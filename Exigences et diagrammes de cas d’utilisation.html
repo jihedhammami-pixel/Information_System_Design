@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Exigences et diagrammes de cas d’utilisation</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Deux fenêtres interactives : exigences fonctionnelles et non fonctionnelles (ISO 25010:2023, EARS, EXNF mesurables, MoSCoW) et diagrammes de cas d’utilisation UML, avec simulateurs, quiz, questions oui/non et exercices progressifs.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700&family=JetBrains+Mono:wght@500;600;700&display=swap">
+<script>try{var t=localStorage.getItem('rq-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<style>
+:root{
+  --bg:#f6f3fc; --surface:#ffffff; --surface-2:#efe9fa; --ink:#1a1230; --muted:#5c5274; --line:#e0d7f1; --edge:#352a52;
+  --g1:#7c3aed; --g2:#c026d3; --g3:#d97706;
+  --h1:#2e1065; --h2:#581c87; --h3:#831843;
+  --hd-a:#7c3aed; --hd-b:#c026d3; --cls-line:#7c3aed;
+  --t1:#2563eb; --t2:#db2777; --t3:#059669;
+  --code:#130d22; --codetx:#f3e8ff;
+  --ok:#15803d; --ok-bg:#dcfce7; --no:#dc2626; --no-bg:#fee2e2; --warn:#b45309; --warn-bg:#fef3c7;
+  --f-display:"Syne","Segoe UI",system-ui,sans-serif;
+  --f-body:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d0918; --surface:#161026; --surface-2:#211836; --ink:#f1eafd; --muted:#ab9fc6; --line:#33284d; --edge:#c7bbe2;
+  --g1:#a78bfa; --g2:#e879f9; --g3:#fbbf24;
+  --h1:#2e1065; --h2:#4c1d95; --h3:#701a43;
+  --hd-a:#6d28d9; --hd-b:#a21caf; --cls-line:#a78bfa;
+  --t1:#60a5fa; --t2:#f472b6; --t3:#34d399;
+  --code:#07040e; --codetx:#f3e8ff;
+  --ok:#4ade80; --ok-bg:#12341f; --no:#f87171; --no-bg:#3d1717; --warn:#fbbf24; --warn-bg:#3a2a0b;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d0918; --surface:#161026; --surface-2:#211836; --ink:#f1eafd; --muted:#ab9fc6; --line:#33284d; --edge:#c7bbe2;
+  --g1:#a78bfa; --g2:#e879f9; --g3:#fbbf24;
+  --h1:#2e1065; --h2:#4c1d95; --h3:#701a43;
+  --hd-a:#6d28d9; --hd-b:#a21caf; --cls-line:#a78bfa;
+  --t1:#60a5fa; --t2:#f472b6; --t3:#34d399;
+  --code:#07040e; --codetx:#f3e8ff;
+  --ok:#4ade80; --ok-bg:#12341f; --no:#f87171; --no-bg:#3d1717; --warn:#fbbf24; --warn-bg:#3a2a0b;
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:calc(70px + env(safe-area-inset-top,0px))}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.62 var(--f-body)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:40;background:var(--surface)}
+a{color:var(--g1)}
+code{font:500 .84em var(--f-mono);background:var(--surface-2);padding:1px 6px;border-radius:6px}
+h1,h2{font-family:var(--f-display);text-wrap:balance;line-height:1.08;margin:0}
+h3,h4{font-family:var(--f-body);font-weight:700;text-wrap:balance;line-height:1.2;margin:0}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:12px;padding-block:9px}
+.brand{display:flex;align-items:center;gap:9px;font:800 16px var(--f-display);color:var(--ink);text-decoration:none;white-space:nowrap}
+.brand i{width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff 0 14%,var(--g2) 15% 45%,var(--g1) 46%);box-shadow:0 0 0 3px color-mix(in srgb,var(--g3) 60%,transparent)}
+.toc{display:flex;gap:2px;overflow-x:auto;flex:1;scrollbar-width:none;min-width:0}.toc::-webkit-scrollbar{display:none}
+.toc a{white-space:nowrap;padding:6px 11px;border-radius:99px;color:var(--muted);text-decoration:none;font-size:15px;font-weight:700}
+.toc a:hover{color:var(--ink);background:var(--surface-2)}
+.toc a.act{color:#fff;background:linear-gradient(100deg,var(--g1),var(--g2))}
+@media(max-width:640px){.brand span{display:none}}
+
+/* hero */
+.hero{position:relative;overflow:hidden;color:#fff;background:radial-gradient(120% 90% at 75% 40%,var(--h2),var(--h1) 60%),linear-gradient(125deg,var(--h1),var(--h3))}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(125deg,transparent 40%,color-mix(in srgb,var(--h3) 70%,transparent));pointer-events:none}
+.stars{position:absolute;inset:0;background-image:radial-gradient(#ffffff55 1px,transparent 1.5px),radial-gradient(#ffffff33 1px,transparent 1.5px);background-size:60px 60px,23px 23px;background-position:0 0,11px 7px;opacity:.6;animation:twinkle 8s linear infinite}
+@keyframes twinkle{to{background-position:60px 30px,34px 30px}}
+.hero .wrap{position:relative;z-index:1;display:grid;grid-template-columns:1.05fr .95fr;gap:20px;align-items:center;padding-block:46px 50px}
+@media(max-width:880px){.hero .wrap{grid-template-columns:1fr;padding-block:32px 36px}}
+.eyebrow{font:600 12px var(--f-mono);letter-spacing:.14em;text-transform:uppercase;opacity:.92}
+.hero h1{font-size:clamp(42px,7.2vw,84px);font-weight:800;margin:10px 0 12px;letter-spacing:-.02em}
+.hero p.lead{font-size:19px;max-width:32em;margin:0 0 22px;opacity:.96}
+.cta{display:flex;flex-wrap:wrap;gap:10px}
+.btn.light{background:#fff;color:#4c1d95;box-shadow:none}
+.btn.glass{background:#ffffff26;color:#fff;box-shadow:inset 0 0 0 1px #ffffff70}
+
+@media(max-width:560px){.scene3d{height:270px}.world{scale:.75}}
+
+main{padding-block:26px 10px}
+.part{margin:44px 0 4px;display:flex;align-items:center;gap:12px;font:600 12px var(--f-mono);letter-spacing:.16em;text-transform:uppercase;color:var(--g1)}
+.part::after{content:"";flex:1;height:2px;background:linear-gradient(90deg,var(--g1),transparent)}
+.part b{color:#fff;background:linear-gradient(100deg,var(--g1),var(--g2));padding:3px 10px;border-radius:99px}
+.ch{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:28px;margin:22px 0;position:relative;overflow:hidden}
+.ch::before{content:"";position:absolute;inset:0 0 auto;height:5px;background:linear-gradient(90deg,var(--g1),var(--g2),var(--g3))}
+@media(max-width:600px){.ch{padding:22px 16px;border-radius:20px}}
+.chh{display:flex;gap:14px;align-items:center;margin-bottom:14px}
+.num{flex:none;width:50px;height:50px;border-radius:50%;display:grid;place-items:center;color:#fff;font:800 19px var(--f-display);background:radial-gradient(circle at 35% 30%,#ffffff66,transparent 40%),linear-gradient(135deg,var(--g1),var(--g2));box-shadow:0 10px 20px -8px var(--g2),0 0 0 3px color-mix(in srgb,var(--g3) 55%,transparent)}
+.ch h2{font-size:clamp(24px,3.4vw,32px);font-weight:800}
+.sub{margin:4px 0 0;color:var(--muted);font-size:16px}
+.ch h3{font-size:21px;margin:26px 0 8px}
+.ch p{max-width:70ch}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.grid>*{min-width:0}
+.tile{background:var(--surface-2);border-radius:16px;padding:16px}
+.tile h4{margin:0 0 4px;font-size:17px}
+.tile p{margin:0;font-size:16px;color:var(--muted)}
+.callout{border-radius:16px;padding:14px 16px;margin:16px 0;background:linear-gradient(135deg,color-mix(in srgb,var(--g1) 13%,var(--surface)),color-mix(in srgb,var(--g3) 12%,var(--surface)))}
+.callout b.t{font-weight:800}
+.callout.warn{background:var(--warn-bg)}
+blockquote{margin:14px 0;padding:14px 18px;border-radius:16px;background:var(--surface-2);font-size:19px;font-style:italic;border-left:5px solid var(--g2)}
+blockquote cite{display:block;font:600 13px var(--f-mono);font-style:normal;color:var(--muted);margin-top:6px}
+.fig{background:var(--surface-2);border-radius:18px;padding:12px;margin:14px 0;overflow-x:auto}
+.fig figcaption{font-size:14px;color:var(--muted);text-align:center;margin-top:6px}
+figure{margin:0}
+.vs{width:100%;border-collapse:collapse;font-size:16px}
+.vs th,.vs td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+.vs th{font:600 13px var(--f-mono);color:var(--g1);letter-spacing:.03em}
+.vs td.y{color:var(--ok);font-weight:700}.vs td.n{color:var(--no);font-weight:700}.vs td.m{color:var(--warn);font-weight:700}
+.scroll{overflow-x:auto}
+.tag{display:inline-block;font:600 11px var(--f-mono);padding:2px 8px;border-radius:99px;color:#fff;background:linear-gradient(100deg,var(--g1),var(--g2));vertical-align:2px}
+.tag.pv{background:linear-gradient(100deg,#d97706,#b45309)}
+
+.btn{font:700 15px var(--f-body);border:0;border-radius:12px;padding:9px 16px;cursor:pointer;color:var(--ink);background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line);transition:transform .15s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{transform:translateY(-1px)}.btn:active{transform:translateY(1px)}
+.btn.pri{color:#fff;background:linear-gradient(100deg,var(--g1),var(--g2));box-shadow:0 6px 16px -8px var(--g2)}
+.btn.t1{color:#fff;background:var(--t1)}.btn.t2{color:#fff;background:var(--t2)}.btn.t3{color:#fff;background:var(--t3)}
+.btn.sm{padding:6px 12px;font-size:14px}
+.btn:disabled{opacity:.4;cursor:default;transform:none}
+.btn:focus-visible,.opt:focus-visible,.toc a:focus-visible,.seg button:focus-visible,.flip:focus-visible,.mb:focus-visible,.chip:focus-visible,.lv:focus-visible,.panel3d:focus-visible{outline:3px solid var(--g3);outline-offset:2px}
+.seg{display:inline-flex;flex-wrap:wrap;gap:4px;background:var(--surface-2);padding:4px;border-radius:12px}
+.seg button{font:700 14px var(--f-body);border:0;cursor:pointer;padding:6px 12px;border-radius:9px;background:transparent;color:var(--muted)}
+.seg button.on{background:linear-gradient(100deg,var(--g1),var(--g2));color:#fff}
+.row{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin:10px 0}
+.lbl{font:600 12px var(--f-mono);color:var(--muted);letter-spacing:.06em;text-transform:uppercase;min-width:100px}
+label.chk{display:inline-flex;gap:6px;align-items:center;font-size:15px;font-weight:600}
+
+pre.code{background:var(--code);color:var(--codetx);padding:13px 15px;border-radius:14px;overflow-x:auto;font:13px/1.6 var(--f-mono);margin:10px 0;tab-size:4;position:relative}
+pre.code .k{color:#c4b5fd;font-weight:600}pre.code .s{color:#86efac}pre.code .c{color:#a99cc3;font-style:italic}pre.code .n{color:#fcd34d}pre.code .t{color:#7dd3fc}pre.code .a{color:#f9a8d4}
+.copy{position:absolute;top:8px;right:8px;font:600 12px var(--f-body);padding:3px 9px;background:#ffffff1f;color:#f3e8ff;border:0;border-radius:8px;cursor:pointer;opacity:.8}
+.ln{display:block;padding:0 6px;margin:0 -6px;border-radius:6px}
+.ln.on{background:#7c3aed55;box-shadow:inset 3px 0 0 #c4b5fd}
+
+/* class diagram */
+svg{display:block;max-width:100%;height:auto}
+svg text{font-family:var(--f-body)}
+.cls .body{fill:var(--surface);stroke:var(--cls-line);stroke-width:1.6}
+.cls .sep{stroke:var(--cls-line);stroke-width:1.2}
+.cls .hd{fill:url(#gHd)}
+.cn{fill:#fff;font:700 14px var(--f-body)}
+.cs{fill:#ffffffd9;font:600 11px var(--f-mono)}
+.cm{fill:var(--ink);font:500 12px var(--f-mono)}
+.rel .ln{fill:none;stroke:var(--edge);stroke-width:1.8;stroke-linejoin:round}
+.rel.k-dep .ln,.rel.k-nav .ln{marker-end:url(#mOpen)}.rel.k-dep .ln,.rel.k-note .ln{stroke-dasharray:7 5}
+.alab{fill:var(--ink);font:700 12px var(--f-body);paint-order:stroke;stroke:var(--surface-2);stroke-width:4px}
+.mult{fill:var(--g2);font:600 12px var(--f-mono);paint-order:stroke;stroke:var(--surface-2);stroke-width:4px}
+.note path{fill:#fef9c3;stroke:#ca8a04;stroke-width:1.4}.note text{fill:#3f2e05;font:600 12px var(--f-mono)}
+.popin{animation:popin .45s both}@keyframes popin{from{opacity:0;transform:scale(.94)}}
+
+/* flip cards */
+.flips{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
+.flip{perspective:1000px;height:220px;border:0;background:none;padding:0;cursor:pointer;text-align:left;font:inherit;color:inherit}
+.flip .in{position:relative;height:100%;transition:transform .75s cubic-bezier(.2,.7,.2,1);transform-style:preserve-3d}
+.flip:hover .in{transform:rotateY(10deg) rotateX(4deg)}
+.flip.on .in{transform:rotateY(180deg)}.flip.on:hover .in{transform:rotateY(172deg) rotateX(4deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:8px;overflow:hidden}
+.front{background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line)}
+.front .ico{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;color:#fff;font:800 18px var(--f-display);background:radial-gradient(circle at 35% 30%,#ffffff66,transparent 40%),linear-gradient(135deg,var(--g1),var(--g2));box-shadow:0 10px 18px -10px var(--g2)}
+.front h4{font-size:18px}.front .k{font:600 12px var(--f-mono);color:var(--g2)}
+.front .hint{margin-top:auto;font-size:13px;color:var(--muted)}
+.back{transform:rotateY(180deg);color:#fff;background:linear-gradient(150deg,var(--h1),var(--h2) 55%,var(--h3));font-size:15px;line-height:1.5}
+.back h4{font-size:17px}
+
+/* 3D carousel */
+.car{perspective:1200px;height:260px;display:grid;place-items:center;overflow:hidden;margin:10px 0}
+.ring{position:relative;width:240px;height:180px;transform-style:preserve-3d;transition:transform .8s cubic-bezier(.2,.7,.2,1)}
+@media(max-width:560px){.ring{scale:.72}}
+.panel3d{position:absolute;inset:0;border:0;border-radius:18px;padding:16px;cursor:pointer;text-align:left;font:inherit;color:#fff;background:linear-gradient(150deg,var(--h1),var(--h2) 55%,var(--h3));box-shadow:0 18px 30px -16px #0009,inset 0 0 0 1px #ffffff40;display:flex;flex-direction:column;gap:6px;backface-visibility:hidden;transition:filter .5s}
+.panel3d h4{font-size:19px}.panel3d small{font:600 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;opacity:.85}.panel3d p{margin:0;font-size:14px;opacity:.95}
+.panel3d .verdict{margin-top:auto;font:700 12px var(--f-mono);padding:3px 8px;border-radius:99px;align-self:flex-start;background:#ffffff26}
+.panel3d.dim{filter:saturate(.5) brightness(.75)}
+.car-detail{background:var(--surface-2);border-radius:18px;padding:16px;animation:popin .4s both}
+.car-detail h4{font-size:20px;margin-bottom:6px}
+.props{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.props span{font:600 12px var(--f-mono);padding:4px 10px;border-radius:99px}
+.props .y{background:var(--ok-bg);color:var(--ok)}.props .n{background:var(--no-bg);color:var(--no)}.props .m{background:var(--warn-bg);color:var(--warn)}
+
+/* simulators */
+.sim{border-radius:20px;margin:18px 0;padding:3px;background:linear-gradient(135deg,var(--g1),var(--g2),var(--g3))}
+.sim-in{background:var(--surface);border-radius:17px;padding:16px}
+.sim-head{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-bottom:10px}
+.sim-head h4{font-size:18px;display:flex;align-items:center;gap:8px}
+.live{font:600 11px var(--f-mono);color:#fff;background:var(--g2);padding:3px 8px;border-radius:99px;letter-spacing:.08em}
+.two{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px;align-items:start}
+@media(max-width:820px){.two{grid-template-columns:minmax(0,1fr)}}
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px;overflow-x:auto}
+.say{background:var(--surface-2);border-radius:14px;padding:12px 14px;font-size:16px}
+.out{font:500 13px/1.6 var(--f-mono);background:var(--code);color:var(--codetx);border-radius:14px;padding:12px 14px;min-height:96px;white-space:pre-wrap;max-height:260px;overflow:auto}
+.out div{animation:popin .35s both}
+.result{border-radius:12px;padding:10px 14px;font-weight:700;margin-top:8px;font-size:15px}
+.result.ok{background:var(--ok-bg);color:var(--ok)}.result.err{background:var(--no-bg);color:var(--no)}.result.warn{background:var(--warn-bg);color:var(--warn)}
+/* race lanes */
+.lanes{display:flex;flex-direction:column;gap:10px}
+.lane{display:grid;grid-template-columns:52px 1fr;gap:8px;align-items:start}
+.lane .who{font:700 13px var(--f-mono);color:#fff;border-radius:10px;padding:8px 0;text-align:center}
+.ops{display:flex;flex-wrap:wrap;gap:5px}
+.op{font:500 12px var(--f-mono);padding:5px 8px;border-radius:8px;background:var(--surface-2);color:var(--muted);box-shadow:inset 0 0 0 1px var(--line);transition:all .3s}
+.op.cur{color:#fff;background:var(--c);box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 35%,transparent);transform:translateY(-2px)}
+.op.done{color:var(--ink);background:color-mix(in srgb,var(--c) 18%,var(--surface))}
+.op.skip{text-decoration:line-through;opacity:.45}
+.op.blocked{animation:shake .5s}
+.mem{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:12px 0}
+.cell{background:var(--surface-2);border-radius:12px;padding:8px 10px}
+.cell small{display:block;font:600 11px var(--f-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.cell b{font:600 14px var(--f-mono)}
+.flash{animation:flash .8s}@keyframes flash{0%{background:var(--g3);color:#fff}}
+/* attack lab */
+.lab-vis{display:grid;place-items:center;min-height:200px}
+/* init timeline */
+.ibox{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.istat{background:var(--surface-2);border-radius:14px;padding:10px 12px}
+.istat h4{font-size:15px;margin-bottom:6px;font-family:var(--f-mono)}
+.light{display:flex;align-items:center;gap:8px;font-size:14px;margin:3px 0}
+.light i{width:14px;height:14px;border-radius:50%;background:var(--line);transition:background .4s,box-shadow .4s}
+.light.on i{background:var(--ok);box-shadow:0 0 10px var(--ok)}
+/* testing sim */
+.tests{display:flex;flex-direction:column;gap:6px}
+.trow{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--surface-2);border-radius:10px;padding:8px 12px;font:500 14px var(--f-mono)}
+.badge{font:700 12px var(--f-mono);padding:3px 10px;border-radius:99px}
+.badge.pass{background:var(--ok-bg);color:var(--ok)}.badge.fail{background:var(--no-bg);color:var(--no)}.badge.idle{background:var(--line);color:var(--muted)}
+.wq{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:16px}
+.wq .seg button{padding:5px 10px}
+
+.xp{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.xpc{background:var(--surface-2);border-radius:16px;padding:14px 16px;position:relative}
+.xpc h4{font-size:17px;margin:0 0 6px;padding-right:72px}
+.xpc .lvlx{position:absolute;top:12px;right:12px;font:600 11px var(--f-mono);color:#fff;background:linear-gradient(100deg,var(--g1),var(--g2));padding:3px 8px;border-radius:99px}
+.xpc p{margin:0;font-size:16px}
+.rule{background:var(--surface-2);border-radius:16px;padding:14px 16px}
+.rule h4{margin:0 0 6px;font-size:17px}
+.rule .bad,.rule .good{display:block;font:500 13px var(--f-mono);padding:4px 8px;border-radius:8px;margin-top:5px}
+.rule .bad{background:var(--no-bg);color:var(--no)}.rule .good{background:var(--ok-bg);color:var(--ok)}
+
+/* practice */
+.score{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 12px;font-size:16px}
+.meter{flex:1;min-width:120px;height:10px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--g1),var(--g2),var(--g3));transition:width .5s}
+.q{border:1px solid var(--line);border-radius:16px;padding:14px;margin:10px 0}
+.qh{display:flex;gap:10px;align-items:flex-start}
+.qn{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font:800 13px var(--f-display);color:#fff;background:linear-gradient(135deg,var(--g1),var(--g2))}
+.qt{padding-top:2px;min-width:0}
+.qcode{margin:10px 0 0 38px}
+.opts{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0 38px}
+.opt{font:700 15px var(--f-body);border:0;cursor:pointer;border-radius:10px;padding:8px 13px;background:var(--surface-2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line);text-align:left}
+.opt:hover:not(:disabled){box-shadow:inset 0 0 0 2px var(--g1)}
+.opt:disabled{cursor:default}
+.opt.right{background:var(--ok);color:#fff;box-shadow:none}.opt.wrong{background:var(--no);color:#fff;box-shadow:none}
+.fb{margin:8px 0 0 38px;font-size:16px}.fb:empty{display:none}
+@media(max-width:520px){.opts,.fb,.qcode{margin-left:0}}
+.good{color:var(--ok)}.bad{color:var(--no)}
+.shake{animation:shake .4s}@keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.ladder{display:flex;gap:6px;overflow-x:auto;padding:6px 2px 10px;scrollbar-width:thin}
+.lv{flex:none;border:0;cursor:pointer;border-radius:14px;padding:8px 12px;background:var(--surface-2);color:var(--muted);font:700 13px var(--f-body);text-align:left;min-width:112px;transition:transform .2s}
+.lv b{display:block;font:800 15px var(--f-display);color:var(--ink)}
+.lv small{display:block;color:var(--g2);letter-spacing:.05em}
+.lv.on{background:linear-gradient(140deg,var(--g1),var(--g2) 70%,var(--g3));color:#ffffffd8;transform:translateY(-3px)}
+.lv.on b,.lv.on small{color:#fff}
+.lv.done::after{content:"✓";float:right;color:var(--ok);font-weight:900}.lv.on.done::after{color:#fff}
+.lvhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin:8px 0}
+.lvnav{display:flex;justify-content:space-between;gap:8px;margin-top:14px;flex-wrap:wrap}
+.stars-b{font:600 12px var(--f-mono);padding:3px 8px;border-radius:99px;background:linear-gradient(100deg,var(--g1),var(--g2));color:#fff}
+.match{display:grid;grid-template-columns:1fr 1.7fr;gap:10px}
+@media(max-width:600px){.match{grid-template-columns:1fr}}
+.match .col{display:flex;flex-direction:column;gap:6px}
+.mb{font:600 15px var(--f-body);border:0;cursor:pointer;text-align:left;padding:8px 12px;border-radius:10px;background:var(--surface-2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.mb.mono{font:600 14px var(--f-mono)}
+.mb.sel{box-shadow:inset 0 0 0 3px var(--g1)}.mb.ok{background:var(--ok);color:#fff;opacity:.85;box-shadow:none}.mb.bad{background:var(--no);color:#fff}
+.ord{border:1px solid var(--line);border-radius:16px;padding:14px;margin:12px 0}
+.ord h4{margin:0 0 8px;font-size:17px}
+.pool,.ans{display:flex;flex-wrap:wrap;gap:8px;min-height:46px;padding:8px;border-radius:12px}
+.pool{background:var(--surface-2)}
+.ans{border:2px dashed var(--line);counter-reset:o;flex-direction:column;align-items:flex-start}
+.ans:empty::after{content:"Cliquez sur les étapes dans le bon ordre";color:var(--muted);font-size:15px}
+.chip{font:600 14px var(--f-body);border:0;cursor:pointer;padding:7px 12px;border-radius:10px;background:var(--surface);color:var(--ink);box-shadow:inset 0 0 0 1px var(--g1);text-align:left}
+.ans .chip{counter-increment:o}.ans .chip::before{content:counter(o) ". ";color:var(--g2);font-weight:800}
+.ans .chip.okc{box-shadow:inset 0 0 0 2px var(--ok)}.ans .chip.noc{box-shadow:inset 0 0 0 2px var(--no)}
+.task{border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0}
+.task h4{font-size:18px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.task .scen{background:var(--surface-2);border-radius:12px;padding:12px 14px;margin:8px 0}
+.task ul{margin:6px 0;padding-left:20px}
+textarea{width:100%;min-height:130px;border-radius:12px;border:1px solid var(--line);padding:10px;font:13px/1.5 var(--f-mono);background:var(--surface);color:var(--ink);resize:vertical}
+.hint{background:#fef3c7;color:#713f12;border-radius:10px;padding:8px 12px;font-size:15px;margin:8px 0}
+footer{text-align:center;color:var(--muted);font-size:14px;padding:26px 16px 44px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+
+/* ===== tokens for this page ===== */
+:root{
+  --bg:#f4f6fb; --surface:#ffffff; --surface-2:#eceff8; --ink:#141a2e; --muted:#4f5873; --line:#dde2f0; --edge:#2b3350;
+  --g1:#4f46e5; --g2:#c026d3; --g3:#d97706;
+  --h1:#1e1b4b; --h2:#312e81; --h3:#701a75;
+  --hd-a:#4f46e5; --hd-b:#c026d3;
+  --uc-fill:#fff7ed; --uc-stroke:#c2410c; --sys-fill:#f8fafc;
+  --code:#0f1424; --codetx:#e6ebff;
+  --f-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --f-body:"DM Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0a0d1a; --surface:#121729; --surface-2:#1b2238; --ink:#eef1ff; --muted:#a4acc8; --line:#2a3352; --edge:#c9d0ec;
+  --g1:#818cf8; --g2:#e879f9; --g3:#fbbf24; --h1:#1e1b4b; --h2:#312e81; --h3:#581c64;
+  --uc-fill:#2a1a10; --uc-stroke:#fb923c; --sys-fill:#151b2e; --code:#070a14}}
+:root[data-theme="dark"]{
+  --bg:#0a0d1a; --surface:#121729; --surface-2:#1b2238; --ink:#eef1ff; --muted:#a4acc8; --line:#2a3352; --edge:#c9d0ec;
+  --g1:#818cf8; --g2:#e879f9; --g3:#fbbf24; --h1:#1e1b4b; --h2:#312e81; --h3:#581c64;
+  --uc-fill:#2a1a10; --uc-stroke:#fb923c; --sys-fill:#151b2e; --code:#070a14}
+
+/* window colour worlds */
+.w-req{--g1:#0f766e;--g2:#0369a1;--g3:#d97706;--h1:#042f2e;--h2:#0c4a6e;--h3:#134e4a}
+.w-uc{--g1:#be123c;--g2:#7e22ce;--g3:#ea580c;--h1:#4c0519;--h2:#3b0764;--h3:#7c2d12}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  .w-req{--g1:#14b8a6;--g2:#0ea5e9;--g3:#fbbf24;--h1:#022c22;--h2:#0c4a6e;--h3:#134e4a}
+  .w-uc{--g1:#fb7185;--g2:#c084fc;--g3:#fb923c;--h1:#4c0519;--h2:#3b0764;--h3:#7c2d12}}}
+:root[data-theme="dark"] .w-req{--g1:#14b8a6;--g2:#0ea5e9;--g3:#fbbf24;--h1:#022c22;--h2:#0c4a6e;--h3:#134e4a}
+:root[data-theme="dark"] .w-uc{--g1:#fb7185;--g2:#c084fc;--g3:#fb923c;--h1:#4c0519;--h2:#3b0764;--h3:#7c2d12}
+
+.ch h2,.hero h1,.num,.lvl-banner h2{font-family:var(--f-display)}
+
+/* top bar: window switch */
+.wsw{flex:none;display:inline-flex;gap:3px;padding:3px;border-radius:12px;background:var(--surface-2)}
+.wsw button{border:0;cursor:pointer;font:700 14px var(--f-body);padding:6px 11px;border-radius:9px;background:transparent;color:var(--muted);white-space:nowrap}
+.wsw button.on{color:#fff;background:linear-gradient(100deg,var(--g1),var(--g2))}
+.wsw button:focus-visible{outline:3px solid var(--g3);outline-offset:2px}
+@media(max-width:640px){.wsw .tx{display:none}.wsw button{padding:6px 9px;font-size:16px}}
+.toc[hidden]{display:none}
+
+/* hero */
+.hero h1 em{font-style:normal;background:linear-gradient(90deg,#5eead4,#fda4af,#fde68a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.scene{perspective:1100px;height:340px;display:grid;place-items:center;overflow:hidden}
+.duo{position:relative;width:330px;height:240px;transform-style:preserve-3d;animation:sway 9s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:rotateX(10deg) rotateY(-22deg)}50%{transform:rotateX(4deg) rotateY(14deg)}}
+.w3d{position:absolute;width:230px;height:170px;border:0;padding:0;cursor:pointer;border-radius:14px;text-align:left;font:inherit;color:#0f172a;background:#fff;box-shadow:0 30px 50px -20px #000b,inset 0 0 0 1px #fff6;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+.w3d .bar{display:flex;gap:5px;align-items:center;height:26px;padding:0 10px;border-radius:14px 14px 0 0;color:#fff;font:700 11px var(--f-mono)}
+.w3d .bar i{width:9px;height:9px;border-radius:50%;background:#fff8}.w3d .bar i:first-child{background:#fb7185}.w3d .bar i:nth-child(2){background:#fbbf24}.w3d .bar i:nth-child(3){background:#4ade80}
+.w3d .bar span{margin-left:6px}
+.w3d.a{left:0;top:0;transform:translateZ(40px)}.w3d.a .bar{background:linear-gradient(90deg,#0f766e,#0369a1)}
+.w3d.b{right:0;bottom:0;transform:translateZ(-30px)}.w3d.b .bar{background:linear-gradient(90deg,#be123c,#7e22ce)}
+.w3d:hover{transform:translateZ(80px)}
+.w3d .bd{padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.w3d .ln2{display:flex;gap:6px;align-items:center;font:600 11px var(--f-body);color:#334155}
+.w3d .ln2 b{font:700 9px var(--f-mono);color:#fff;padding:1px 5px;border-radius:5px;background:#0f766e}.w3d .ln2 b.n{background:#0369a1}
+.w3d .ln2 s{flex:1;height:6px;border-radius:3px;background:#e2e8f0;text-decoration:none}
+.w3d svg{width:100%;height:130px}
+.chip3d{position:absolute;font:700 12px var(--f-mono);color:#fff;padding:5px 10px;border-radius:99px;box-shadow:0 10px 18px -8px #000a;animation:floaty 5s ease-in-out infinite}
+@keyframes floaty{50%{translate:0 -10px}}
+@media(max-width:560px){.scene{height:280px}.duo{scale:.8}}
+
+/* window frame */
+.winframe{border-radius:26px;padding:3px;margin:26px 0;background:linear-gradient(135deg,var(--g1),var(--g2),var(--g3));box-shadow:0 30px 60px -40px var(--g2)}
+.winbar{display:flex;align-items:center;gap:8px;padding:10px 16px;color:#fff;font:700 14px var(--f-mono);flex-wrap:wrap}
+.winbar .dots{display:flex;gap:6px}.winbar .dots i{width:12px;height:12px;border-radius:50%}
+.winbar .dots i:nth-child(1){background:#fb7185}.winbar .dots i:nth-child(2){background:#fde047}.winbar .dots i:nth-child(3){background:#4ade80}
+.winbar .other{margin-left:auto;color:#fff;font:700 13px var(--f-body);text-decoration:none;background:#ffffff26;padding:4px 10px;border-radius:99px;border:0;cursor:pointer}
+.winbody{background:var(--bg);border-radius:0 0 23px 23px;padding:6px 18px 18px}
+@media(max-width:600px){.winbody{padding:4px 8px 12px}.winframe{margin:16px -8px}}
+.win{perspective:1600px}
+.win.enter .winframe{animation:winIn .7s cubic-bezier(.2,.8,.2,1) both}
+@keyframes winIn{from{transform:rotateY(-14deg) translateZ(-120px) translateY(30px)}}
+.win[hidden]{display:none}
+
+/* intro banner per window */
+.wintro{position:relative;overflow:hidden;border-radius:22px;margin:12px 0;padding:24px;color:#fff;background:linear-gradient(120deg,var(--h1),var(--h2) 50%,var(--h3),var(--h1));background-size:240% 100%;animation:flow 14s ease-in-out infinite alternate}
+.wintro::after{content:"";position:absolute;inset:0;background-image:radial-gradient(#ffffff40 1px,transparent 1.6px);background-size:26px 26px;opacity:.4;pointer-events:none}
+@keyframes flow{to{background-position:100% 0}}
+.wintro h2{font:800 clamp(28px,4.4vw,42px)/1.08 var(--f-display);margin:4px 0 8px}
+.wintro p{margin:0;max-width:62ch;opacity:.95}
+.wintro small{font:600 12px var(--f-mono);letter-spacing:.14em;text-transform:uppercase;opacity:.85}
+.wintro .path{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px;position:relative;z-index:1}
+.wintro .path a{color:#fff;text-decoration:none;font:700 13px var(--f-body);padding:5px 11px;border-radius:99px;background:#ffffff22;box-shadow:inset 0 0 0 1px #ffffff45}
+.wintro .path a:hover{background:#ffffff3a}
+.wintro>*{position:relative;z-index:1}
+
+/* difficulty tag on chapters */
+.diff{display:inline-block;font:700 11px var(--f-mono);letter-spacing:.04em;padding:2px 8px;border-radius:99px;margin-left:8px;vertical-align:4px;color:#fff}
+.diff.d1{background:#059669}.diff.d2{background:#2563eb}.diff.d3{background:#9333ea}.diff.d4{background:#be185d}
+
+/* 3D layer cake */
+.cake-wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:center}
+@media(max-width:820px){.cake-wrap{grid-template-columns:minmax(0,1fr)}}
+.cake-scene{height:300px;perspective:1000px;display:grid;place-items:center;overflow:hidden}
+.cake{position:relative;width:220px;height:220px;transform-style:preserve-3d;transform:rotateX(60deg) rotateZ(-40deg);animation:cakespin 16s linear infinite}
+.cake:hover{animation-play-state:paused}
+@keyframes cakespin{to{transform:rotateX(60deg) rotateZ(320deg)}}
+.layer{position:absolute;border:0;cursor:pointer;border-radius:16px;display:grid;place-items:center;color:#fff;font:800 14px var(--f-display);box-shadow:-10px 14px 24px -10px #0008,inset 0 0 0 2px #ffffff40;transition:transform .5s,filter .3s}
+.layer.on{filter:brightness(1.18) saturate(1.2);box-shadow:0 0 0 4px var(--g3),-10px 14px 24px -10px #0008}
+.layer span{transform:rotateZ(40deg)}
+.l-bus{inset:0;transform:translateZ(0);background:linear-gradient(135deg,#0f766e,#115e59)}
+.l-usr{inset:22px;transform:translateZ(46px);background:linear-gradient(135deg,#0369a1,#0e7490)}
+.l-fr{inset:44px;transform:translateZ(92px);background:linear-gradient(135deg,#4f46e5,#6d28d9)}
+.l-nfr{inset:66px;transform:translateZ(138px);background:linear-gradient(135deg,#d97706,#db2777)}
+.cake-info{background:var(--surface-2);border-radius:18px;padding:16px;min-height:200px;animation:popin .4s both}
+.cake-info h4{font-size:20px;margin:0 0 6px}
+.cake-info .ex{margin-top:10px;font:500 14px var(--f-mono);background:var(--surface);border-radius:10px;padding:10px 12px;border-left:4px solid var(--g1)}
+.cake-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+
+/* FR/NFR sorter */
+.sorter{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) minmax(0,1fr);gap:12px;align-items:center;perspective:1100px}
+@media(max-width:760px){.sorter{grid-template-columns:1fr 1fr}.sorter .deck{grid-column:1/-1;order:-1}}
+.bin{position:relative;height:190px;transform-style:preserve-3d;transform:rotateX(18deg)}
+.bin .fr2{position:absolute;inset:40px 0 0;border-radius:0 0 18px 18px;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transform:translateZ(30px);box-shadow:0 20px 30px -18px #000a,inset 0 0 0 1px #fff5}
+.bin .tp2{position:absolute;left:0;right:0;top:40px;height:60px;border-radius:18px;transform-origin:top;transform:translateZ(30px) rotateX(-90deg);filter:brightness(.7)}
+.bin.f .fr2,.bin.f .tp2{background:linear-gradient(160deg,#0f766e,#0d9488)}.bin.n .fr2,.bin.n .tp2{background:linear-gradient(160deg,#0369a1,#6366f1)}
+.bin b{font:800 30px var(--f-display)}.bin small{font:700 12px var(--f-body);opacity:.9;text-align:center;padding:0 8px}
+.bin .cnt{font:700 13px var(--f-mono);background:#ffffff2a;padding:2px 8px;border-radius:99px;margin-top:4px}
+.bin.hit .fr2{animation:binhit .5s}
+@keyframes binhit{40%{transform:translateZ(30px) scale(1.08)}}
+.deck{position:relative;min-height:190px;display:grid;place-items:center}
+.scard{width:100%;max-width:330px;min-height:150px;border-radius:18px;padding:16px;background:var(--surface);box-shadow:0 20px 40px -22px #0009,inset 0 0 0 2px var(--line);font-size:17px;font-weight:600;display:flex;flex-direction:column;gap:8px;transition:transform .7s cubic-bezier(.5,-.3,.6,1),opacity .7s;animation:cardin .5s cubic-bezier(.2,.9,.3,1.3) both}
+.scard small{font:600 11px var(--f-mono);color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+@keyframes cardin{from{transform:translateY(-40px) rotateX(50deg) scale(.9)}}
+.scard.go-f{transform:translate(-120%,60px) rotate(-22deg) scale(.4);opacity:0}.scard.go-n{transform:translate(120%,60px) rotate(22deg) scale(.4);opacity:0}
+.sort-btns{display:flex;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap}
+
+/* ISO carousel tweaks */
+.car.iso{height:280px}
+.iso .panel3d{width:200px}
+.subs{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.subs span{font:600 13px var(--f-body);padding:4px 10px;border-radius:99px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line)}
+.subs span.new{box-shadow:inset 0 0 0 2px var(--g3)}
+
+/* ambiguity detector */
+.amb-in{width:100%;min-height:90px;border-radius:14px;border:2px solid var(--line);padding:12px;font:16px/1.5 var(--f-body);background:var(--surface);color:var(--ink);resize:vertical}
+.amb-in:focus{outline:none;border-color:var(--g1)}
+.amb-out{background:var(--surface-2);border-radius:14px;padding:12px 14px;font-size:17px;line-height:1.9}
+.amb-out mark{background:#fecaca;color:#7f1d1d;border-radius:5px;padding:1px 4px;font-weight:700;cursor:help}
+.amb-out mark.ok{background:#bbf7d0;color:#14532d}
+.amb-out mark.wk{background:#fde68a;color:#713f12}
+.gauge{position:relative;height:16px;border-radius:99px;background:linear-gradient(90deg,#ef4444,#f59e0b,#22c55e);margin:10px 0 4px}
+.gauge i{position:absolute;top:-6px;width:6px;height:28px;border-radius:3px;background:var(--ink);transition:left .6s cubic-bezier(.3,1.4,.5,1);box-shadow:0 0 0 2px var(--surface)}
+.issues{list-style:none;padding:0;margin:8px 0;display:flex;flex-direction:column;gap:6px}
+.issues li{background:var(--surface-2);border-radius:10px;padding:8px 12px;font-size:15px;animation:popin .35s both}
+.issues li b{font-family:var(--f-mono)}
+
+/* Constructeur EARS */
+.ears-out{font-size:19px;line-height:1.7;background:var(--surface-2);border-radius:16px;padding:14px 16px;min-height:60px}
+.ears-out span{padding:2px 6px;border-radius:7px;font-weight:700}
+.e-kw{color:#fff;background:var(--g2)}.e-sys{background:#ccfbf1;color:#134e4a}.e-tr{background:#fde68a;color:#713f12}.e-rs{background:#e0e7ff;color:#312e81}
+.fields{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin:10px 0}
+.fields label{display:flex;flex-direction:column;gap:4px;font:600 12px var(--f-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.fields input,.fields select{font:16px var(--f-body);padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);text-transform:none;letter-spacing:0}
+
+/* quality scenario 3D tiles */
+.qs6{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;perspective:900px;margin:12px 0}
+.q6{border-radius:16px;padding:12px;color:#fff;background:linear-gradient(150deg,var(--h1),var(--h2));min-height:120px;transform:rotateX(14deg);transition:transform .4s;animation:rise .6s both;box-shadow:0 18px 26px -18px #000a}
+.q6:hover{transform:rotateX(0) translateZ(20px)}
+.q6 small{font:700 11px var(--f-mono);opacity:.8;letter-spacing:.06em;text-transform:uppercase}.q6 b{display:block;font:800 17px var(--f-display);margin:2px 0 4px}.q6 span{font-size:14px;opacity:.95}
+@keyframes rise{from{transform:rotateX(70deg) translateY(30px)}}
+/* load test */
+.bars{display:flex;align-items:flex-end;gap:2px;height:180px;padding:8px;position:relative;background:var(--surface);border-radius:14px;border:1px solid var(--line)}
+.bars i{flex:1;border-radius:3px 3px 0 0;background:linear-gradient(180deg,var(--g1),var(--g2));transform-origin:bottom;animation:grow .6s both}
+.bars i.over{background:linear-gradient(180deg,#f43f5e,#be123c)}
+@keyframes grow{from{transform:scaleY(0)}}
+.bars .lim{position:absolute;left:0;right:0;border-top:2px dashed var(--g3);pointer-events:none}
+.bars .lim span{position:absolute;right:8px;top:-22px;font:700 12px var(--f-mono);color:var(--g3);background:var(--surface);padding:0 4px}
+input[type=range]{width:100%;accent-color:var(--g1)}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:10px 0}
+.kv div{background:var(--surface-2);border-radius:12px;padding:8px 10px}.kv small{display:block;font:600 11px var(--f-mono);color:var(--muted);text-transform:uppercase}.kv b{font:700 18px var(--f-mono)}
+
+/* RE cycle */
+.cycle-wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:center}
+@media(max-width:820px){.cycle-wrap{grid-template-columns:minmax(0,1fr)}}
+.cyc .st{cursor:pointer}
+.cyc .st circle{transition:r .3s}
+.cyc .st:hover circle,.cyc .st.on circle{r:46}
+.cyc .st text{fill:#fff;font:700 12px var(--f-body);pointer-events:none}
+.cyc .orb{animation:orb 8s linear infinite;transform-origin:200px 200px}
+@keyframes orb{to{transform:rotate(360deg)}}
+/* MoSCoW */
+.mos{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+@media(max-width:760px){.mos{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.mcol{border-radius:14px;padding:8px;background:var(--surface-2);min-height:150px}
+.mcol h5{margin:0 0 6px;font:800 14px var(--f-display);display:flex;justify-content:space-between}
+.mcol.M h5{color:#e11d48}.mcol.S h5{color:#d97706}.mcol.C h5{color:#0284c7}.mcol.W h5{color:var(--muted)}
+.mreq{background:var(--surface);border-radius:10px;padding:7px 8px;margin-bottom:6px;font-size:13px;font-weight:600;box-shadow:inset 0 0 0 1px var(--line);animation:popin .35s both}
+.mreq .pts{font:700 11px var(--f-mono);color:var(--muted)}
+.mreq .mv{display:flex;gap:3px;margin-top:5px}
+.mreq .mv button{flex:1;border:0;cursor:pointer;font:800 11px var(--f-mono);padding:3px 0;border-radius:6px;background:var(--surface-2);color:var(--muted)}
+.mreq .mv button.on{color:#fff;background:var(--g1)}
+.budget{position:relative;height:22px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin:10px 0 4px;display:flex}
+.budget i{height:100%;transition:width .5s}
+.budget .bm{background:#e11d48}.budget .bs{background:#f59e0b}.budget .bc{background:#0ea5e9}
+.budget .cap60{position:absolute;top:0;bottom:0;border-left:2px dashed var(--ink)}
+
+/* user story card */
+.story{border-radius:18px;padding:16px;background:#fef9c3;color:#422006;box-shadow:0 16px 30px -18px #0009;transform:rotate(-1.2deg);font-size:17px}
+.story b{color:#9a3412}
+.gwt{font:500 14px/1.7 var(--f-mono);background:var(--code);color:var(--codetx);border-radius:14px;padding:12px 14px;white-space:pre-wrap}
+.gwt .k{color:#fbbf24;font-weight:700}
+
+/* ===== UML use case diagrams ===== */
+.ucd{background:var(--surface-2);border-radius:18px;padding:10px;overflow-x:auto}
+.ucd svg{min-width:560px;width:100%}
+.ucd.sm svg{min-width:420px}
+.u-sys rect{fill:var(--sys-fill);stroke:var(--edge);stroke-width:1.6}
+.u-sys text{fill:var(--ink);font:800 15px var(--f-display)}
+.u-uc ellipse{fill:var(--uc-fill);stroke:var(--uc-stroke);stroke-width:1.8}
+.u-uc text{fill:var(--ink);font:600 13px var(--f-body)}
+.u-uc line{stroke:var(--uc-stroke);stroke-width:1.2}
+.u-uc .ep{font:500 10.5px var(--f-mono);fill:var(--muted)}
+.u-act .fig{fill:none;stroke:var(--ink);stroke-width:2;stroke-linecap:round}
+.u-act text{fill:var(--ink);font:700 13px var(--f-body)}
+.u-act .box{fill:var(--surface);stroke:var(--edge);stroke-width:1.6}
+.u-act .kw{font:500 11px var(--f-mono);fill:var(--muted)}
+.u-ln{fill:none;stroke:var(--edge);stroke-width:1.7}
+.u-ln.dash{stroke-dasharray:7 5}
+.u-lab{font:600 11.5px var(--f-mono);fill:var(--g2);paint-order:stroke;stroke:var(--surface-2);stroke-width:5px}
+.u-note path{fill:#fef9c3;stroke:#ca8a04;stroke-width:1.3}.u-note text{fill:#422006;font:500 11px var(--f-mono)}
+.dw{animation:popin .55s both}
+.dl{stroke-dasharray:1;stroke-dashoffset:1;animation:drawl .8s forwards}
+@keyframes drawl{to{stroke-dashoffset:0}}
+.hot{cursor:pointer}
+.hot:hover>*:first-child{filter:drop-shadow(0 0 6px var(--g3))}
+.hot.found .mk{display:block}
+.mk{display:none}
+.mk circle{fill:#e11d48}.mk text{fill:#fff;font:800 12px var(--f-body)}
+.ok-mk circle{fill:#16a34a}
+.token{transition:transform .9s cubic-bezier(.45,0,.3,1)}
+.token circle{fill:var(--g3);stroke:#fff;stroke-width:3}
+.glow-uc ellipse{stroke:var(--g3);stroke-width:4;filter:drop-shadow(0 0 8px var(--g3))}
+.glow-ln{stroke:var(--g3)!important;stroke-width:3!important}
+
+.builder-steps{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.stepb{border:0;cursor:pointer;font:700 13px var(--f-body);padding:7px 12px;border-radius:99px;background:var(--surface-2);color:var(--muted);box-shadow:inset 0 0 0 1px var(--line)}
+.stepb.on{color:#fff;background:linear-gradient(100deg,var(--g1),var(--g2))}
+.stepb.past{color:var(--g1);box-shadow:inset 0 0 0 2px var(--g1)}
+
+/* actor-or-not chips */
+.aon{display:flex;flex-wrap:wrap;gap:8px}
+.aon button{border:0;cursor:pointer;font:700 15px var(--f-body);padding:9px 14px;border-radius:14px;background:var(--surface-2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line);transition:transform .2s}
+.aon button:hover{transform:translateY(-2px)}
+.aon button.y{background:var(--ok);color:#fff}.aon button.n{background:var(--no);color:#fff}
+
+/* relation 3D cards */
+.rel3{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));perspective:1000px}
+.r3{border-radius:18px;padding:14px;background:var(--surface-2);transform:rotateY(-8deg) rotateX(6deg);transition:transform .5s;box-shadow:0 20px 30px -24px #000a}
+.r3:hover{transform:rotateY(0) rotateX(0) translateZ(20px)}
+.r3 h4{font-size:18px;margin:0 0 4px}.r3 p{margin:6px 0 0;font-size:15px}
+.r3 svg{width:100%;height:auto;background:var(--surface);border-radius:12px}
+
+/* spec walker */
+.spec{width:100%;border-collapse:collapse;font-size:15px}
+.spec td,.spec th{border-bottom:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+.spec th{width:28%;font:600 12px var(--f-mono);color:var(--g1);text-transform:uppercase;letter-spacing:.04em}
+.spec ol{margin:0;padding-left:20px}
+.spec li{padding:2px 6px;border-radius:7px;margin:1px 0;transition:background .3s}
+.spec li.on{background:color-mix(in srgb,var(--g3) 30%,transparent);font-weight:700}
+.spec li.done{background:color-mix(in srgb,var(--ok) 16%,transparent)}
+.walk{display:flex;flex-direction:column;gap:8px}
+.walk .ask{font-weight:700}
+.trail{display:flex;flex-wrap:wrap;gap:5px}
+.trail span{font:600 12px var(--f-mono);padding:3px 8px;border-radius:8px;background:var(--surface-2);animation:popin .3s both}
+.trail span.alt{background:var(--warn-bg);color:var(--warn)}.trail span.bad{background:var(--no-bg);color:var(--no)}
+.levels3{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.lvc{border-radius:16px;padding:14px;color:#fff;position:relative;overflow:hidden}
+.lvc .ic{font-size:32px;display:block;animation:floaty 4s ease-in-out infinite}
+.lvc.k1{background:linear-gradient(160deg,#0ea5e9,#6366f1)}.lvc.k2{background:linear-gradient(160deg,#0284c7,#0f766e)}.lvc.k3{background:linear-gradient(160deg,#155e75,#1e3a8a)}
+
+/* traceability */
+.trace{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media(max-width:700px){.trace{grid-template-columns:minmax(0,1fr)}}
+.tr-list{display:flex;flex-direction:column;gap:6px}
+.tr-list button{border:0;cursor:pointer;text-align:left;font:600 14px var(--f-body);padding:8px 10px;border-radius:10px;background:var(--surface-2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line);transition:all .3s}
+.tr-list button b{font-family:var(--f-mono);color:var(--g1);margin-right:6px}
+.tr-list button.on{background:linear-gradient(100deg,var(--g1),var(--g2));color:#fff}.tr-list button.on b{color:#fff}
+.tr-list button.lit{box-shadow:inset 0 0 0 3px var(--g3);transform:translateX(4px)}
+
+.sol-box{margin-top:10px;background:var(--surface-2);border-radius:14px;padding:12px 14px}
+.sol-box h5{margin:8px 0 4px;font-size:15px}
+.sol-box ul{margin:4px 0;padding-left:20px}
+.task textarea{font-family:var(--f-body);font-size:15px}
+.bridge{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:space-between}
+
+.face.front .hint{background:none;padding:0;margin:auto 0 0;border-radius:0;color:var(--muted);font-size:13px}
+.grid.g4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.qs6{grid-template-columns:repeat(auto-fit,minmax(135px,1fr))}
+.layer{font-size:20px;text-shadow:0 2px 6px #0007}
+.cake{width:260px;height:260px}
+.layer{display:flex;align-items:flex-end;justify-content:center;padding:0 0 4px;font-size:17px}
+.layer span{transform:none}
+.l-usr{inset:30px}.l-fr{inset:60px}.l-nfr{inset:90px}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <marker id="aOpen" viewBox="0 0 14 14" refX="13" refY="7" markerWidth="13" markerHeight="13" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M1 1 L13 7 L1 13" style="fill:none;stroke:var(--edge);stroke-width:1.8"/></marker>
+    <marker id="aTri" viewBox="0 0 18 18" refX="17" refY="9" markerWidth="18" markerHeight="18" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M1 1 L17 9 L1 17 Z" style="fill:var(--surface);stroke:var(--edge);stroke-width:1.6"/></marker>
+    <marker id="aGlow" viewBox="0 0 14 14" refX="13" refY="7" markerWidth="13" markerHeight="13" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M1 1 L13 7 L1 13" style="fill:none;stroke:var(--g3);stroke-width:2.2"/></marker>
+  </defs>
+</svg>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#start"><i></i><span>Exigences &amp; Cas d’utilisation</span></a>
+    <div class="wsw" role="tablist" aria-label="Choisir une fenêtre">
+      <button type="button" role="tab" data-w="req" class="on" aria-selected="true">📋<span class="tx"> Exigences</span></button>
+      <button type="button" role="tab" data-w="uc" aria-selected="false">🎭<span class="tx"> Cas d’utilisation</span></button>
+    </div>
+    <nav class="toc" id="toc-req" aria-label="Chapitres des exigences">
+      <a href="#r-what">Qu’est-ce que c’est ?</a><a href="#r-frnfr">EF vs ENF</a><a href="#r-iso">Modèle de qualité</a><a href="#r-write">Bonnes exigences</a><a href="#r-measure">ENF mesurables</a><a href="#r-process">Processus &amp; priorités</a><a href="#r-stories">User stories</a><a href="#r-yn">Oui / Non</a><a href="#r-quiz">Quiz</a><a href="#r-ex">Exercices</a><a href="#r-cheat">Aide-mémoire</a>
+    </nav>
+    <nav class="toc" id="toc-uc" aria-label="Chapitres des cas d’utilisation" hidden>
+      <a href="#u-what">Bases</a><a href="#u-build">Construire un diagramme</a><a href="#u-actors">Acteurs</a><a href="#u-rel">Relations</a><a href="#u-spec">Descriptions</a><a href="#u-mistakes">Erreurs</a><a href="#u-trace">Depuis les exigences</a><a href="#u-yn">Oui / Non</a><a href="#u-quiz">Quiz</a><a href="#u-ex">Exercices</a><a href="#u-cheat">Aide-mémoire</a>
+    </nav>
+    <button class="btn sm" id="theme" type="button" aria-label="Basculer entre thème clair et sombre"><svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 2a8 8 0 0 1 0 16z" fill="currentColor"/></svg></button>
+  </div>
+</header>
+
+<section class="hero" id="start">
+  <div class="stars"></div>
+  <div class="wrap">
+    <div>
+      <div class="eyebrow">Génie logiciel · Exigences · UML</div>
+      <h1><em>Exigences</em> &amp; diagrammes de cas d’utilisation</h1>
+      <p class="lead">Deux fenêtres, une seule histoire. Apprenez d’abord ce qu’un système doit <b>faire</b> (fonctionnel) et avec quelle <b>qualité</b> (non fonctionnel). Transformez ensuite ces exigences en diagrammes de cas d’utilisation UML : acteurs, objectifs, include et extend.</p>
+      <div class="cta"><button class="btn light" type="button" data-open="req">📋 Ouvrir les exigences</button><button class="btn glass" type="button" data-open="uc">🎭 Ouvrir les cas d’utilisation</button></div>
+    </div>
+    <div class="scene" aria-hidden="true">
+      <div class="duo">
+        <button class="w3d a" type="button" data-open="req" tabindex="-1"><div class="bar"><i></i><i></i><i></i><span>requirements.txt</span></div><div class="bd">
+          <div class="ln2"><b>FR</b><s></s></div><div class="ln2"><b>FR</b><s style="max-width:70%"></s></div><div class="ln2"><b class="n">NFR</b><s></s></div><div class="ln2"><b>FR</b><s style="max-width:55%"></s></div><div class="ln2"><b class="n">NFR</b><s style="max-width:80%"></s></div><div class="ln2"><b class="n">NFR</b><s style="max-width:60%"></s></div></div></button>
+        <button class="w3d b" type="button" data-open="uc" tabindex="-1"><div class="bar"><i></i><i></i><i></i><span>usecases.uml</span></div>
+          <svg viewBox="0 0 230 130"><rect x="80" y="8" width="140" height="116" rx="6" fill="#f8fafc" stroke="#334155"/><text x="150" y="22" text-anchor="middle" font-size="9" font-weight="700" fill="#334155">Library</text>
+          <circle cx="30" cy="42" r="7" fill="none" stroke="#0f172a" stroke-width="2"/><path d="M30 49v22M18 56h24M30 71l-9 14M30 71l9 14" stroke="#0f172a" stroke-width="2" fill="none"/>
+          <ellipse cx="150" cy="45" rx="46" ry="14" fill="#fff7ed" stroke="#c2410c"/><text x="150" y="48" text-anchor="middle" font-size="9" fill="#0f172a">Borrow book</text>
+          <ellipse cx="150" cy="96" rx="46" ry="14" fill="#fff7ed" stroke="#c2410c"/><text x="150" y="99" text-anchor="middle" font-size="9" fill="#0f172a">Return book</text>
+          <path d="M42 60 L104 47 M42 64 L104 92" stroke="#334155" stroke-width="1.5"/></svg></button>
+        <span class="chip3d" style="left:-30px;top:-10px;background:#0f766e;transform:translateZ(90px)">doit</span>
+        <span class="chip3d" style="right:-20px;top:20px;background:#7e22ce;animation-delay:-2s;transform:translateZ(70px)">«include»</span>
+        <span class="chip3d" style="left:40px;bottom:-20px;background:#ea580c;animation-delay:-1s;transform:translateZ(110px)">≤ 2 s</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<main class="wrap">
+
+<!-- ======================= WINDOW 1: REQUIREMENTS ======================= -->
+<div class="win w-req" id="w-req">
+<div class="winframe"><div class="winbar"><span class="dots"><i></i><i></i><i></i></span>📋 Fenêtre 1 · Exigences fonctionnelles &amp; non fonctionnelles<button type="button" class="other" data-open="uc">Ouvrir les cas d’utilisation ➜</button></div>
+<div class="winbody">
+
+<div class="wintro"><small>Fenêtre 1</small><h2>Exigences fonctionnelles et non fonctionnelles</h2><p>Une exigence dit ce qu’un système doit faire, ou avec quelle qualité. Si elles sont fausses, l’équipe construit la mauvaise chose, aussi bon que soit le code. Les chapitres vont du plus simple au plus difficile : les étiquettes de couleur indiquent le niveau.</p>
+<div class="path"><a href="#r-what">🌱 1 · Qu’est-ce que c’est ?</a><a href="#r-frnfr">🌱 2 · EF vs ENF</a><a href="#r-iso">🧭 3 · Modèle de qualité</a><a href="#r-write">🧭 4 · Bien les rédiger</a><a href="#r-measure">⚡ 5 · ENF mesurables</a><a href="#r-process">⚡ 6 · Processus</a><a href="#r-stories">👑 7 · User stories</a></div></div>
+
+<section class="ch" id="r-what">
+  <div class="chh"><div class="num">1</div><div><h2>Qu’est-ce qu’une exigence ? <span class="diff d1">DÉBUTANT</span></h2><p class="sub">Un besoin que le système doit satisfaire</p></div></div>
+  <blockquote>"A condition or capability needed by a user to solve a problem or achieve an objective" and "a condition or capability that must be met or possessed by a system … to satisfy a contract, standard, specification, or other formally imposed document."<cite>IEEE Std 610.12-1990, Standard Glossary of Software Engineering Terminology</cite></blockquote>
+  <p>Requirements come in <b>layers</b>. Business requirements explain <i>why</i> the system exists. User requirements say what users need to <i>do</i>. Functional requirements say what the system must <i>do</i>, and non-functional requirements say how <i>well</i> it must do it. Click a layer of the 3D cake, or a button.</p>
+  <div class="cake-wrap">
+    <div><div class="cake-scene"><div class="cake" id="cake"></div></div></div>
+    <div><div class="cake-tabs" id="cake-tabs"></div><div class="cake-info" id="cake-info" aria-live="polite"></div></div>
+  </div>
+  <h3>Qui a des exigences ? Les parties prenantes</h3>
+  <div class="flips" id="stake"></div>
+</section>
+
+<section class="ch" id="r-frnfr">
+  <div class="chh"><div class="num">2</div><div><h2>Fonctionnelle vs non fonctionnelle <span class="diff d1">DÉBUTANT</span></h2><p class="sub">« Ce qu’il fait » vs « avec quelle qualité »</p></div></div>
+  <div class="grid">
+    <div class="tile"><h4>✅ Functional requirement (FR)</h4><p>A behaviour or function: an input, an action, an output. <i>"The system shall let a member reserve a book."</i> If it is missing, a user <b>can't do something</b>.</p></div>
+    <div class="tile"><h4>⭐ Non-functional requirement (NFR)</h4><p>A quality or a constraint on the whole system or a function: speed, security, availability, usability, legal rules. <i>"95% of searches shall return in under 2 seconds."</i> If it is missing, users can do the task, but <b>badly</b>.</p></div>
+    <div class="tile"><h4>🔒 Constraints</h4><p>Limits on the solution: technology, law, budget, standards. <i>"Personal data shall be stored only in the EU."</i> Usually listed with the NFRs.</p></div>
+  </div>
+  <div class="callout"><b class="t">Test rapide.</b> Ask: "Does this describe something the system <b>does</b> for someone?" → FR. "Does it describe a <b>quality</b> (how fast, how secure, how easy) or a <b>limit</b>?" → NFR. NFRs are also called <i>quality attributes</i> or <i>"-ilities"</i>.</div>
+  <div class="sim"><div class="sim-in">
+    <div class="sim-head"><h4><span class="live">SIMULATEUR</span> La machine à trier</h4><span id="so-score" style="font:700 14px var(--f-mono)"></span></div>
+    <p style="margin:0 0 6px;font-size:15px">Chaque carte est une exigence d’un système de bibliothèque. Envoyez-la dans le bon bac.</p>
+    <div class="sorter">
+      <div class="bin f" id="bin-f"><div class="tp2"></div><div class="fr2"><b>EF</b><small>ce qu’il fait</small><span class="cnt" id="cnt-f">0</span></div></div>
+      <div class="deck" id="so-deck"></div>
+      <div class="bin n" id="bin-n"><div class="tp2"></div><div class="fr2"><b>ENF</b><small>qualité · limites</small><span class="cnt" id="cnt-n">0</span></div></div>
+    </div>
+    <div class="sort-btns"><button class="btn pri" id="so-f" type="button">◀ EF</button><button class="btn pri" id="so-n" type="button">ENF ▶</button><button class="btn" id="so-rst" type="button">↺ Mélanger et recommencer</button></div>
+    <div class="say" id="so-say" aria-live="polite" style="margin-top:10px"></div>
+  </div></div>
+</section>
+
+<section class="ch" id="r-iso">
+  <div class="chh"><div class="num">3</div><div><h2>Types d’ENF : le modèle de qualité ISO 25010 <span class="diff d2">INTERMÉDIAIRE</span></h2><p class="sub">Neuf caractéristiques de qualité produit dans l’édition 2023</p></div></div>
+  <p>Instead of inventing categories, use a standard checklist. <b>ISO/IEC 25010:2023</b> defines nine product quality characteristics, each with sub-characteristics. Turn the 3D carousel to explore them. Sub-characteristics with a gold border are new or renamed in 2023.</p>
+  <div class="car iso"><div class="ring" id="iso-ring"></div></div>
+  <div class="row" style="justify-content:center"><button class="btn" id="iso-prev" type="button">◀</button><span id="iso-pos" style="font:600 14px var(--f-mono)"></span><button class="btn" id="iso-next" type="button">▶</button></div>
+  <div class="car-detail" id="iso-detail" aria-live="polite"></div>
+  <div class="grid" style="margin-top:14px">
+    <div class="tile"><h4>What changed from ISO 25010:2011?</h4><p><b>Usability</b> became <b>interaction capability</b>, <b>portability</b> became <b>flexibility</b> (now with scalability), and <b>safety</b> was added as a ninth characteristic.</p></div>
+    <div class="tile"><h4>Another classic: FURPS+</h4><p>From Hewlett-Packard (Robert Grady): <b>F</b>unctionality, <b>U</b>sability, <b>R</b>eliability, <b>P</b>erformance, <b>S</b>upportability, and <b>+</b> for constraints (design, implementation, interface, physical).</p></div>
+  </div>
+</section>
+
+<section class="ch" id="r-write">
+  <div class="chh"><div class="num">4</div><div><h2>Rédiger de bonnes exigences <span class="diff d2">INTERMÉDIAIRE</span></h2><p class="sub">Assez claires pour que deux personnes les lisent pareil, et qu’un testeur puisse les vérifier</p></div></div>
+  <div class="grid g4">
+    <div class="rule"><h4>Use "shall" for obligations</h4>"Shall" is binding. "Should" and "may" read as optional.<span class="bad">✗ The system should send a receipt.</span><span class="good">✓ The system shall email a receipt after each payment.</span></div>
+    <div class="rule"><h4>One requirement per statement</h4>A tester must be able to pass or fail it as one unit.<span class="bad">✗ … shall log in users and export reports.</span><span class="good">✓ two separate requirements</span></div>
+    <div class="rule"><h4>Verifiable, with numbers</h4>Replace adjectives with measures.<span class="bad">✗ The search shall be fast.</span><span class="good">✓ 95% of searches shall return within 2 s.</span></div>
+    <div class="rule"><h4>Say what, not how</h4>Leave design choices to designers, unless it is a real constraint.<span class="bad">✗ … shall use a MySQL table for loans.</span><span class="good">✓ … shall keep the loan history for 5 years.</span></div>
+  </div>
+  <p style="margin-top:14px">ISO/IEC/IEEE 29148 lists the characteristics of a well-formed requirement: <b>necessary, appropriate, unambiguous, complete, singular, feasible, verifiable, correct, conforming</b>.</p>
+  <div class="sim"><div class="sim-in">
+    <div class="sim-head"><h4><span class="live">SIMULATEUR</span> Détecteur d’ambiguïté</h4></div>
+    <div class="row" id="amb-presets"></div>
+    <textarea class="amb-in" id="amb-in" aria-label="Requirement to analyse" spellcheck="false"></textarea>
+    <div class="two" style="margin-top:10px">
+      <div><div class="lbl">Surligné</div><div class="amb-out" id="amb-out"></div><div class="gauge"><i id="amb-g"></i></div><div id="amb-verdict" style="font-weight:800"></div></div>
+      <div><div class="lbl">Problèmes détectés</div><ul class="issues" id="amb-issues"></ul></div>
+    </div>
+  </div></div>
+  <h3>EARS: five sentence patterns for clear requirements</h3>
+  <p><b>EARS</b> (Easy Approach to Requirements Syntax, Mavin et al., Rolls-Royce, 2009) gives each requirement a fixed shape. Pick a pattern, edit the fields, and watch the sentence build.</p>
+  <div class="sim"><div class="sim-in">
+    <div class="sim-head"><h4><span class="live">SIMULATEUR</span> Constructeur EARS</h4></div>
+    <div class="seg" id="ears-pat"></div>
+    <div class="fields" id="ears-f"></div>
+    <div class="ears-out" id="ears-out" aria-live="polite"></div>
+    <div class="say" id="ears-say" style="margin-top:10px"></div>
+  </div></div>
+</section>
+
+<section class="ch" id="r-measure">
+  <div class="chh"><div class="num">5</div><div><h2>Rendre les ENF mesurables <span class="diff d3">AVANCÉ</span></h2><p class="sub">Si on ne peut pas la tester, ce n’est pas encore une exigence</p></div></div>
+  <p>"The system shall be fast" can't pass or fail. Architects describe a quality as a <b>quality attribute scenario</b> with six parts (Bass, Clements &amp; Kazman, <i>Software Architecture in Practice</i>). Hover the 3D tiles: together they give a testable NFR.</p>
+  <div class="seg" id="qa-pick"></div>
+  <div class="qs6" id="qa-tiles"></div>
+  <div class="callout" id="qa-sentence"></div>
+  <div class="sim"><div class="sim-in">
+    <div class="sim-head"><h4><span class="live">SIMULATEUR</span> Test de charge : le système respecte-t-il l’ENF ?</h4></div>
+    <p style="margin:0 0 6px;font-size:15px"><b>Requirement:</b> "With up to the given number of concurrent users, 95% of catalogue searches shall return within <b>2.0 s</b>." Change the load and the servers, then run the test. The response times are simulated with a simple queue model.</p>
+    <div class="two">
+      <div>
+        <label class="lbl" for="lt-users">Utilisateurs simultanés : <b id="lt-uv"></b></label><input type="range" id="lt-users" min="100" max="3000" step="100" value="800">
+        <div class="row"><span class="lbl">Serveurs</span><div class="seg" id="lt-srv"><button type="button" data-v="1">1</button><button type="button" data-v="2" class="on">2</button><button type="button" data-v="4">4</button></div><button class="btn pri" id="lt-run" type="button">▶ Lancer 60 recherches</button></div>
+        <div class="kv"><div><small>médiane</small><b id="lt-med">–</b></div><div><small>95e centile</small><b id="lt-p95">–</b></div><div><small>plus lent</small><b id="lt-max">–</b></div></div>
+        <div id="lt-res" aria-live="polite"></div>
+      </div>
+      <div><div class="bars" id="lt-bars"></div><p style="font-size:13px;color:var(--muted);margin:4px 0 0">Each bar is one search. Red bars took longer than 2 s.</p></div>
+    </div>
+  </div></div>
+  <div class="grid">
+    <div class="tile"><h4>Tactic: give a "fit criterion"</h4><p>The Volere template asks for a <b>fit criterion</b> for every requirement: a measurement that shows the solution fits.</p></div>
+    <div class="tile"><h4>Percentiles, not averages</h4><p>"Average 1 s" can hide 10% of users waiting 8 s. Ask for p95 or p99.</p></div>
+    <div class="tile"><h4>State the conditions</h4><p>"Under 2,000 concurrent users, on the production configuration". Without conditions, the number means little.</p></div>
+  </div>
+</section>
+
+<section class="ch" id="r-process">
+  <div class="chh"><div class="num">6</div><div><h2>Le processus d’exigences et les priorités <span class="diff d3">AVANCÉ</span></h2><p class="sub">Les exigences se découvrent, elles ne se contentent pas d’être écrites</p></div></div>
+  <div class="cycle-wrap">
+    <div id="cycle"></div>
+    <div class="cake-info" id="cyc-info" aria-live="polite"></div>
+  </div>
+  <h3>Prioritise with MoSCoW</h3>
+  <p><b>M</b>ust have, <b>S</b>hould have, <b>C</b>ould have, <b>W</b>on't have (this time). DSDM, where MoSCoW comes from, advises that Musts take <b>no more than about 60%</b> of the effort, so there is room to absorb surprises. The team has <b>40 points</b> for this release.</p>
+  <div class="sim"><div class="sim-in">
+    <div class="sim-head"><h4><span class="live">SIMULATEUR</span> Planifier la livraison</h4><button class="btn sm" id="mo-rst" type="button">↺ Réinitialiser</button></div>
+    <div class="mos" id="mos"></div>
+    <div class="budget" id="mo-bud"></div>
+    <div id="mo-say" class="say" aria-live="polite"></div>
+  </div></div>
+</section>
+
+<section class="ch" id="r-stories">
+  <div class="chh"><div class="num">7</div><div><h2>User stories et critères d’acceptation <span class="diff d4">EXPERT</span></h2><p class="sub">La façon agile d’exprimer les exigences fonctionnelles</p></div></div>
+  <div class="two">
+    <div><div class="story"><b>As a</b> library member, <b>I want</b> to reserve a book that is on loan, <b>so that</b> I get it as soon as it is returned.</div>
+      <p style="margin-top:14px">A story is a <b>placeholder for a conversation</b>, not a full specification. The details live in its <b>acceptance criteria</b>, often written in Gherkin (Given / When / Then), which can become automated tests.</p>
+      <p>Good stories are <b>INVEST</b> (Bill Wake): Independent, Negotiable, Valuable, Estimable, Small, Testable.</p></div>
+    <div><div class="gwt"><span class="k">Scenario:</span> Reserve a book that is on loan
+<span class="k">Given</span> the book "Dune" is on loan until 12 May
+<span class="k">And</span>   I have fewer than 5 active reservations
+<span class="k">When</span>  I reserve "Dune"
+<span class="k">Then</span>  my reservation is confirmed
+<span class="k">And</span>   I am notified by email when "Dune" is returned</div>
+      <div class="callout"><b class="t">Where do NFRs go?</b> Not in one story. Write them as <b>constraints</b> that every story must respect, often as part of the team's "Definition of Done" (e.g. "every page meets WCAG 2.2 AA").</div></div>
+  </div>
+  <div class="scroll"><table class="vs">
+    <tr><th>Form</th><th>Best for</th><th>Watch out</th></tr>
+    <tr><td>"The system shall…" statements</td><td>Contracts, safety-critical and regulated systems</td><td>Long lists hide the user's goal</td></tr>
+    <tr><td>User stories + acceptance criteria</td><td>Agile teams with an available customer</td><td>NFRs are easily forgotten</td></tr>
+    <tr><td>Use cases (Window 2)</td><td>Interactions with several steps and alternatives</td><td>Over-detailed descriptions nobody reads</td></tr>
+  </table></div>
+</section>
+
+<div class="part"><b>Pratique</b> Testez-vous sur les exigences</div>
+<section class="ch" id="r-yn"><div class="chh"><div class="num">✓</div><div><h2>Oui ou non ?</h2><p class="sub">Du plus simple au plus difficile, avec la raison de chaque réponse</p></div></div><div class="score"></div><div class="qs"></div></section>
+<section class="ch" id="r-quiz"><div class="chh"><div class="num">?</div><div><h2>Quiz</h2><p class="sub">Choix multiples, du plus simple au plus difficile</p></div></div><div class="score"></div><div class="qs"></div></section>
+<section class="ch" id="r-ex"><div class="chh"><div class="num">🏆</div><div><h2>Exercices, du débutant à l’expert</h2><p class="sub">Sept niveaux de types différents</p></div></div><div class="ladder" role="tablist"></div><div class="lvbody"></div></section>
+<section class="ch" id="r-cheat">
+  <div class="chh"><div class="num">★</div><div><h2>Aide-mémoire</h2><p class="sub">Les exigences sur un seul écran</p></div></div>
+  <div class="grid">
+    <div class="tile"><h4>FR</h4><p>What the system <b>does</b>: "The system shall &lt;action&gt; &lt;object&gt; &lt;condition&gt;."</p></div>
+    <div class="tile"><h4>NFR</h4><p>How <b>well</b> it does it, or limits on it: performance, security, availability, usability, legal.</p></div>
+    <div class="tile"><h4>ISO 25010:2023</h4><p>Functional suitability · Performance efficiency · Compatibility · Interaction capability · Reliability · Security · Maintainability · Flexibility · Safety.</p></div>
+    <div class="tile"><h4>Good requirement</h4><p>Necessary, unambiguous, singular, feasible, verifiable, correct. Use "shall", one per sentence, numbers not adjectives.</p></div>
+    <div class="tile"><h4>EARS</h4><p>Ubiquitous · When (event) · While (state) · If…then (unwanted) · Where (feature).</p></div>
+    <div class="tile"><h4>Measurable NFR</h4><p>Source · stimulus · environment · artifact · response · <b>response measure</b>. Use percentiles.</p></div>
+  </div>
+  <div class="callout bridge"><span><b class="t">Ensuite :</b> transformez ces exigences en diagramme de cas d’utilisation UML.</span><button class="btn pri" type="button" data-open="uc">🎭 Ouvrir les cas d’utilisation ➜</button></div>
+</section>
+
+</div></div>
+</div>
+
+<!-- ======================= WINDOW 2: USE CASES ======================= -->
+<div class="win w-uc" id="w-uc" hidden>
+<div class="winframe"><div class="winbar"><span class="dots"><i></i><i></i><i></i></span>🎭 Fenêtre 2 · Diagrammes de cas d’utilisation UML<button type="button" class="other" data-open="req">⬅ Ouvrir les exigences</button></div>
+<div class="winbody">
+
+<div class="wintro"><small>Fenêtre 2</small><h2>Diagrammes de cas d’utilisation UML</h2><p>Un diagramme de cas d’utilisation montre <b>qui</b> utilise un système et <b>pour quels objectifs</b>. C’est la carte ; les descriptions écrites sont le territoire. Tous les exemples portent sur un même système de bibliothèque, pour suivre le fil des exigences jusqu’au diagramme.</p>
+<div class="path"><a href="#u-what">🌱 1 · Bases</a><a href="#u-build">🌱 2 · Construire un diagramme</a><a href="#u-actors">🧭 3 · Acteurs</a><a href="#u-rel">🧭 4 · Relations</a><a href="#u-spec">⚡ 5 · Descriptions</a><a href="#u-mistakes">⚡ 6 · Erreurs</a><a href="#u-trace">👑 7 · Depuis les exigences</a></div></div>
+
+<section class="ch" id="u-what">
+  <div class="chh"><div class="num">1</div><div><h2>Les bases <span class="diff d1">DÉBUTANT</span></h2><p class="sub">Qui utilise le système, et pour quoi faire ?</p></div></div>
+  <p>A <b>use case</b> is a goal an actor achieves with the system, producing a result of value: "Borrow book", "Pay fine". Ivar Jacobson introduced use cases in 1987, and UML adopted them. A <b>use case diagram</b> gives an overview of all of them. It does <b>not</b> show order, screens or data. Flip the cards for each element.</p>
+  <div class="flips" id="u-flips"></div>
+  <div class="callout"><b class="t">Règle de nommage.</b> Name a use case with a <b>verb + noun</b> from the actor's point of view: "Borrow book", not "Book" or "Loan processing". Name actors with a <b>role</b>: "Member", not "Sara".</div>
+</section>
+
+<section class="ch" id="u-build">
+  <div class="chh"><div class="num">2</div><div><h2>Construire un diagramme, pas à pas <span class="diff d1">DÉBUTANT</span></h2><p class="sub">Parcourez huit étapes. Chacune ajoute une idée.</p></div></div>
+  <div class="builder-steps" id="bd-steps"></div>
+  <div class="ucd" id="bd-svg"></div>
+  <div class="say" id="bd-say" aria-live="polite" style="margin-top:10px"></div>
+  <div class="row"><button class="btn" id="bd-prev" type="button">◀ Retour</button><button class="btn pri" id="bd-next" type="button">Étape suivante ▶</button><button class="btn" id="bd-play" type="button">▶ Tout lire</button></div>
+</section>
+
+<section class="ch" id="u-actors">
+  <div class="chh"><div class="num">3</div><div><h2>Les acteurs en détail <span class="diff d2">INTERMÉDIAIRE</span></h2><p class="sub">Un rôle joué par quelqu’un ou quelque chose d’extérieur au système</p></div></div>
+  <div class="grid">
+    <div class="tile"><h4>👤 Primary actor</h4><p>Starts the use case to reach a goal. Member starts "Borrow book". Usually drawn on the left.</p></div>
+    <div class="tile"><h4>🖥️ Supporting (secondary) actor</h4><p>The system needs its help: a payment service, an email server. Usually drawn on the right.</p></div>
+    <div class="tile"><h4>⏰ Time as an actor</h4><p>Scheduled jobs ("every night at 02:00, send reminders") are often shown with a Clock or Timer actor.</p></div>
+    <div class="tile"><h4>🎭 Role, not person</h4><p>One person can play several roles (a librarian who borrows a book is a Member then). One role can be many people.</p></div>
+  </div>
+  <div class="sim"><div class="sim-in">
+    <div class="sim-head"><h4><span class="live">SIMULATEUR</span> Acteur ou non ?</h4><span id="aon-score" style="font:700 14px var(--f-mono)"></span></div>
+    <p style="margin:0 0 8px;font-size:15px">For the library system, click each candidate. Is it an actor of this system?</p>
+    <div class="aon" id="aon"></div>
+    <div class="say" id="aon-say" aria-live="polite" style="margin-top:10px">Choisissez un candidat.</div>
+  </div></div>
+</section>
+
+<section class="ch" id="u-rel">
+  <div class="chh"><div class="num">4</div><div><h2>Relations : association, include, extend, généralisation <span class="diff d2">INTERMÉDIAIRE</span></h2><p class="sub">Quatre types de lignes, quatre sens. Le sens de la flèche compte.</p></div></div>
+  <div class="rel3" id="rel3"></div>
+  <div class="scroll" style="margin-top:14px"><table class="vs">
+    <tr><th></th><th>«include»</th><th>«extend»</th></tr>
+    <tr><td>Runs</td><td class="y">always</td><td class="m">only if a condition is true</td></tr>
+    <tr><td>Arrow points from → to</td><td>base → included</td><td>extension → base</td></tr>
+    <tr><td>Who knows whom?</td><td>The base needs the included one to be complete</td><td>The base is complete without it and doesn't know the extension</td></tr>
+    <tr><td>Where it hooks in</td><td>At a step in the base flow</td><td>At a named <b>extension point</b> of the base</td></tr>
+    <tr><td>Typical use</td><td>Behaviour shared by several use cases</td><td>Optional or exceptional behaviour, added later</td></tr>
+  </table></div>
+  <div class="sim"><div class="sim-in">
+    <div class="sim-head"><h4><span class="live">SIMULATEUR</span> Exécuter « Emprunter un livre »</h4></div>
+    <p style="margin:0 0 6px;font-size:15px">Watch the token follow the flow. «include» always runs. «extend» runs only when its condition is true at the extension point.</p>
+    <div class="row"><label class="chk"><input type="checkbox" id="rn-fine"> Le membre a des amendes impayées</label><button class="btn pri" id="rn-go" type="button">▶ Exécuter le cas</button></div>
+    <div class="two"><div class="ucd sm" id="rn-svg"></div><div><div class="lbl">Journal d’exécution</div><div class="out" id="rn-log"></div></div></div>
+  </div></div>
+</section>
+
+<section class="ch" id="u-spec">
+  <div class="chh"><div class="num">5</div><div><h2>Descriptions de cas d’utilisation <span class="diff d3">AVANCÉ</span></h2><p class="sub">Le diagramme est la table des matières. Le texte est le contenu.</p></div></div>
+  <p>Each use case gets a written description. Alistair Cockburn (<i>Writing Effective Use Cases</i>, 2000) describes three formats: <b>brief</b> (one paragraph), <b>casual</b> (a few paragraphs) and <b>fully dressed</b> (the template below). He also defines <b>goal levels</b>:</p>
+  <div class="levels3">
+    <div class="lvc k1"><span class="ic">☁️</span><b>Summary</b><p style="margin:4px 0 0;font-size:14px">A business goal over many sessions: "Run the library".</p></div>
+    <div class="lvc k2"><span class="ic">🌊</span><b>User goal ("sea level")</b><p style="margin:4px 0 0;font-size:14px">One sitting, one actor, one goal: "Borrow book". <b>Most use cases belong here.</b></p></div>
+    <div class="lvc k3"><span class="ic">🐟</span><b>Subfunction</b><p style="margin:4px 0 0;font-size:14px">A piece of a user goal: "Identify member". Often an «include».</p></div>
+  </div>
+  <div class="sim"><div class="sim-in">
+    <div class="sim-head"><h4><span class="live">SIMULATEUR</span> Parcourir les scénarios</h4><button class="btn sm" id="wk-rst" type="button">↺ Recommencer</button></div>
+    <div class="two">
+      <div class="scroll"><table class="spec" id="spec"></table></div>
+      <div class="walk"><div class="say" id="wk-say" aria-live="polite"></div><div class="row" id="wk-btns"></div><div class="lbl">Chemin parcouru</div><div class="trail" id="wk-trail"></div></div>
+    </div>
+  </div></div>
+</section>
+
+<section class="ch" id="u-mistakes">
+  <div class="chh"><div class="num">6</div><div><h2>Repérer les erreurs <span class="diff d3">AVANCÉ</span></h2><p class="sub">Ce diagramme de « boutique en ligne » contient 6 erreurs. Cliquez sur les éléments qui vous semblent faux.</p></div></div>
+  <div class="row"><span id="sp-score" style="font:700 15px var(--f-mono)"></span><button class="btn sm" id="sp-rst" type="button">↺ Recommencer</button><button class="btn sm" id="sp-show" type="button">Tout afficher</button></div>
+  <div class="ucd" id="sp-svg"></div>
+  <ul class="issues" id="sp-list"></ul>
+  <h3>Bonnes pratiques</h3>
+  <div class="grid g4">
+    <div class="rule"><h4>No functional decomposition</h4>Use cases are goals, not menu items or steps.<span class="bad">✗ Click "Buy" · Enter address · Validate card</span><span class="good">✓ Buy products</span></div>
+    <div class="rule"><h4>Don't draw a flowchart</h4>Use case diagrams have no order. Lines between use cases are only include, extend or generalization.<span class="bad">✗ Browse → Add to cart → Checkout</span><span class="good">✓ an activity diagram for the flow</span></div>
+    <div class="rule"><h4>Use «include» and «extend» sparingly</h4>They help with shared or optional behaviour. Too many make the diagram unreadable.<span class="bad">✗ 15 include arrows on one diagram</span><span class="good">✓ a few, where text would repeat</span></div>
+    <div class="rule"><h4>Actors stay outside</h4>Everything inside the boundary is the system you build.<span class="bad">✗ Database inside, as an actor</span><span class="good">✓ external systems outside, as actors</span></div>
+  </div>
+</section>
+
+<section class="ch" id="u-trace">
+  <div class="chh"><div class="num">7</div><div><h2>Des exigences aux cas d’utilisation <span class="diff d4">EXPERT</span></h2><p class="sub">Relier la fenêtre 1 à la fenêtre 2</p></div></div>
+  <p><b>Functional requirements</b> group into use cases: one use case usually covers several FRs (its steps and alternatives). <b>Non-functional requirements</b> are not use cases. Attach them as notes, write them in the use case's "special requirements" section, or keep them in a supplementary specification. A <b>traceability</b> link from each requirement to its use case lets you check that nothing is forgotten. Click a requirement or a use case.</p>
+  <div class="trace"><div><div class="lbl">Exigences</div><div class="tr-list" id="tr-req"></div></div><div><div class="lbl">Cas d’utilisation</div><div class="tr-list" id="tr-uc"></div></div></div>
+  <div class="say" id="tr-say" aria-live="polite" style="margin-top:10px">Cliquez sur un élément pour voir ses liens.</div>
+  <div class="grid" style="margin-top:14px">
+    <div class="tile"><h4>Use cases in UML 2.5</h4><p>The <b>subject</b> (the boundary) can be any classifier: a system, a subsystem or a component. Use cases can be owned by a classifier, and can have their own behaviour diagrams (activity, sequence, state machine).</p></div>
+    <div class="tile"><h4>Extension points</h4><p>Written in a compartment of the base use case. The «extend» can carry a <b>condition</b> in a note; if no condition is given, the extension always applies.</p></div>
+    <div class="tile"><h4>Abstract use cases and actors</h4><p>A use case that is never run on its own (only through specialization or inclusion) can be marked abstract, with its name in <i>italics</i>.</p></div>
+  </div>
+</section>
+
+<div class="part"><b>Pratique</b> Testez-vous sur les diagrammes de cas d’utilisation</div>
+<section class="ch" id="u-yn"><div class="chh"><div class="num">✓</div><div><h2>Oui ou non ?</h2><p class="sub">Du plus simple au plus difficile, avec la raison de chaque réponse</p></div></div><div class="score"></div><div class="qs"></div></section>
+<section class="ch" id="u-quiz"><div class="chh"><div class="num">?</div><div><h2>Quiz</h2><p class="sub">Choix multiples, du plus simple au plus difficile</p></div></div><div class="score"></div><div class="qs"></div></section>
+<section class="ch" id="u-ex"><div class="chh"><div class="num">🏆</div><div><h2>Exercices, du débutant à l’expert</h2><p class="sub">Sept niveaux de types différents</p></div></div><div class="ladder" role="tablist"></div><div class="lvbody"></div></section>
+<section class="ch" id="u-cheat">
+  <div class="chh"><div class="num">★</div><div><h2>Cheat sheet</h2><p class="sub">Les diagrammes de cas d’utilisation sur un seul écran</p></div></div>
+  <div class="ucd sm" id="cheat-svg"></div>
+  <div class="grid" style="margin-top:12px">
+    <div class="tile"><h4>Elements</h4><p>Actor (stick figure or «actor» box) · use case (ellipse, verb + noun) · subject (rectangle with the system name).</p></div>
+    <div class="tile"><h4>Lines</h4><p>Association: solid line actor–use case. Generalization: solid line, hollow triangle at the parent.</p></div>
+    <div class="tile"><h4>«include» / «extend»</h4><p>Dashed arrows. Include: base → included, always. Extend: extension → base, conditional, at an extension point.</p></div>
+    <div class="tile"><h4>Descriptions</h4><p>Actors, preconditions, trigger, main success scenario, extensions, postconditions (guarantees).</p></div>
+  </div>
+  <div class="callout bridge"><span><b class="t">Retour au début :</b> les exigences derrière ces cas d’utilisation.</span><button class="btn pri" type="button" data-open="req">⬅ Ouvrir les exigences</button></div>
+</section>
+
+</div></div>
+</div>
+
+</main>
+<footer>Exigences &amp; diagrammes de cas d’utilisation UML · chapitre interactif en deux fenêtres · notation UML 2.5.1 · modèle de qualité ISO/IEC 25010:2023</footer>
+
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const REDUCE=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const YES=['Correct !','Exactement.','Bien joué !','En plein dans le mille !','Exact !'];const pick=a=>a[Math.floor(Math.random()*a.length)];
+const KW=new Set('abstract boolean case catch class default double else enum extends final for if implements import int interface long new private protected public record return static super switch synchronized this throw throws try var void volatile while null true false'.split(' '));
+function hl(src){const re=/(\/\/[^\n]*)|("(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)')|(@[A-Za-z]+)|(\b\d[\d_]*(?:\.\d+)?\b)|([A-Za-z_]\w*)/g;let o='',l=0,m;
+  while((m=re.exec(src))){o+=esc(src.slice(l,m.index));l=re.lastIndex;
+    if(m[1])o+=`<span class="c">${esc(m[1])}</span>`;else if(m[2])o+=`<span class="s">${esc(m[2])}</span>`;else if(m[3])o+=`<span class="a">${m[3]}</span>`;else if(m[4])o+=`<span class="n">${m[4]}</span>`;
+    else{const w=m[5];o+=KW.has(w)?`<span class="k">${w}</span>`:/^[A-Z]/.test(w)?`<span class="t">${w}</span>`:w}}
+  return o+esc(src.slice(l))}
+function addCopy(pre,text){const b=document.createElement('button');b.className='copy';b.type='button';b.textContent='Copier';
+  b.onclick=()=>{const ok=()=>{b.textContent='Copié ✓';setTimeout(()=>b.textContent='Copier',1400)};const sel=()=>{const r=document.createRange();r.selectNodeContents(pre);const s=getSelection();s.removeAllRanges();s.addRange(r)};try{navigator.clipboard.writeText(text).then(ok,sel)}catch(e){sel()}};pre.append(b)}
+function codeBlock(pre,src){pre.innerHTML=hl(src);addCopy(pre,src)}
+const codeLines=(lines,on)=>lines.map((l,i)=>`<span class="ln${on.includes(i)?' on':''}">${hl(l)||' '}</span>`).join('');
+function matchGame(box,pairs,onDone){box.innerHTML='<div class="score"><span class="mstat"></span><button type="button" class="btn sm mres">Mélanger et recommencer</button></div><div class="match"><div class="col mt"></div><div class="col md"></div></div>';
+  function draw(){let sel=null,essais=0,found=0;const tt=box.querySelector('.mt'),dd=box.querySelector('.md'),st=box.querySelector('.mstat');
+    const upd=()=>{st.innerHTML=`<b>${found}</b>/${pairs.length} associés · ${essais} essais${found===pairs.length?' · <span class="good">Tout est associé !</span>':''}`;if(found===pairs.length)onDone()};
+    tt.innerHTML=shuffle(pairs).map(p=>`<button type="button" class="mb mono" data-k="${esc(p[0])}">${esc(p[0])}</button>`).join('');dd.innerHTML=shuffle(pairs).map(p=>`<button type="button" class="mb" data-k="${esc(p[0])}">${esc(p[1])}</button>`).join('');
+    tt.querySelectorAll('.mb').forEach(b=>b.onclick=()=>{if(b.disabled)return;tt.querySelectorAll('.mb').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');sel=b});
+    dd.querySelectorAll('.mb').forEach(b=>b.onclick=()=>{if(!sel||b.disabled)return;essais++;if(b.dataset.k===sel.dataset.k){[b,sel].forEach(x=>{x.classList.remove('sel');x.classList.add('ok');x.disabled=true});sel=null;found++}else{b.classList.add('bad','shake');setTimeout(()=>b.classList.remove('bad','shake'),500)}upd()});upd()}
+  box.querySelector('.mres').onclick=draw;draw()}
+function orderGame(box,items,onDone){const solved=new Set();box.innerHTML=items.map((o,i)=>`<div class="ord" data-i="${i}"><h4>${i+1}. ${o[0]}</h4><div class="pool"></div><div class="ans"></div><div class="row"><button type="button" class="btn pri chk">Vérifier</button><button type="button" class="btn clr">Effacer</button><button type="button" class="btn sh">Voir la réponse</button><span class="res" aria-live="polite"></span></div></div>`).join('');
+  box.querySelectorAll('.ord').forEach(el=>{const steps=items[+el.dataset.i][1],pool=el.querySelector('.pool'),ans=el.querySelector('.ans'),res=el.querySelector('.res');
+    const chip=t=>{const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=t;b.onclick=()=>{b.classList.remove('okc','noc');(b.parentNode===pool?ans:pool).append(b);res.textContent=''};return b};
+    function fill(){pool.innerHTML='';ans.innerHTML='';res.textContent='';let s=shuffle(steps);while(s.join()===steps.join())s=shuffle(steps);s.forEach(t=>pool.append(chip(t)))}
+    el.querySelector('.chk').onclick=()=>{if(ans.children.length<steps.length){res.innerHTML=`<span class="bad">Place all ${steps.length} steps first.</span>`;return}let r=0;[...ans.children].forEach((c,i)=>{const ok=c.textContent===steps[i];if(ok)r++;c.classList.toggle('okc',ok);c.classList.toggle('noc',!ok)});
+      if(r===steps.length){res.innerHTML='<span class="good">Ordre parfait !</span>';solved.add(el.dataset.i);if(solved.size===items.length)onDone()}else res.innerHTML=`<span class="bad">${r} of ${steps.length} in place. Click a red step to send it back.</span>`};
+    el.querySelector('.clr').onclick=fill;el.querySelector('.sh').onclick=()=>{pool.innerHTML='';ans.innerHTML='';steps.forEach(t=>{const c=chip(t);c.classList.add('okc');ans.append(c)});res.textContent='Bon ordre affiché.'};fill()})}
+
+function mcq(root,items,onDone){const sc=root.querySelector('.score'),list=root.querySelector('.qs');let ok=0,n=0;
+  function upd(){sc.innerHTML=`<span><b>${ok}</b> / ${items.length} correct(s)</span><span class="meter"><i style="width:${ok/items.length*100}%"></i></span><button type="button" class="btn sm">↺ Recommencer</button>`;sc.querySelector('button').onclick=draw}
+  function draw(){ok=0;n=0;list.innerHTML=items.map((it,i)=>`<div class="q"><div class="qh"><span class="qn">${i+1}</span><div class="qt">${it.q}</div></div>${it.code?`<pre class="code qcode">${hl(it.code)}</pre>`:''}<div class="opts">${it.o.map((o,j)=>`<button type="button" class="opt" data-j="${j}">${o}</button>`).join('')}</div><div class="fb" aria-live="polite"></div></div>`).join('');
+    list.querySelectorAll('.q').forEach((q,i)=>q.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{if(q.dataset.done)return;q.dataset.done=1;const it=items[i],good=+b.dataset.j===it.a;n++;if(good)ok++;
+      q.querySelectorAll('.opt').forEach((x,k)=>{x.disabled=true;if(k===it.a)x.classList.add('right');else if(x===b)x.classList.add('wrong')});
+      if(!good){q.classList.add('shake');setTimeout(()=>q.classList.remove('shake'),450)}
+      q.querySelector('.fb').innerHTML=`<b class="${good?'good':'bad'}">${good?pick(YES):'Pas tout à fait.'}</b> ${it.w}`;upd();if(n===items.length&&onDone)onDone(ok,items.length)}));upd()}
+  draw()}
+
+
+const sleep=ms=>new Promise(r=>setTimeout(r,REDUCE?Math.min(ms,80):ms));
+function flipsHtml(rows){return rows.map(r=>`<button type="button" class="flip" aria-pressed="false" aria-label="${esc(r[1])}: show details"><div class="in"><div class="face front"><div class="ico">${r[0]}</div><h4>${r[1]}</h4><div class="k">${r[2]}</div><div class="hint">↻ Cliquer pour retourner</div></div><div class="face back"><h4>${r[1]}</h4><div>${r[3]}</div></div></div></button>`).join('')}
+function bindFlips(root){root.querySelectorAll('.flip').forEach(f=>f.onclick=()=>{f.classList.toggle('on');f.setAttribute('aria-pressed',f.classList.contains('on'))})}
+
+/* ================= UML use case renderer ================= */
+const XE=s=>esc(s);
+function ucNode(D,id){return D.a&&D.a[id]?{...D.a[id],T:'a'}:{...D.u[id],T:'u'}}
+function ucDims(n){if(n.T==='u'){const lines=n.n.split('\n').length;return{rx:n.rx||76,ry:n.ry||(n.ep?36:(lines>1?30:26))}}return n.k==='sys'?{hw:60,hh:26}:{hw:22,hh:38}}
+function edgePt(n,tx,ty){const d=ucDims(n);let dx=tx-n.x,dy=ty-n.y;if(!dx&&!dy)return[n.x,n.y];
+  if(n.T==='u'){const t=1/Math.sqrt((dx/d.rx)**2+(dy/d.ry)**2);return[n.x+dx*t,n.y+dy*t]}
+  const hh=n.k!=='sys'&&dy>0?54:d.hh;const t=Math.min(dx?d.hw/Math.abs(dx):1e9,dy?hh/Math.abs(dy):1e9);return[n.x+dx*t,n.y+dy*t]}
+function ucSvg(D,upto=99,opt={}){const[W,H]=D.vb;const vis=o=>(o.s||0)<=upto,anim=o=>(o.s||0)===upto&&opt.anim;
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${XE(D.alt||'Use case diagram')}">`;
+  const wrapHot=(o,inner,mx,my)=>o.h?`<g class="hot" data-k="${o.h}" tabindex="0" role="button" aria-label="${XE(o.hl||o.n||'line')}">${inner}<g class="mk ${String(o.h).startsWith('ok')?'ok-mk':''}"><circle cx="${mx}" cy="${my}" r="11"/><text x="${mx}" y="${my+4}" text-anchor="middle">${String(o.h).startsWith('ok')?'✓':'!'}</text></g></g>`:inner;
+  if(D.sys&&vis(D.sys)){const b=D.sys;s+=`<g class="u-sys${anim(b)?' dw':''}"><rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="8"/><text x="${b.x+b.w/2}" y="${b.y+24}" text-anchor="middle">${XE(b.t)}</text></g>`}
+  // links first (under nodes)
+  (D.l||[]).forEach((L,i)=>{if(!vis(L))return;const A=ucNode(D,L.f),B=ucNode(D,L.t);const p=edgePt(A,B.x,B.y),q=edgePt(B,A.x,A.y);
+    const dash=L.k==='inc'||L.k==='ext';const mk=L.k==='inc'||L.k==='ext'||L.k==='flow'?' marker-end="url(#aOpen)"':L.k==='gen'?' marker-end="url(#aTri)"':'';
+    const d=`M${p[0].toFixed(1)} ${p[1].toFixed(1)} L${q[0].toFixed(1)} ${q[1].toFixed(1)}`;
+    const cls=anim(L)?(dash?' dw':' dl'):'';const mx=(p[0]+q[0])/2,my=(p[1]+q[1])/2;
+    let g=`<g class="u-link" data-l="${L.id||i}">${L.h?`<path d="${d}" stroke="transparent" stroke-width="16" fill="none"/>`:''}<path class="u-ln${dash?' dash':''}${cls}" d="${d}"${!dash&&anim(L)?' pathLength="1"':''}${mk}/>`;
+    if(dash){const lab=L.k==='inc'?'«include»':'«extend»';g+=`<text class="u-lab${anim(L)?' dw':''}" x="${mx+(L.lx||0)}" y="${my-7+(L.ly||0)}" text-anchor="middle">${lab}</text>`}
+    g+='</g>';s+=wrapHot(L,g,mx,my)});
+  (D.notes||[]).forEach(N=>{if(!vis(N))return;const h=N.lines.length*15+12;const tx=N.to[0],ty=N.to[1];const cx=Math.max(N.x,Math.min(N.x+N.w,tx)),cy=ty<N.y?N.y:N.y+h;
+    s+=`<g class="u-note${anim(N)?' dw':''}"><path class="u-ln dash" d="M${cx} ${cy} L${tx} ${ty}" style="stroke-dasharray:4 4"/><path d="M${N.x} ${N.y} h${N.w-12} l12 12 v${h-12} h${-N.w} z"/>${N.lines.map((t,j)=>`<text x="${N.x+8}" y="${N.y+19+j*15}">${XE(t)}</text>`).join('')}</g>`});
+  for(const id in (D.u||{})){const n={...D.u[id],T:'u'};if(!vis(n))continue;const d=ucDims(n),L=n.n.split('\n');const ep=n.ep&&(n.ep.s||0)<=upto;
+    let t;if(ep){t=`<text x="${n.x}" y="${n.y-10}" text-anchor="middle" font-weight="700">${XE(n.n)}</text><line x1="${n.x-d.rx+8}" y1="${n.y-2}" x2="${n.x+d.rx-8}" y2="${n.y-2}"/><text class="ep" x="${n.x}" y="${n.y+11}" text-anchor="middle">extension points</text><text class="ep" x="${n.x}" y="${n.y+24}" text-anchor="middle">${XE(n.ep.t)}</text>`}
+    else t=L.map((x,j)=>`<text x="${n.x}" y="${n.y+5+(j-(L.length-1)/2)*15}" text-anchor="middle"${n.abs?' font-style="italic"':''}>${XE(x)}</text>`).join('');
+    const g=`<g class="u-uc${anim(n)||(ep&&n.ep.s===upto&&opt.anim)?' dw':''}" data-u="${id}"><ellipse cx="${n.x}" cy="${n.y}" rx="${d.rx}" ry="${d.ry}"/>${t}</g>`;s+=wrapHot(n,g,n.x+d.rx-6,n.y-d.ry+4)}
+  for(const id in (D.a||{})){const n={...D.a[id],T:'a'};if(!vis(n))continue;const L=n.n.split('\n');let g;
+    if(n.k==='sys')g=`<g class="u-act${anim(n)?' dw':''}" data-a="${id}"><rect class="box" x="${n.x-60}" y="${n.y-26}" width="120" height="52" rx="6"/><text class="kw" x="${n.x}" y="${n.y-8}" text-anchor="middle">${n.kw||'«actor»'}</text>${L.map((x,j)=>`<text x="${n.x}" y="${n.y+10+j*14-(L.length-1)*5}" text-anchor="middle">${XE(x)}</text>`).join('')}</g>`;
+    else{const x=n.x,y=n.y;g=`<g class="u-act${anim(n)?' dw':''}" data-a="${id}"><circle class="fig" cx="${x}" cy="${y-27}" r="9"/><path class="fig" d="M${x} ${y-18} V${y+6} M${x-15} ${y-9} H${x+15} M${x} ${y+6} L${x-12} ${y+25} M${x} ${y+6} L${x+12} ${y+25}"/>${L.map((t,j)=>`<text x="${x}" y="${y+44+j*15}" text-anchor="middle">${XE(t)}</text>`).join('')}</g>`}
+    s+=wrapHot(n,g,n.x+20,n.y-34)}
+  if(opt.token)s+=`<g class="token" id="${opt.token}"><circle cx="0" cy="0" r="10"/></g>`;
+  return s+'</svg>'}
+
+/* the library diagram used across the window */
+const LIB={vb:[900,560],alt:'Library system use case diagram',
+ sys:{x:200,y:14,w:500,h:532,t:'Library System',s:1},
+ a:{mem:{x:95,y:200,n:'Member',s:2},lib:{x:805,y:92,n:'Librarian',s:2},stu:{x:45,y:430,n:'Student',s:7},tea:{x:150,y:430,n:'Teacher',s:7},
+    pay:{x:800,y:255,n:'Payment Service',k:'sys',s:6},clk:{x:800,y:458,n:'Clock',k:'sys',kw:'«actor» (time)',s:8}},
+ u:{search:{x:330,y:72,n:'Search catalogue',s:3},reserve:{x:330,y:156,n:'Reserve book',s:3},borrow:{x:330,y:258,n:'Borrow book',ep:{t:'fines check',s:6},s:3},ret:{x:330,y:368,n:'Return book',s:3},
+    manage:{x:575,y:84,n:'Manage catalogue',s:3},fine:{x:575,y:200,n:'Pay fine',s:6},ident:{x:575,y:318,n:'Identify member',s:5},remind:{x:575,y:458,n:'Send overdue\nreminder',s:8}},
+ l:[{f:'mem',t:'search',k:'as',s:4},{f:'mem',t:'reserve',k:'as',s:4},{f:'mem',t:'borrow',k:'as',s:4},{f:'mem',t:'ret',k:'as',s:4},{f:'lib',t:'manage',k:'as',s:4},
+    {f:'borrow',t:'ident',k:'inc',s:5},{f:'ret',t:'ident',k:'inc',s:5,ly:22},{f:'fine',t:'borrow',k:'ext',s:6},{f:'fine',t:'pay',k:'as',s:6},
+    {f:'stu',t:'mem',k:'gen',s:7},{f:'tea',t:'mem',k:'gen',s:7},{f:'clk',t:'remind',k:'as',s:8}],
+ notes:[{x:222,y:440,w:200,lines:['condition: {member has','unpaid fines}','extension point: fines check'],to:[452,229],s:6}]};
+
+/* ================= WINDOW 1 · REQUIREMENTS ================= */
+/* layer cake */
+(()=>{const L=[['l-bus','Business','Business requirements','<b>Why</b> the organisation wants the system. Written by sponsors and managers.','Reduce the time librarians spend on loans by 50% within one year.'],
+ ['l-usr','User','User requirements','<b>What users need to do</b>, in their language. Often captured as use cases or user stories.','Members need to borrow and reserve books without queueing at the desk.'],
+ ['l-fr','FR','Functional requirements','<b>What the system shall do</b>: behaviours, inputs, outputs, calculations, rules.','The system shall record a loan with its due date when a member borrows a book.'],
+ ['l-nfr','NFR','Non-functional requirements','<b>How well</b> the system does it, and the <b>limits</b> it must respect. They apply across many functions.','The kiosk shall complete a loan of up to 5 books in under 60 seconds.']];
+ $('#cake').innerHTML=L.map((l,i)=>`<button type="button" class="layer ${l[0]}" data-i="${i}" aria-label="${l[2]}"><span>${l[1]}</span></button>`).join('');
+ $('#cake-tabs').innerHTML=L.map((l,i)=>`<button type="button" class="btn sm" data-i="${i}">${l[1]}</button>`).join('');
+ function show(i){$$('#cake .layer').forEach((b,j)=>b.classList.toggle('on',j===i));$$('#cake-tabs .btn').forEach((b,j)=>b.classList.toggle('pri',j===i));const l=L[i],c=$('#cake-info');c.style.animation='none';void c.offsetWidth;c.style.animation='';
+  c.innerHTML=`<h4>${l[2]}</h4><p style="margin:0">${l[3]}</p><div class="ex">e.g. ${l[4]}</div>${i===3?'<p style="margin:10px 0 0;font-size:15px;color:var(--muted)">The NFR layer sits on top in the 3D cake because it constrains everything below it.</p>':''}`}
+ $$('#cake .layer,#cake-tabs .btn').forEach(b=>b.onclick=()=>show(+b.dataset.i));show(0)})();
+$('#stake').innerHTML=flipsHtml([['👥','Users','members, librarians','They use the system every day. Source of most functional and usability requirements.'],['💼','Sponsor','the city council','Pays for the system. Source of business requirements, budget and deadlines.'],['🛠️','Developers & testers','the project team','Need requirements that are clear, feasible and testable.'],['⚖️','Regulators','GDPR, accessibility law','Impose constraints: data protection, accessibility, record keeping.'],['🧰','Operations','IT support','Care about availability, backups, monitoring, installation.']]);bindFlips($('#stake'));
+
+/* sorting machine */
+(()=>{const C=[
+ ['The system shall let a member reserve a book that is currently on loan.','f','A behaviour the system performs for a member.'],
+ ['95% of catalogue searches shall return results within 2 seconds.','n','How fast: performance efficiency (time behaviour).'],
+ ['The system shall email a receipt after each fine payment.','f','An output the system produces.'],
+ ['The system shall be available 99.5% of the time each month, excluding planned maintenance.','n','Reliability (availability).'],
+ ['A librarian shall be able to add a new book to the catalogue.','f','A function used by a librarian.'],
+ ['Passwords shall be stored only as salted hashes produced by an adaptive algorithm such as bcrypt or Argon2.','n','A security constraint on how data is kept.'],
+ ['The system shall calculate a fine of €0.20 per day for each overdue book.','f','A calculation, i.e. a business rule the system applies. Functional.'],
+ ['A new member shall be able to reserve a book without help within 3 minutes of first use.','n','Interaction capability (learnability), and it is measurable.'],
+ ['The web interface shall meet WCAG 2.2 level AA.','n','Interaction capability (inclusivity). Also a legal constraint in many counessais.'],
+ ['When a reserved book is returned, the system shall notify the member who reserved it.','f','A behaviour triggered by an event.'],
+ ['The system shall support 2,000 concurrent users without breaking the search-time requirement.','n','Performance efficiency (capacity).'],
+ ['Personal data shall be stored only in data centres located in the EU.','n','A legal constraint, listed with the NFRs.'],
+ ['The system shall log every login attempt with its time and IP address.','f','Tricky! It is a behaviour, so it is an FR. It exists <b>because of</b> a security NFR: NFRs often produce new FRs.'],
+ ['The system shall export the monthly loan report as a CSV file.','f','A function with a defined output.'],
+ ['The system shall run on the latest two versions of Chrome, Firefox, Safari and Edge.','n','Compatibility / flexibility constraint.']];
+ let deck,i,ok,cf,cn;const card=()=>$('#so-deck .scard');
+ function next(){if(i>=deck.length){$('#so-deck').innerHTML=`<div class="scard" style="text-align:center;justify-content:center"><b style="font-size:28px">${ok} / ${deck.length}</b><span>${ok===deck.length?'Tri parfait ! 🎉':ok>=11?'Very good. Read the explanations of the ones you missed.':'Read the explanations, then try again.'}</span></div>`;$('#so-f').disabled=$('#so-n').disabled=true;return}
+  $('#so-deck').innerHTML=`<div class="scard"><small>Carte ${i+1} sur ${deck.length}</small>${deck[i][0]}</div>`;$('#so-score').textContent=`score ${ok}/${i}`}
+ function pick(k){const c=card();if(!c||$('#so-f').disabled&&i<deck.length)return;const d=deck[i],good=d[1]===k;if(good)ok++;
+  $('#so-f').disabled=$('#so-n').disabled=true;c.classList.add(k==='f'?'go-f':'go-n');const bin=$(k==='f'?'#bin-f':'#bin-n');bin.classList.remove('hit');void bin.offsetWidth;bin.classList.add('hit');
+  if(k==='f')cf++;else cn++;$('#cnt-f').textContent=cf;$('#cnt-n').textContent=cn;
+  $('#so-say').innerHTML=`<b class="${good?'good':'bad'}">${good?pick2(YES):'Not quite: it is '+(d[1]==='f'?'an FR.':'an NFR.')}</b> ${d[2]}`;
+  setTimeout(()=>{i++;$('#so-f').disabled=$('#so-n').disabled=false;next();$('#so-score').textContent=`score ${ok}/${i}`},REDUCE?50:650)}
+ const pick2=a=>a[Math.floor(Math.random()*a.length)];
+ function reset(){deck=shuffle(C);i=0;ok=0;cf=0;cn=0;$('#cnt-f').textContent=0;$('#cnt-n').textContent=0;$('#so-f').disabled=$('#so-n').disabled=false;$('#so-say').innerHTML='Lisez la carte, puis choisissez un bac. Clavier : ← EF, → ENF.';next()}
+ $('#so-f').onclick=()=>pick('f');$('#so-n').onclick=()=>pick('n');$('#so-rst').onclick=reset;
+ $('#r-frnfr').addEventListener('keydown',e=>{if(e.target.closest('input,textarea'))return;if(e.key==='ArrowLeft'&&!$('#so-f').disabled){pick('f');e.preventDefault()}if(e.key==='ArrowRight'&&!$('#so-n').disabled){pick('n');e.preventDefault()}});reset()})();
+
+/* ISO 25010 carousel */
+(()=>{const V=[
+ ['Functional suitability','does it do the right things, correctly?',[['functional completeness'],['functional correctness'],['functional appropriateness']],'Fines shall be calculated to the cent, exactly as the library\'s fee policy defines.'],
+ ['Performance efficiency','how fast, with what resources?',[['time behaviour'],['resource utilization'],['capacity']],'95% of catalogue searches shall return within 2 s with 2,000 concurrent users.'],
+ ['Compatibility','does it work with other systems?',[['co-existence'],['interoperability']],'The system shall exchange catalogue records with the national library in MARC 21 format.'],
+ ['Interaction capability','can people use it? (was "usability")',[['appropriateness recognizability'],['learnability'],['operability'],['user error protection'],['user engagement',1],['inclusivity',1],['user assistance',1],['self-descriptiveness',1]],'The web interface shall meet WCAG 2.2 level AA.'],
+ ['Reliability','does it keep working?',[['faultlessness',1],['availability'],['fault tolerance'],['recoverability']],'The loan service shall be available 99.5% of each month, excluding announced maintenance.'],
+ ['Security','is it protected?',[['confidentiality'],['integrity'],['non-repudiation'],['accountability'],['authenticity'],['resistance',1]],'An account shall be locked for 15 minutes after 5 failed login attempts.'],
+ ['Maintainability','can it be changed easily?',[['modularity'],['reusability'],['analysability'],['modifiability'],['testability']],'A librarian shall be able to change the daily fine amount without a new software release.'],
+ ['Flexibility','can it adapt and scale? (was "portability")',[['adaptability'],['scalability',1],['installability'],['replaceability']],'Adding a second library branch shall require configuration only, no code change.'],
+ ['Safety','can it avoid harming people or property? (new in 2023)',[['operational constraint',1],['risk identification',1],['fail safe',1],['hazard warning',1],['safe integration',1]],'(Not critical for a library.) Infusion pump: if the flow sensor fails, the pump shall stop and sound an alarm.']];
+ const N=V.length,R=280;let cur=0;const ring=$('#iso-ring');
+ ring.innerHTML=V.map((v,i)=>`<button type="button" class="panel3d" data-i="${i}" style="transform:rotateY(${i*360/N}deg) translateZ(${R}px)"><small>${i+1} of 9</small><h4>${v[0]}</h4><p>${v[1]}</p></button>`).join('');
+ ring.querySelectorAll('.panel3d').forEach(b=>b.onclick=()=>go(+b.dataset.i));
+ function go(i){cur=(i+N)%N;ring.style.transform=`translateZ(-${R}px) rotateY(${-cur*360/N}deg)`;ring.querySelectorAll('.panel3d').forEach((p,j)=>{p.classList.toggle('dim',j!==cur);p.tabIndex=j===cur?0:-1});
+  $('#iso-pos').textContent=`${cur+1} / ${N}`;const v=V[cur],d=$('#iso-detail');d.style.animation='none';void d.offsetWidth;d.style.animation='';
+  d.innerHTML=`<h4>${cur+1}. ${v[0]}</h4><p style="margin:0">Question it answers: <i>${v[1]}</i></p><div class="subs">${v[2].map(s=>`<span class="${s[1]?'new':''}">${s[0]}</span>`).join('')}</div><div class="ex" style="font:500 14px var(--f-mono);background:var(--surface);border-radius:10px;padding:10px 12px;border-left:4px solid var(--g1)">e.g. ${v[3]}</div>`}
+ $('#iso-prev').onclick=()=>go(cur-1);$('#iso-next').onclick=()=>go(cur+1);go(0)})();
+
+/* ambiguity detector */
+(()=>{const WEAK=['as soon as possible','user-friendly','user friendly','state-of-the-art','if possible','where possible','as needed','as appropriate','and/or','etc.','etc','asap','fast','quick','quickly','slow','easy','easily','simple','simply','intuitive','efficient','efficiently','flexible','robust','seamless','seamlessly','modern','best','optimal','optimised','optimized','adequate','sufficient','appropriate','reasonable','minimal','high','low','large','small','many','few','several','some','various','approximately','normally','usually','typically','generally','secure','reliable','scalable','responsive','good','nice','better','improved','enhanced','support','handle','TBD','TBC'];
+ const MODAL=['should','may','might','could'];const DESIGN=['MySQL','SQL','Java','React','table','button','dropdown','drop-down','checkbox','Oracle','JSON','REST','popup','pop-up'];
+ const WHY={fast:'How fast? Give a time and a percentile.',quick:'How quick? Give a time.',quickly:'How quickly? Give a time.','user-friendly':'Not testable. Say who must do what, in how long, with how many errors.','user friendly':'Not testable. Say who must do what, in how long.',easy:'Easy for whom? Measure it (task time, success rate).',easily:'Measure it instead.',intuitive:'Not testable. e.g. "90% of new users complete X within 3 min without help".',secure:'Secure against what? Name the threat and the response.',reliable:'Give availability (%) or mean time between failures.',scalable:'Scale to what? Give users, data or requests.','etc.':'"etc." hides missing items: list them all.',etc:'"etc." hides missing items: list them all.','and/or':'Ambiguous: is it both, or either? Split or choose.',support:'Vague verb: what exactly must the system do?',handle:'Vague verb: what exactly must the system do?',TBD:'Unfinished: the requirement is incomplete.',TBC:'Unfinished: the requirement is incomplete.',appropriate:'Who decides what is appropriate? State the rule.',several:'How many exactly?',some:'Which ones? How many?',many:'How many exactly?',few:'How many exactly?'};
+ const PRE=[['😬 Vague','The system should be fast and user-friendly.'],['😬 Very vague','The search shall be quick, and results should be displayed in an intuitive way, with sorting, filters etc.'],['🛠️ Design detail','The system shall store loans in a MySQL table and show them in a dropdown.'],['➕ Two in one','The system shall log in users and the system shall export reports as PDF.'],['✅ Good NFR','95% of catalogue searches shall return results within 2 seconds with 2,000 concurrent users.'],['✅ Good FR','When a reserved book is returned, the system shall email the member who reserved it within 10 minutes.']];
+ $('#amb-presets').innerHTML=PRE.map((p,i)=>`<button type="button" class="btn sm" data-i="${i}">${p[0]}</button>`).join('');
+ $$('#amb-presets .btn').forEach(b=>b.onclick=()=>{$('#amb-in').value=PRE[+b.dataset.i][1];run()});
+ const reEsc=s=>s.replace(/[.*+?^${}()|[\]\\\/]/g,'\\$&');
+ const NUM='\\d[\\d,.]*\\s*(?:%|ms|milliseconds?|s|sec|seconds?|min|minutes?|h|hours?|days?|users?|requests?|MB|GB|KB|times|books?|attempts?)\\b|€\\s?\\d[\\d,.]*';
+ const RX=new RegExp(`(${NUM})|\\b(shall)\\b|\\b(${MODAL.join('|')})\\b|(${[...WEAK].sort((a,b)=>b.length-a.length).map(w=>/^\w/.test(w)?'\\b'+reEsc(w)+(/\w$/.test(w)?'\\b':''):reEsc(w)).join('|')})|\\b(${DESIGN.map(reEsc).join('|')})\\b`,'gi');
+ function run(){const t=$('#amb-in').value.trim();const issues=[];let score=100,nums=0,shalls=0,weak=0,des=0,mod=0;
+  const html=esc(t).replace(RX,(m,n,sh,md,wk,dz)=>{if(n){nums++;return`<mark class="ok" title="measurable value">${m}</mark>`}if(sh){shalls++;return`<mark class="ok" title="binding obligation">${m}</mark>`}
+    if(md){mod++;issues.push(`<b>${m}</b> · weak modal: reads as optional. Use "shall".`);return`<mark class="wk" title="weak modal">${m}</mark>`}
+    if(wk){weak++;issues.push(`<b>${m}</b> · ${WHY[m]||WHY[m.toLowerCase()]||'Vague word: replace it with something measurable.'}`);return`<mark title="vague">${m}</mark>`}
+    if(dz){des++;issues.push(`<b>${m}</b> · design detail: say what, not how (unless it is a real constraint).`);return`<mark class="wk" title="design detail">${m}</mark>`}return m});
+  if(!t){$('#amb-out').innerHTML='<span style="color:var(--muted)">Saisissez une exigence ou choisissez un exemple.</span>';$('#amb-issues').innerHTML='';$('#amb-verdict').textContent='';$('#amb-g').style.left='0%';return}
+  if(!shalls&&!mod)issues.push('<b>no "shall"</b> · the obligation is unclear.');
+  if(shalls>1)issues.push('<b>several "shall"</b> · not singular: split it into separate requirements.');
+  const words=t.split(/\s+/).length;if(words>40)issues.push('<b>long</b> · over 40 words: it may hide several requirements.');
+  const quality=/(fast|quick|secure|reliable|available|easy|intuitive|user|perform|scal|respons|efficien)/i.test(t);if(quality&&!nums)issues.push('<b>no number</b> · a quality without a measure can\'t be tested.');
+  score-=Math.min(60,weak*18)+mod*10+(!shalls&&!mod?15:0)+(shalls>1?20:0)+des*12+(words>40?8:0)+(quality&&!nums?15:0);score=Math.max(0,Math.min(100,score));
+  $('#amb-out').innerHTML=html;$('#amb-issues').innerHTML=issues.length?issues.map(x=>`<li>${x}</li>`).join(''):'<li class="good"><b>✓ No issues found.</b> Clear, singular and testable.</li>';
+  $('#amb-g').style.left=`calc(${score}% - 3px)`;$('#amb-verdict').innerHTML=`Quality score: ${score}/100 · ${score>=85?'<span class="good">clear and testable</span>':score>=55?'<span style="color:var(--warn)">needs work</span>':'<span class="bad">ambiguous</span>'}`}
+ $('#amb-in').addEventListener('input',run);$('#amb-in').value=PRE[0][1];run()})();
+
+/* Constructeur EARS */
+(()=>{const P={ubi:['Ubiquitous','The <sys> shall <res>.','Always true, no trigger.',{sys:'kiosk',res:'display the library\'s opening hours'}],
+ event:['Event-driven','When <tr>, the <sys> shall <res>.','Reacts to a trigger that happens once.',{tr:'a member scans a book',sys:'kiosk',res:'show the due date within 1 second'}],
+ state:['State-driven','While <st>, the <sys> shall <res>.','Applies as long as a state lasts.',{st:'the library is closed',sys:'kiosk',res:'accept returns only'}],
+ unwanted:['Unwanted behaviour','If <cd>, then the <sys> shall <res>.','For failures and errors: the "if … then" is the signal.',{cd:'the card reader fails',sys:'kiosk',res:'display the desk number of a librarian'}],
+ option:['Optional feature','Where <ft>, the <sys> shall <res>.','Only for products that include a feature.',{ft:'a receipt printer is installed',sys:'kiosk',res:'print a receipt for every loan'}],
+ complex:['Complex','While <st>, when <tr>, the <sys> shall <res>.','Combines the keywords.',{st:'the network is down',tr:'a member borrows a book',sys:'kiosk',res:'store the loan and send it within 5 minutes of reconnection'}]};
+ const LB={sys:'system',res:'response',tr:'trigger (event)',st:'state',cd:'unwanted condition',ft:'feature'},CL={sys:'e-sys',res:'e-rs',tr:'e-tr',st:'e-tr',cd:'e-tr',ft:'e-tr'};let pat='event',val={};
+ $('#ears-pat').innerHTML=Object.keys(P).map(k=>`<button type="button" data-v="${k}">${P[k][0]}</button>`).join('');
+ $$('#ears-pat button').forEach(b=>b.onclick=()=>{pat=b.dataset.v;val={...P[pat][3]};fields()});
+ function fields(){$$('#ears-pat button').forEach(b=>b.classList.toggle('on',b.dataset.v===pat));const keys=[...P[pat][1].matchAll(/<(\w+)>/g)].map(m=>m[1]);
+  $('#ears-f').innerHTML=keys.map(k=>`<label>${LB[k]}<input data-k="${k}" value="${esc(val[k]||'')}"></label>`).join('');$$('#ears-f input').forEach(i=>i.oninput=()=>{val[i.dataset.k]=i.value;out()});out()}
+ function out(){const tpl=P[pat][1];const parts=tpl.split(/(<\w+>)/);
+  $('#ears-out').innerHTML=parts.map(p=>{const m=p.match(/^<(\w+)>$/);if(m)return`<span class="${CL[m[1]]}">${esc(val[m[1]]||'…')}</span>`;return p.replace(/\b(When|While|If|then|Where|shall)\b/g,'<span class="e-kw">$1</span>')}).join('');
+  $('#ears-say').innerHTML=`<b>${P[pat][0]}:</b> ${P[pat][2]}`}
+ val={...P[pat][3]};fields()})();
+
+/* quality attribute scenario */
+(()=>{const Q={performance:['⚡ Performance',['2,000 members','submit catalogue searches','peak hours, normal operation','catalogue search service','results are returned','95% within 2 s']],
+ availability:['🛟 Availability',['the hardware','a server crashes','normal operation','loan service','traffic moves to a backup server','service back within 30 s, no loan lost']],
+ security:['🔐 Security',['an unknown attacker','essais 100 passwords on one account','online system','login service','account locked, librarian alerted','locked after 5 failures, alert within 1 min']],
+ usability:['🙂 Interaction capability',['a new member','wants to reserve a book','first use, no training','web catalogue','completes the reservation','90% succeed within 3 min without help']]};
+ const PARTS=['Source','Stimulus','Environment','Artifact','Response','Response measure'];let k='performance';
+ $('#qa-pick').innerHTML=Object.keys(Q).map(x=>`<button type="button" data-v="${x}">${Q[x][0]}</button>`).join('');
+ $$('#qa-pick button').forEach(b=>b.onclick=()=>{k=b.dataset.v;draw()});
+ function draw(){$$('#qa-pick button').forEach(b=>b.classList.toggle('on',b.dataset.v===k));const v=Q[k][1];
+  $('#qa-tiles').innerHTML=PARTS.map((p,i)=>`<div class="q6" style="animation-delay:${i*.08}s;${i===5?'background:linear-gradient(150deg,var(--g1),var(--g3))':''}"><small>${i+1} · ${p}</small><b>${v[i]}</b><span>${['who or what causes it','the event','the conditions','the part affected','what the system does','how we measure it'][i]}</span></div>`).join('');
+  $('#qa-sentence').innerHTML=`<b class="t">As a requirement:</b> When <b>${v[0]}</b> ${v[1]} during <b>${v[2]}</b>, the <b>${v[3]}</b> shall ensure that ${v[4]}: <b>${v[5]}</b>.`}
+ draw()})();
+
+/* load test */
+(()=>{let srv=2;const CAP={1:900,2:1800,4:3600};const u=$('#lt-users');
+ $$('#lt-srv button').forEach(b=>b.onclick=()=>{srv=+b.dataset.v;$$('#lt-srv button').forEach(x=>x.classList.toggle('on',x===b))});
+ u.oninput=()=>$('#lt-uv').textContent=u.value;u.oninput();
+ const gauss=()=>{let a=0;for(let i=0;i<6;i++)a+=Math.random();return a-3};
+ function run(){const rho=Math.min(.97,+u.value/CAP[srv]);const base=.35/(1-rho);const xs=Array.from({length:60},()=>Math.max(.08,base*Math.exp(.45*gauss())));
+  const s=[...xs].sort((a,b)=>a-b),p95=s[Math.ceil(.95*s.length)-1],med=s[29],mx=s[59],top=Math.max(4,mx*1.1);
+  $('#lt-bars').innerHTML=xs.map((x,i)=>`<i class="${x>2?'over':''}" style="height:${x/top*100}%;animation-delay:${i*12}ms"></i>`).join('')+`<div class="lim" style="bottom:${8+2/top*164}px"><span>2.0 s limit</span></div>`;
+  $('#lt-med').textContent=med.toFixed(2)+' s';$('#lt-p95').textContent=p95.toFixed(2)+' s';$('#lt-max').textContent=mx.toFixed(2)+' s';
+  const pass=p95<=2;$('#lt-res').innerHTML=`<div class="result ${pass?'ok':'err'}">${pass?'✓ PASS':'✗ FAIL'} · p95 = ${p95.toFixed(2)} s ${pass?'≤':'>'} 2.0 s · load ${(rho*100).toFixed(0)}% of capacity<br><span style="font-weight:500">${pass?'The NFR is met at this load.':'Too slow for 5% or more of the searches. Add servers, or negotiate the requirement.'} ${med<2&&!pass?'Notice the median still looks fine: that is why averages and medians aren\'t enough.':''}</span></div>`}
+ $('#lt-run').onclick=run;run()})();
+
+/* RE cycle */
+(()=>{const S=[['Elicit','Elicitation','Discover needs with stakeholders.',['interviews','workshops','observation (job shadowing)','questionnaires','prototypes','document analysis']],
+ ['Analyse','Analysis','Understand, model and negotiate.',['resolve conflicts between stakeholders','model with use cases and activity diagrams','check feasibility','prioritise (MoSCoW)']],
+ ['Specify','Specification','Write them down clearly.',['SRS document (ISO/IEC/IEEE 29148)','user stories with acceptance criteria','use case descriptions','glossary of terms']],
+ ['Validate','Validation','"Are we building the right thing?"',['reviews and inspections','prototypes shown to users','writing acceptance tests early','checking against business goals']],
+ ['Manage','Management','Requirements change. Keep control.',['change requests and impact analysis','versioning and baselines','traceability matrix (requirement ↔ design ↔ test)','status tracking']]];
+ const C=['#0f766e','#0369a1','#4f46e5','#c026d3','#d97706'];
+ let s='<svg class="cyc" viewBox="0 0 400 400" role="img" aria-label="Requirements engineering cycle"><circle cx="200" cy="200" r="140" fill="none" stroke="var(--line)" stroke-width="10"/><circle cx="200" cy="200" r="140" fill="none" stroke="url(#cg)" stroke-width="4" stroke-dasharray="6 10"/><defs><linearGradient id="cg"><stop offset="0" stop-color="#14b8a6"/><stop offset="1" stop-color="#c026d3"/></linearGradient></defs><g class="orb"><circle cx="200" cy="60" r="9" fill="#fbbf24" stroke="#fff" stroke-width="3"/></g>';
+ S.slice(0,4).forEach((x,i)=>{const a=-Math.PI/2+i*Math.PI/2,cx=200+140*Math.cos(a),cy=200+140*Math.sin(a);s+=`<g class="st" data-i="${i}" tabindex="0" role="button" aria-label="${x[1]}"><circle cx="${cx}" cy="${cy}" r="40" fill="${C[i]}" stroke="#fff" stroke-width="3"/><text x="${cx}" y="${cy+4}" text-anchor="middle">${x[0]}</text></g>`});
+ s+=`<g class="st" data-i="4" tabindex="0" role="button" aria-label="Management"><circle cx="200" cy="200" r="52" fill="${C[4]}" stroke="#fff" stroke-width="3"/><text x="200" y="196" text-anchor="middle">Manage</text><text x="200" y="212" text-anchor="middle" style="font-size:10px">(all the time)</text></g></svg>`;
+ $('#cycle').innerHTML=s;const show=i=>{$$('#cycle .st').forEach(g=>g.classList.toggle('on',+g.dataset.i===i));const x=S[i],c=$('#cyc-info');c.style.animation='none';void c.offsetWidth;c.style.animation='';c.innerHTML=`<h4>${x[1]}</h4><p style="margin:0">${x[2]}</p><div class="subs">${x[3].map(t=>`<span>${t}</span>`).join('')}</div><p style="font-size:14px;color:var(--muted);margin:8px 0 0">The activities overlap and repeat. In agile teams they happen every sprint.</p>`};
+ $$('#cycle .st').forEach(g=>{g.onclick=()=>show(+g.dataset.i);g.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();show(+g.dataset.i)}}});show(0)})();
+
+/* MoSCoW */
+(()=>{const R=[['Borrow & return books',8,'M'],['Search the catalogue',5,'M'],['Identify member by card',3,'M'],['Reserve books',5,'S'],['Pay fines online',8,'S'],['Email overdue reminders',3,'S'],['Book recommendations',8,'C'],['Mobile app',13,'W']];const CAPA=40;let st;
+ const NM={M:'Must',S:'Should',C:'Could',W:"Won't (this time)"};
+ function draw(){const sum=k=>R.reduce((a,r,i)=>a+(st[i]===k?r[1]:0),0);const m=sum('M'),s=sum('S'),c=sum('C');
+  $('#mos').innerHTML=['M','S','C','W'].map(k=>`<div class="mcol ${k}"><h5>${NM[k]}<span>${sum(k)} pts</span></h5>${R.map((r,i)=>st[i]===k?`<div class="mreq">${r[0]}<div class="pts">${r[1]} pts</div><div class="mv">${['M','S','C','W'].map(x=>`<button type="button" data-i="${i}" data-k="${x}" class="${x===k?'on':''}" aria-label="Move ${esc(r[0])} to ${NM[x]}">${x}</button>`).join('')}</div></div>`:'').join('')}</div>`).join('');
+  $$('#mos .mv button').forEach(b=>b.onclick=()=>{st[+b.dataset.i]=b.dataset.k;draw()});
+  const w=x=>Math.max(0,Math.min(100,x/CAPA*100));let left=100;const wm=Math.min(left,w(m));left-=wm;const ws=Math.min(left,w(s));left-=ws;const wc=Math.min(left,w(c));
+  $('#mo-bud').innerHTML=`<i class="bm" style="width:${wm}%"></i><i class="bs" style="width:${ws}%"></i><i class="bc" style="width:${wc}%"></i><span class="cap60" style="left:60%" title="60% of capacity"></span>`;
+  let v;if(m>CAPA)v=`<b class="bad">✗ Musts alone need ${m} points: more than the ${CAPA} available.</b> The release can't succeed. Move something out of Must.`;
+  else if(m>CAPA*.6)v=`<b style="color:var(--warn)">⚠ Musts take ${Math.round(m/CAPA*100)}% of the capacity.</b> DSDM advises about 60% at most, so one surprise could break the release.`;
+  else if(m+s>CAPA)v=`<b class="good">✓ Musts fit (${Math.round(m/CAPA*100)}%).</b> Not all Shoulds fit (${m+s} of ${CAPA} pts): that is normal. Shoulds and Coulds are the contingency.`;
+  else v=`<b class="good">✓ Musts fit (${Math.round(m/CAPA*100)}%), and so do the Shoulds (${m+s} of ${CAPA} pts).</b> ${c&&m+s+c<=CAPA?'Even the Coulds fit: maybe you can promise more.':'Coulds are done only if time is left.'}`;
+  $('#mo-say').innerHTML=`Must ${m} · Should ${s} · Could ${c} pts of ${CAPA}. The dashed line marks 60%.<br>${v}`}
+ const reset=()=>{st=R.map(r=>r[2]);draw()};$('#mo-rst').onclick=reset;reset()})();
+
+/* ================= WINDOW 2 · USE CASES ================= */
+$('#u-flips').innerHTML=flipsHtml([
+ ['🧍','Actor','stick figure, or «actor» box','A <b>role</b> outside the system that interacts with it: a person, an external system, a device, or time.'],
+ ['⬭','Use case','ellipse · "Borrow book"','A goal an actor reaches with the system, giving a result of value. Named verb + noun.'],
+ ['▭','Subject','rectangle · system boundary','The system being modelled. Use cases inside, actors outside. Its name is written at the top.'],
+ ['—','Association','solid line','Connects an actor to a use case it takes part in. No arrowhead is needed.'],
+ ['⇢','«include»','dashed arrow, base → included','The base use case <b>always</b> runs the included one. Used to share common steps.'],
+ ['⇠','«extend»','dashed arrow, extension → base','The extension runs <b>only sometimes</b>, at an extension point, if its condition holds.'],
+ ['△','Generalization','solid line, hollow triangle','"Is a kind of". The child (actor or use case) inherits from the parent.']]);
+bindFlips($('#u-flips'));
+
+/* builder */
+(()=>{const ST=[['Subject','Draw the <b>subject</b>: a rectangle named after the system. Everything inside it is what you are building.'],
+ ['Actors','Add the <b>primary actors</b> outside the boundary: Member and Librarian. They are roles, not people.'],
+ ['Use cases','Add each actor\'s <b>goals</b> as ellipses, named verb + noun.'],
+ ['Associations','Connect each actor to the use cases it takes part in with a <b>solid line</b>.'],
+ ['«include»','Borrowing and returning both need to identify the member. Factor it out: <b>dashed arrow from the base to the included use case</b>.'],
+ ['«extend»','Paying a fine happens <b>only if</b> the member has unpaid fines. The extension points to the base and hooks in at the extension point "fines check". Payment Service is a <b>supporting actor</b>.'],
+ ['Generalization','Student and Teacher are <b>kinds of</b> Member: hollow triangle at the parent. They inherit all of Member\'s use cases.'],
+ ['Time actor','A <b>Clock</b> starts "Send overdue reminder" every night. Scheduled behaviour still needs an actor.']];
+ let cur=0,timer=null;$('#bd-steps').innerHTML=ST.map((s,i)=>`<button type="button" class="stepb" data-i="${i}">${i+1} · ${s[0]}</button>`).join('');
+ $$('#bd-steps .stepb').forEach(b=>b.onclick=()=>{stop();go(+b.dataset.i)});
+ function go(i){cur=Math.max(0,Math.min(ST.length-1,i));$$('#bd-steps .stepb').forEach((b,j)=>{b.classList.toggle('on',j===cur);b.classList.toggle('past',j<cur)});
+  $('#bd-svg').innerHTML=ucSvg(LIB,cur+1,{anim:true});$('#bd-say').innerHTML=`<b>Step ${cur+1} · ${ST[cur][0]}.</b> ${ST[cur][1]}`;$('#bd-prev').disabled=cur===0;$('#bd-next').disabled=cur===ST.length-1}
+ const stop=()=>{clearInterval(timer);timer=null;$('#bd-play').textContent='▶ Tout lire'};
+ $('#bd-prev').onclick=()=>{stop();go(cur-1)};$('#bd-next').onclick=()=>{stop();go(cur+1)};
+ $('#bd-play').onclick=()=>{if(timer){stop();return}if(cur===ST.length-1)go(0);$('#bd-play').textContent='⏸ Pause';timer=setInterval(()=>{if(cur>=ST.length-1){stop();return}go(cur+1)},2200)};go(0)})();
+
+/* actor or not */
+(()=>{const C=[['Member',1,'A role that starts use cases like Borrow book.'],['Librarian',1,'A role with its own goals (Manage catalogue).'],['Payment Service',1,'An external system the library uses: a supporting actor.'],['The loans database',0,'Part of the system you build (inside the boundary), so not an actor.'],['The "Borrow" button',0,'A user-interface element, part of the system.'],['Clock (nightly job)',1,'Time can be an actor when it triggers a use case.'],['Sara Benali',0,'A person, not a role. Sara plays the role Member (or Librarian).'],['The national library catalogue',1,'An external system that exchanges records with ours.'],['Kiosk card reader',0,'A device that is part of the kiosk system itself. (If it were a separate system, it could be an actor.)'],['Visitor (not registered)',1,'A role: can search the catalogue without an account.']];let done=0,ok=0;
+ $('#aon').innerHTML=C.map((c,i)=>`<button type="button" data-i="${i}">${c[0]}</button>`).join('');
+ $$('#aon button').forEach(b=>b.onclick=()=>{if(b.dataset.d)return;const c=C[+b.dataset.i];const box=document.createElement('div');box.className='row';
+   $('#aon-say').innerHTML=`<b>${c[0]}</b>: is it an actor? <button type="button" class="btn sm pri" data-a="1">Oui</button> <button type="button" class="btn sm" data-a="0">Non</button>`;
+   $$('#aon-say [data-a]').forEach(x=>x.onclick=()=>{const g=+x.dataset.a===c[1];b.dataset.d=1;done++;if(g)ok++;b.classList.add(c[1]?'y':'n');b.textContent=(c[1]?'🧍 ':'✗ ')+c[0];
+     $('#aon-say').innerHTML=`<b class="${g?'good':'bad'}">${g?'Correct.':'Pas tout à fait.'}</b> <b>${c[0]}</b> is ${c[1]?'':'<b>not</b> '}an actor. ${c[2]}`;$('#aon-score').textContent=`${ok}/${done} correct${done===C.length?' · all done!':''}`})})})();
+
+/* relation cards */
+(()=>{const mini=(D)=>ucSvg(D,99);
+ const R=[['Association','Actor takes part in the use case.',{vb:[300,120],a:{m:{x:50,y:52,n:'Member'}},u:{b:{x:205,y:60,n:'Borrow book',rx:70}},l:[{f:'m',t:'b',k:'as'}]}],
+  ['«include»','Borrow book <b>always</b> runs Identify member. Arrow from base to included.',{vb:[300,170],u:{b:{x:85,y:50,n:'Borrow book',rx:70},i:{x:205,y:135,n:'Identify member',rx:78}},l:[{f:'b',t:'i',k:'inc',lx:-34,ly:4}]}],
+  ['«extend»','Pay fine runs <b>only if</b> there are fines. Arrow from extension to base.',{vb:[300,170],u:{b:{x:85,y:50,n:'Borrow book',rx:70},p:{x:205,y:135,n:'Pay fine',rx:60}},l:[{f:'p',t:'b',k:'ext',lx:-30,ly:4}]}],
+  ['Generalization','Student <b>is a</b> Member; Pay by card <b>is a</b> way to pay a fine. Triangle at the parent.',{vb:[300,170],a:{p:{x:50,y:52,n:'Member'},c:{x:50,y:142,n:''}},u:{f:{x:210,y:42,n:'Pay fine',rx:58},cc:{x:210,y:135,n:'Pay by card',rx:62}},l:[{f:'c',t:'p',k:'gen'},{f:'cc',t:'f',k:'gen'}]}]];
+ R[3][2].vb=[300,200];R[3][2].a.c={x:50,y:150,n:'Student'};
+ $('#rel3').innerHTML=R.map(r=>`<div class="r3"><h4>${r[0]}</h4>${mini(r[2])}<p>${r[1]}</p></div>`).join('')})();
+
+/* include / extend runner */
+(()=>{const D={vb:[520,330],alt:'Borrow book with include and extend',a:{m:{x:52,y:160,n:'Member'}},u:{b:{x:250,y:165,n:'Borrow book',ep:{t:'fines check'},rx:82},i:{x:420,y:58,n:'Identify member',rx:80},f:{x:420,y:278,n:'Pay fine',rx:62}},
+  l:[{f:'m',t:'b',k:'as',id:'lm'},{f:'b',t:'i',k:'inc',id:'li',lx:-30,ly:6},{f:'f',t:'b',k:'ext',id:'lf',lx:-34,ly:2}]};
+ $('#rn-svg').innerHTML=ucSvg(D,99,{token:'rn-tok'});const tok=$('#rn-tok');const P={m:[52,160],b:[250,165],i:[420,58],f:[420,278]};
+ const at=k=>{tok.style.transform=`translate(${P[k][0]}px,${P[k][1]}px)`};at('m');
+ const glow=(sel,on)=>{const g=$('#rn-svg '+sel);if(g)g.classList.toggle('glow-uc',on)};const gl=(id,on)=>{const p=$(`#rn-svg [data-l="${id}"] .u-ln`);if(p)p.classList.toggle('glow-ln',on)};
+ const log=t=>{const d=document.createElement('div');d.innerHTML=t;$('#rn-log').append(d);$('#rn-log').scrollTop=1e6};
+ let busy=false;
+ $('#rn-go').onclick=async()=>{if(busy)return;busy=true;$('#rn-go').disabled=true;$('#rn-log').innerHTML='';const fine=$('#rn-fine').checked;$$('#rn-svg .glow-uc').forEach(g=>g.classList.remove('glow-uc'));
+  at('m');await sleep(300);log('1. Member asks to borrow 2 books.');gl('lm',1);at('b');glow('[data-u="b"]',1);await sleep(1000);gl('lm',0);
+  log('2. «include» Identify member: runs <b>every</b> time.');gl('li',1);at('i');glow('[data-u="i"]',1);await sleep(1100);log('   ✓ member identified, back to Borrow book');at('b');await sleep(900);gl('li',0);glow('[data-u="i"]',0);
+  log('3. Extension point "fines check".');await sleep(600);
+  if(fine){log('   condition {unpaid fines} is <b>true</b> → «extend» Pay fine runs');gl('lf',1);at('f');glow('[data-u="f"]',1);await sleep(1100);log('   ✓ fine paid, back to Borrow book');at('b');await sleep(900);gl('lf',0);glow('[data-u="f"]',0)}
+  else{log('   condition {unpaid fines} is <b>false</b> → Pay fine is skipped');await sleep(700)}
+  log('4. Check the limit, record the loans and due dates.');await sleep(800);log('5. ✓ Goal reached: books borrowed.');at('m');glow('[data-u="b"]',0);await sleep(800);
+  log(fine?'<i>Tick off the box and run again: the base works without the extension.</i>':'<i>Tick "unpaid fines" and run again to see «extend».</i>');busy=false;$('#rn-go').disabled=false}})();
+
+/* scenario walker */
+(()=>{const MAIN=['Member scans the membership card and the books at the kiosk.','System identifies the member (<b>«include»</b> Identify member).','System checks for unpaid fines. <i>[extension point: fines check]</i>','System checks the borrowing limit (5 books).','System records each loan with its due date.','System prints the receipt.'];
+ const EXT=[['2a','Card not recognised: system asks for the member number. After 3 failures, the use case ends.'],['3a','Unpaid fines: <b>«extend»</b> Pay fine. If the member refuses, the use case ends.'],['4a','Limit reached: member chooses which books to keep, up to the limit.'],['5a','A book is reserved for someone else: that book is refused; the others are recorded.']];
+ $('#spec').innerHTML=`<tr><th>Use case</th><td><b>UC-03 Borrow book</b></td></tr><tr><th>Goal level</th><td>🌊 user goal</td></tr><tr><th>Primary actor</th><td>Member</td></tr><tr><th>Preconditions</th><td>The member is registered. The kiosk is online.</td></tr><tr><th>Trigger</th><td>The member starts a loan at the kiosk.</td></tr>
+ <tr><th>Main success scenario</th><td><ol>${MAIN.map((m,i)=>`<li id="m${i+1}">${m}</li>`).join('')}</ol></td></tr>
+ <tr><th>Extensions</th><td><ol style="list-style:none;padding-left:0">${EXT.map(e=>`<li id="x${e[0]}"><b>${e[0]}.</b> ${e[1]}</li>`).join('')}</ol></td></tr>
+ <tr><th>Success guarantee</th><td>Loans are recorded and a receipt is printed.</td></tr><tr><th>Minimal guarantee</th><td>No loan is recorded unless the member was identified.</td></tr><tr><th>Special requirements</th><td>A loan of up to 5 books completes in under 60 s (NFR).</td></tr>`;
+ const G={m1:['Step 1: the member scans the card and the books.',[['Next ▶','m2']]],
+  m2:['Step 2: the system identifies the member. Is the card recognised?',[['Yes','m3'],['No','x2a']]],
+  x2a:['Extension 2a: the system asks for the member number.',[['Number accepted','m3','alt'],['Fails 3 times','F1','bad']]],
+  m3:['Step 3, extension point "fines check": does the member have unpaid fines?',[['No fines','m4'],['Has fines','x3a']]],
+  x3a:['Extension 3a: «extend» Pay fine runs. Does the member pay?',[['Pays','m4','alt'],['Refuses','F2','bad']]],
+  m4:['Step 4: the system checks the limit. Is the member within 5 books?',[['Within limit','m5'],['Limit reached','x4a']]],
+  x4a:['Extension 4a: the member chooses which books to keep.',[['Continue','m5','alt']]],
+  m5:['Step 5: the system records the loans. Is any book reserved for someone else?',[['No','m6'],['Yes, one is','x5a']]],
+  x5a:['Extension 5a: that book is refused; the others are recorded.',[['Continue','m6','alt']]],
+  m6:['Step 6: the system prints the receipt.',[['Finish ✓','OK']]]};
+ let path=[];
+ function go(k){$$('#spec li').forEach(l=>{if(l.classList.contains('on')){l.classList.remove('on');l.classList.add('done')}});
+  if(k==='OK'||k[0]==='F'){const alt=path.some(p=>p[0]==='x');$('#wk-say').innerHTML=k==='OK'?`<b class="good">✓ Success.</b> The success guarantee holds. You followed ${alt?'an <b>alternative scenario</b>: extensions happened, but the goal was still reached.':'the <b>main success scenario</b> (the "happy path").'}`:`<b class="bad">✗ The use case ends in failure.</b> The minimal guarantee still holds: no loan was recorded. ${k==='F1'?'(2a: member not identified)':'(3a: fine not paid)'}`;
+   $('#wk-btns').innerHTML='<button type="button" class="btn pri" id="wk-again">↺ Essayer un autre chemin</button>';$('#wk-again').onclick=start;$('#wk-trail').insertAdjacentHTML('beforeend',`<span class="${k==='OK'?'':'bad'}">${k==='OK'?'✓ goal':'✗ end'}</span>`);return}
+  path.push(k);const li=$('#'+k);if(li){li.classList.remove('done');li.classList.add('on')}const n=G[k];$('#wk-say').innerHTML=n[0];
+  $('#wk-btns').innerHTML=n[1].map((b,i)=>`<button type="button" class="btn ${i===0?'pri':''}" data-i="${i}">${b[0]}</button>`).join('');
+  $$('#wk-btns .btn').forEach(b=>b.onclick=()=>{const o=n[1][+b.dataset.i];go(o[1])});
+  $('#wk-trail').insertAdjacentHTML('beforeend',`<span class="${k[0]==='x'?'alt':''}">${k[0]==='x'?k.slice(1):'step '+k.slice(1)}</span>`)}
+ function start(){path=[];$$('#spec li').forEach(l=>l.classList.remove('on','done'));$('#wk-trail').innerHTML='';go('m1')}
+ $('#wk-rst').onclick=start;start()})();
+
+/* spot the mistakes */
+(()=>{const D={vb:[860,500],alt:'Online shop use case diagram with mistakes',sys:{x:170,y:14,w:520,h:472,t:'Online Shop'},
+  a:{cus:{x:240,y:200,n:'Customer',h:'e1',hl:'Customer'},adm:{x:70,y:420,n:'Admin',h:'ok1',hl:'Admin'},pg:{x:785,y:180,n:'Payment Gateway',k:'sys',h:'ok2',hl:'Payment Gateway'},cou:{x:785,y:400,n:'Courier',h:'ok5',hl:'Courier'}},
+  u:{browse:{x:420,y:76,n:'Browse products'},cart:{x:420,y:152,n:'Add to cart'},chk:{x:420,y:242,n:'Checkout'},buy:{x:598,y:76,n:'Click "Buy" button',rx:84,h:'e3',hl:'Click Buy button'},db:{x:605,y:152,n:'Database',rx:60,h:'e5',hl:'Database'},addr:{x:605,y:265,n:'Enter address',rx:70},track:{x:420,y:345,n:'Track order',h:'ok3',hl:'Track order'},prod:{x:420,y:440,n:'Manage products',rx:80}},
+  l:[{f:'cus',t:'browse',k:'as'},{f:'cus',t:'cart',k:'as'},{f:'cus',t:'chk',k:'as'},{f:'cus',t:'track',k:'as'},{f:'adm',t:'prod',k:'as',h:'ok4',hl:'Admin to Manage products'},{f:'chk',t:'pg',k:'as'},{f:'cou',t:'track',k:'as'},
+     {f:'browse',t:'cart',k:'flow',h:'e6',hl:'arrow Browse to Add to cart'},{f:'cart',t:'chk',k:'flow',h:'e6',hl:'arrow Add to cart to Checkout'},{f:'addr',t:'chk',k:'inc',h:'e4',hl:'include arrow',lx:-26,ly:38},{f:'pg',t:'cou',k:'as',h:'e2',hl:'line between Payment Gateway and Courier'}]};
+ const E={e1:'<b>Actor inside the boundary.</b> Customer is outside the system: actors are always drawn outside the subject.',e2:'<b>Actor–actor association.</b> Payment Gateway and Courier are linked to each other. Use case diagrams only connect actors to use cases (or actors to actors by generalization).',
+  e3:'<b>"Click Buy button" is a UI step, not a goal.</b> Use cases name what the actor wants to achieve ("Buy products"), not screen actions.',e4:'<b>«include» points the wrong way.</b> It must go from the base (Checkout) to the included use case (Enter address).',
+  e5:'<b>"Database" is not a use case.</b> It is part of the design, not a goal. Use cases are named verb + noun.',e6:'<b>Flowchart arrows between use cases.</b> Use case diagrams show no order. Use an activity diagram for Browse → Add to cart → Checkout.'};
+ const OK={ok1:'Admin outside the boundary: correct.',ok2:'An external system as an actor, drawn as an «actor» box: correct.',ok3:'"Track order" is a real customer goal: correct.',ok4:'Admin associated with Manage products: correct.',ok5:'Courier as a supporting actor of Track order: fine.'};
+ let found;
+ function draw(){found=new Set();$('#sp-svg').innerHTML=ucSvg(D);$('#sp-list').innerHTML='';upd();
+  $$('#sp-svg .hot').forEach(g=>{const act=()=>hit(g.dataset.k);g.onclick=act;g.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();act()}}})}
+ function upd(){$('#sp-score').textContent=`${found.size} / 6 mistakes found`+(found.size===6?' · 🎉 all found!':'')}
+ function hit(k){$$(`#sp-svg .hot[data-k="${k}"]`).forEach(g=>g.classList.add('found'));
+  if(E[k]){if(found.has(k))return;found.add(k);$('#sp-list').insertAdjacentHTML('beforeend',`<li>❗ ${E[k]}</li>`);upd()}
+  else $('#sp-list').insertAdjacentHTML('beforeend',`<li class="good">✓ ${OK[k]}</li>`)}
+ $('#sp-rst').onclick=draw;$('#sp-show').onclick=()=>Object.keys(E).forEach(hit);draw()})();
+
+/* traceability */
+(()=>{const RQ=[['FR-1','Search the catalogue by title, author or ISBN',['search']],['FR-2','Reserve a book that is on loan',['reserve']],['FR-3','Record a loan and its due date',['borrow']],['FR-4','Refuse a loan beyond 5 books',['borrow']],['FR-5','Calculate fines for late returns',['ret']],['FR-6','Accept fine payment by card',['fine']],['FR-7','Email a reminder the day after the due date',['remind']],['FR-8','Identify members by card or member number',['ident']],
+  ['NFR-1','95% of searches within 2 s',['search'],'Written in the "special requirements" of Search catalogue.'],['NFR-2','Card numbers are never stored by the library',['fine'],'Attached to Pay fine; it also shapes the Payment Service interface.'],['NFR-3','99.5% availability per month',[],'System-wide: it goes in the supplementary specification, not in one use case.']];
+ const UC=[['search','Search catalogue'],['reserve','Reserve book'],['borrow','Borrow book'],['ret','Return book'],['ident','Identify member'],['fine','Pay fine'],['remind','Send overdue reminder'],['manage','Manage catalogue']];
+ $('#tr-req').innerHTML=RQ.map((r,i)=>`<button type="button" data-r="${i}"><b>${r[0]}</b>${r[1]}</button>`).join('');$('#tr-uc').innerHTML=UC.map(u=>`<button type="button" data-u="${u[0]}"><b>UC</b>${u[1]}</button>`).join('');
+ const clear=()=>$$('.tr-list button').forEach(b=>b.classList.remove('on','lit'));
+ $$('#tr-req button').forEach(b=>b.onclick=()=>{clear();b.classList.add('on');const r=RQ[+b.dataset.r];r[2].forEach(u=>$(`#tr-uc [data-u="${u}"]`).classList.add('lit'));
+   $('#tr-say').innerHTML=`<b>${r[0]}</b> → ${r[2].length?r[2].map(u=>UC.find(x=>x[0]===u)[1]).join(', '):'<i>no single use case</i>'}. ${r[3]||'A functional requirement becomes a step or an extension of this use case.'}`});
+ $$('#tr-uc button').forEach(b=>b.onclick=()=>{clear();b.classList.add('on');const u=b.dataset.u;const rs=RQ.filter(r=>r[2].includes(u));rs.forEach(r=>$(`#tr-req [data-r="${RQ.indexOf(r)}"]`).classList.add('lit'));
+   $('#tr-say').innerHTML=rs.length?`<b>${UC.find(x=>x[0]===u)[1]}</b> is justified by ${rs.map(r=>r[0]).join(', ')}.`:`<b class="bad">${UC.find(x=>x[0]===u)[1]} has no requirement!</b> Traceability found a gap: either a requirement is missing (ask the stakeholders), or this use case isn't needed.`})})();
+
+/* cheat sheet diagram */
+$('#cheat-svg').innerHTML=ucSvg({vb:[680,290],alt:'Use case notation summary',sys:{x:150,y:12,w:380,h:266,t:'Subject (system)'},a:{a:{x:60,y:85,n:'Actor'},c:{x:60,y:225,n:'Child actor'},s:{x:600,y:150,n:'External system',k:'sys'}},
+ u:{b:{x:270,y:150,n:'Base use case',ep:{t:'point X'},rx:84},i:{x:430,y:68,n:'Included',rx:62},e:{x:430,y:232,n:'Extension',rx:62}},
+ l:[{f:'a',t:'b',k:'as'},{f:'c',t:'a',k:'gen'},{f:'b',t:'i',k:'inc',lx:-14,ly:-2},{f:'e',t:'b',k:'ext',lx:-12,ly:16},{f:'e',t:'s',k:'as'}]});
+
+/* ================= practice components ================= */
+function taskList(box,items,onDone){const seen=new Set();box.innerHTML=items.map((m,i)=>`<div class="task"><h4>${m.t} <span class="stars-b">${m.stars}</span></h4><div class="scen">${m.s}</div><ul>${m.c.map(c=>`<li>${c}</li>`).join('')}</ul><textarea spellcheck="true" placeholder="Écrivez votre réponse ici…" aria-label="Your answer for ${esc(m.t)}"></textarea><div class="row"><button type="button" class="btn hb">💡 Indice</button><button type="button" class="btn pri sb">Voir la réponse type</button></div><div class="hint" hidden>${m.h}</div><div class="sol-box" hidden></div></div>`).join('');
+ box.querySelectorAll('.task').forEach((el,i)=>{el.querySelector('.hb').onclick=()=>{const h=el.querySelector('.hint');h.hidden=!h.hidden};
+  el.querySelector('.sb').onclick=e=>{const s=el.querySelector('.sol-box');if(!s.innerHTML)s.innerHTML=typeof items[i].sol==='function'?items[i].sol():items[i].sol;s.hidden=!s.hidden;e.target.textContent=s.hidden?'Voir la réponse type':'Masquer la réponse type';seen.add(i);if(seen.size===items.length)onDone()}})}
+function ladder(sec,LEVELS){const lad=sec.querySelector('.ladder'),body=sec.querySelector('.lvbody');
+ lad.innerHTML=LEVELS.map((l,i)=>`<button type="button" class="lv" role="tab" data-i="${i}"><small>${'★'.repeat(l.st)}</small><b>Niveau ${i+1}</b>${l.t}</button>`).join('');
+ const bs=[...lad.querySelectorAll('.lv')];bs.forEach(b=>b.onclick=()=>show(+b.dataset.i));const fin=i=>bs[i].classList.add('done');
+ function show(i){const L=LEVELS[i];bs.forEach((b,j)=>{b.classList.toggle('on',j===i);b.setAttribute('aria-selected',j===i)});{const bt=bs[i];lad.scrollTo({left:bt.offsetLeft-lad.clientWidth/2+bt.offsetWidth/2,behavior:'smooth'})}
+  body.innerHTML=`<div class="lvhead"><h3>Niveau ${i+1} · ${L.t}</h3><span class="stars-b">${'★'.repeat(L.st)}</span></div><div style="margin:4px 0 10px;color:var(--muted)">${typeof L.intro==='function'?L.intro():L.intro}</div><div class="lvc"></div><div class="lvnav"><button type="button" class="btn lvp" ${i===0?'disabled':''}>◀ Niveau précédent</button><button type="button" class="btn pri lvn" ${i===LEVELS.length-1?'disabled':''}>Niveau suivant ▶</button></div>`;
+  body.querySelector('.lvp').onclick=()=>show(i-1);body.querySelector('.lvn').onclick=()=>show(i+1);const box=body.querySelector('.lvc');
+  if(L.type==='mcq'){box.innerHTML='<div class="score"></div><div class="qs"></div>';mcq(box,L.items.map(it=>Array.isArray(it)?{q:it[0],o:it[1],a:it[2],w:it[3]}:it),()=>fin(i))}
+  else if(L.type==='match')matchGame(box,L.pairs,()=>fin(i));else if(L.type==='order')orderGame(box,L.items,()=>fin(i));else taskList(box,L.items,()=>fin(i))}
+ show(0)}
+const YN=a=>a.map(y=>({q:y[0],o:['Oui','Non'],a:y[1]?0:1,w:y[2]}));
+
+/* ================= REQUIREMENTS: practice ================= */
+mcq($('#r-yn'),YN([
+ ['Is "The system shall let members reserve books" a functional requirement?',1,'Yes. It describes something the system does for a user.'],
+ ['Is "The system shall be easy to use" a well-written requirement?',0,'No. "Easy" can\'t be tested. Measure it: who, which task, how long, what success rate.'],
+ ['Is "95% of searches shall return within 2 s" a non-functional requirement?',1,'Yes: performance efficiency (time behaviour).'],
+ ['In a requirement, is "shall" stronger than "should"?',1,'Yes. "Shall" is binding; "should" reads as a wish.'],
+ ['Are NFRs less important than FRs?',0,'No. A system that is too slow, insecure or unavailable can fail completely, even if every function works.'],
+ ['Can "personal data shall stay in the EU" be a requirement?',1,'Yes: a legal constraint, usually listed with the NFRs.'],
+ ['Should one sentence contain several requirements?',0,'No. Each requirement should be singular, so it can be tested and traced on its own.'],
+ ['Is "usability" still a characteristic name in ISO/IEC 25010:2023?',0,'No. It was renamed <b>interaction capability</b>.'],
+ ['Is safety a characteristic in ISO/IEC 25010:2023?',1,'Yes. Safety was added as the ninth characteristic.'],
+ ['Is an average response time enough to specify performance?',0,'No. An average can hide many slow requests. Use percentiles (p95, p99) and state the load.'],
+ ['Does validation answer "are we building the right thing?"',1,'Yes. Verification asks "are we building it right?"'],
+ ['In MoSCoW, does W mean the feature will surely come in the next release?',0,'No. It means "won\'t have this time". It is not a promise.'],
+ ['Can a security NFR lead to new functional requirements?',1,'Yes. "Protect accounts" leads to FRs such as "lock an account after 5 failed logins" and "log every login attempt".'],
+ ['Does a user story contain every detail of the requirement?',0,'No. It is a placeholder for a conversation; details go into acceptance criteria.']]));
+
+mcq($('#r-quiz'),[
+ {q:'Which one is a <b>functional</b> requirement?',o:['The system shall send a reminder email when a loan is overdue.','The system shall respond within 2 seconds.','The system shall run on Linux.'],a:0,w:'It is a behaviour. The others are performance and a platform constraint.'},
+ {q:'Which one is a <b>non-functional</b> requirement?',o:['The system shall let members renew a loan.','The system shall encrypt all traffic with TLS 1.3 or later.','The system shall print a receipt.'],a:1,w:'A security constraint (confidentiality).'},
+ {q:'Which word makes this requirement ambiguous? "The kiosk shall quickly show the due date."',o:['kiosk','shall','quickly'],a:2,w:'How quickly? Give a time.'},
+ {q:'"An account shall be locked after 5 failed logins." Which ISO 25010 characteristic?',o:['Reliability','Security','Maintainability'],a:1,w:'Security (resistance, authenticity).'},
+ {q:'"The system shall run alongside the city\'s staff portal on the same server without slowing it down." Which characteristic?',o:['Compatibility (co-existence)','Functional suitability','Safety'],a:0,w:'Co-existence is a sub-characteristic of compatibility.'},
+ {q:'"If the card reader fails, then the kiosk shall display the librarian\'s desk number." Which EARS pattern?',o:['Event-driven','Unwanted behaviour','Optional feature'],a:1,w:'"If … then" signals unwanted behaviour.'},
+ {q:'Which version of "fast search" is testable?',o:['Searches shall be very fast.','Searches shall be faster than the old system.','95% of searches shall return within 2 s with 2,000 concurrent users.'],a:2,w:'A metric, a target, and the conditions.'},
+ {q:'In a quality attribute scenario, which part holds the number to test?',o:['Stimulus','Artifact','Response measure'],a:2,w:'The response measure makes the scenario testable.'},
+ {q:'Which elicitation technique best uncovers things users do without thinking about them?',o:['Questionnaires','Observation','Reading the contract'],a:1,w:'Tacit knowledge shows up when you watch people work.'},
+ {q:'Which activity answers "are we building the right thing?"',o:['Verification','Validation','Compilation'],a:1,w:'Validation checks the requirements against real needs.'},
+ {q:'According to DSDM, how much of the effort should Must-haves take at most?',o:['About 60%','100%','About 10%'],a:0,w:'The rest gives contingency for surprises.'},
+ {q:'In INVEST, what does the T stand for?',o:['Traceable','Testable','Technical'],a:1,w:'Independent, Negotiable, Valuable, Estimable, Small, Testable.'}]);
+
+ladder($('#r-ex'),[
+ {t:'Match the terms',st:1,type:'match',intro:'Click a term, then its meaning.',pairs:[['FR','what the system shall do'],['NFR','how well it shall do it, or a limit on it'],['Constraint','a limit on the solution: law, technology, budget'],['Stakeholder','anyone affected by or affecting the system'],['Elicitation','discovering requirements with stakeholders'],['Validation','checking we build the right thing'],['Traceability','links from a requirement to design and tests']]},
+ {t:'FR or NFR?',st:1,type:'mcq',intro:'A food delivery app. Classify each requirement.',items:[
+   ['The app shall let a customer track the courier on a map.',['FR','NFR'],0,'A function.'],['The map position shall update at least every 10 seconds.',['FR','NFR'],1,'Performance (time behaviour).'],['A customer shall be able to rate a restaurant from 1 to 5 stars.',['FR','NFR'],0,'A function.'],
+   ['The app shall work on Android 12 and later and on iOS 17 and later.',['FR','NFR'],1,'Compatibility / flexibility constraint.'],['Payment data shall be handled according to PCI DSS.',['FR','NFR'],1,'Security and legal constraint.'],['The app shall offer a refund when an order arrives more than 30 minutes late.',['FR','NFR'],0,'A business rule the system applies.'],
+   ['The service shall handle 10,000 orders per hour at peak.',['FR','NFR'],1,'Capacity.'],['The app shall send a push notification when the courier is 2 minutes away.',['FR','NFR'],0,'A behaviour triggered by an event (the "2 minutes" is part of the function).']]},
+ {t:'Which quality?',st:2,type:'mcq',intro:'Pick the ISO/IEC 25010:2023 characteristic.',items:[
+   ['After a crash, the app shall restore the open basket within 5 s.',['Reliability','Security','Compatibility'],0,'Recoverability is part of reliability.'],['Screen readers shall announce every button.',['Interaction capability','Performance efficiency','Maintainability'],0,'Inclusivity.'],['The app shall use at most 150 MB of memory on the phone.',['Flexibility','Performance efficiency','Safety'],1,'Resource utilization.'],
+   ['A new payment provider shall be added by changing one module only.',['Maintainability','Reliability','Security'],0,'Modularity / modifiability.'],['The backend shall move to another cloud provider in under a week.',['Flexibility','Compatibility','Functional suitability'],0,'Adaptability / replaceability (was portability).'],['Every order change shall be recorded so the customer can\'t deny it later.',['Security','Interaction capability','Safety'],0,'Non-repudiation is a security sub-characteristic.']]},
+ {t:'What\'s wrong?',st:2,type:'mcq',intro:'Each requirement has one main problem.',items:[
+   ['"The system should send a confirmation email."',['Weak modal ("should")','Design detail','Not singular'],0,'Use "shall" for an obligation.'],['"The app shall display orders in a React table component."',['Ambiguous word','Design detail (how, not what)','Weak modal'],1,'Unless the customer imposes React, say what must be shown, not how.'],
+   ['"The app shall let users register and shall send weekly newsletters."',['Not singular','Not verifiable','Design detail'],0,'Two requirements in one sentence.'],['"The app shall be highly reliable."',['Not verifiable','Not singular','Weak modal'],0,'Give an availability target and a period.'],['"The menu shall show prices, ingredients, allergens, etc."',['Incomplete ("etc.")','Design detail','Weak modal'],0,'"etc." hides missing items.']]},
+ {t:'Best rewrite',st:3,type:'mcq',intro:'Pick the best rewrite of each vague requirement.',items:[
+   ['"Checkout shall be fast."',['Checkout shall be very fast.','For 95% of orders, checkout shall complete within 3 s of pressing "Pay", with 1,000 concurrent users.','Checkout shall use caching.'],1,'Metric, target, condition.'],
+   ['"The app shall be easy for new users."',['90% of first-time users shall place an order within 4 minutes without help.','The app shall be intuitive.','The app shall have a tutorial.'],0,'Measurable learnability. (A tutorial is a solution, not a requirement.)'],
+   ['"The system shall be secure."',['The system shall use the best security.','After 5 failed logins, the account shall be locked for 15 minutes, and the user shall be notified by email.','Hackers shall not get in.'],1,'A specific threat and a testable response.'],
+   ['"The app should notify users and/or couriers."',['When an order is ready, the app shall notify the assigned courier.','The app may notify people.','Notifications shall be nice.'],0,'One trigger, one receiver, "shall".']]},
+ {t:'Put it in order',st:3,type:'order',intro:'Cliquez sur les étapes dans le bon ordre.',items:[
+   ['Requirements engineering activities (first pass)',['Elicit needs from stakeholders','Analyse and resolve conflicts','Specify the requirements','Validate them with stakeholders','Manage changes under version control']],
+   ['From a vague wish to a testable NFR',['Identify the quality concerned','Choose a metric','Set a target value','State the conditions (load, environment)','Define how it will be tested']]]},
+ {t:'Write it yourself',st:4,type:'tasks',intro:'Write your answer, then compare with the model answer. Other answers can be just as good.',items:[
+   {stars:'★★★★',t:'Requirements for a cinema booking app',s:'A cinema wants an app where customers choose a film, a session and seats, and pay online. Write <b>4 functional</b> and <b>4 non-functional</b> requirements.',c:['use "shall"','one requirement per sentence','every NFR has a number'],h:'Think: choose film, choose seats, pay, receive ticket. NFRs: speed, availability, security of payment, accessibility.',
+    sol:'<h5>Functional</h5><ul><li>FR-1 The app shall list the sessions of the next 7 days for a chosen film.</li><li>FR-2 The app shall show the seat map with free and taken seats for a session.</li><li>FR-3 The app shall hold the selected seats for 10 minutes while the customer pays.</li><li>FR-4 After payment, the app shall send an e-ticket with a QR code by email.</li></ul><h5>Non-functional</h5><ul><li>NFR-1 95% of seat-map loads shall complete within 1.5 s with 3,000 concurrent users.</li><li>NFR-2 The booking service shall be available 99.9% of the time between 10:00 and 23:00.</li><li>NFR-3 Card data shall be handled only by a PCI DSS–certified payment provider; the app shall not store card numbers.</li><li>NFR-4 The booking pages shall meet WCAG 2.2 level AA.</li></ul>'},
+   {stars:'★★★★',t:'Rewrite in EARS',s:'Rewrite each with an EARS pattern and a measure: (a) "The system should warn users quickly when their session is about to expire." (b) "The app handles lost connections." (c) "During maintenance, users can only browse."',c:['name the pattern you use','add a number where it helps'],h:'(a) event-driven, (b) unwanted behaviour, (c) state-driven.',
+    sol:'<ul><li>(a) <b>Event-driven:</b> When a session has 2 minutes left, the system shall display a warning with a "Stay signed in" button.</li><li>(b) <b>Unwanted behaviour:</b> If the network connection is lost, then the app shall keep the basket and retry the request every 10 s for up to 2 minutes.</li><li>(c) <b>State-driven:</b> While the system is in maintenance mode, the system shall allow browsing and reject new bookings with a message.</li></ul>'},
+   {stars:'★★★★★',t:'Quality attribute scenario',s:'Write a full six-part scenario for the <b>availability</b> of the cinema\'s booking service on a Saturday evening, then turn it into one requirement sentence.',c:['source, stimulus, environment, artifact, response, response measure'],h:'What can fail? A database node? What should happen, and how fast?',
+    sol:'<ul><li><b>Source:</b> internal hardware</li><li><b>Stimulus:</b> the primary database node fails</li><li><b>Environment:</b> peak load, Saturday 18:00–22:00</li><li><b>Artifact:</b> booking service</li><li><b>Response:</b> switches to the replica; held seats are kept</li><li><b>Response measure:</b> bookings possible again within 60 s; no confirmed booking lost</li></ul><p><b>Requirement:</b> If the primary database node fails during peak load, then the booking service shall resume bookings within 60 s without losing any confirmed booking.</p>'}]}]);
+
+/* ================= USE CASES: practice ================= */
+mcq($('#u-yn'),YN([
+ ['Is an actor always a person?',0,'No. An actor is a role: a person, an external system, a device, or even time.'],
+ ['Is the subject (system boundary) drawn as a rectangle?',1,'Yes, with the system\'s name at the top.'],
+ ['Are actors drawn inside the system boundary?',0,'No. Actors are outside: they are not part of the system.'],
+ ['Does a use case diagram show the order of steps?',0,'No. Use an activity or sequence diagram, or the use case description.'],
+ ['Is "Borrow book" a good use case name?',1,'Yes: verb + noun, the actor\'s goal.'],
+ ['Does an «include» run every time the base use case runs?',1,'Yes. The base needs it.'],
+ ['Does the «extend» arrow point from the base to the extension?',0,'No. It points from the extension to the base.'],
+ ['Is the base use case complete without its extension?',1,'Yes. The extension adds optional behaviour; the base doesn\'t depend on it.'],
+ ['Can two actors be linked by an association in a use case diagram?',0,'No. Associations link actors to use cases. Actors can only be related by generalization.'],
+ ['Does a child actor inherit the use cases of its parent?',1,'Yes. A Student can do everything a Member can.'],
+ ['Is "Identify member" a user-goal level use case in Cockburn\'s terms?',0,'No. It is a subfunction: part of other goals.'],
+ ['Do non-functional requirements usually become use cases?',0,'No. They go into notes, special requirements or a supplementary specification.'],
+ ['Can a use case description contain alternative flows?',1,'Yes: the extensions (2a, 3a…).'],
+ ['Must every «extend» have a condition written on it?',0,'No. The condition is optional; without one, the extension is unconditional.']]));
+
+mcq($('#u-quiz'),[
+ {q:'Which symbol represents a use case?',o:['Rectangle','Ellipse','Stick figure'],a:1,w:'Ellipse with the name inside (or below).'},
+ {q:'For an ATM, which is <b>not</b> an actor?',o:['Customer','Bank\'s central system','The ATM\'s own card reader'],a:2,w:'The card reader is part of the ATM system itself.'},
+ {q:'Which way does an «include» arrow point?',o:['From the included use case to the base','From the base to the included use case','Both ways'],a:1,w:'The base includes (and depends on) the included one.'},
+ {q:'"Pay fine" happens only when the member has unpaid fines. Which relationship?',o:['«include»','«extend»','Association'],a:1,w:'Optional, conditional behaviour.'},
+ {q:'"Identify member" is needed by both Borrow and Return. Which relationship?',o:['«include»','«extend»','Generalization'],a:0,w:'Shared mandatory behaviour.'},
+ {q:'Student and Teacher are both Members. How do you draw this?',o:['Association between actors','Actor generalization, triangle at Member','«include» between actors'],a:1,w:'Actor generalization.'},
+ {q:'What does a solid line with a hollow triangle arrowhead mean?',o:['Generalization','«extend»','Dependency'],a:0,w:'Points to the parent.'},
+ {q:'Where are extension points listed?',o:['On the actor','In a compartment of the base use case','On the system boundary'],a:1,w:'Under the base use case\'s name, after a line.'},
+ {q:'In Cockburn\'s goal levels, a goal completed in one sitting by one actor is…',o:['Summary','User goal','Subfunction'],a:1,w:'"Sea level": most use cases.'},
+ {q:'What does the minimal guarantee in a description promise?',o:['What is true even if the goal fails','The fastest response time','The number of steps'],a:0,w:'e.g. "No loan is recorded unless the member was identified."'},
+ {q:'Which diagram should show the order Browse → Add to cart → Checkout?',o:['Use case diagram','Activity diagram','Class diagram'],a:1,w:'Use case diagrams have no order.'},
+ {q:'A nightly job sends overdue reminders. Who is the primary actor?',o:['The Librarian','Time (a Clock or Timer actor)','The database'],a:1,w:'Time triggers the use case.'}]);
+
+ladder($('#u-ex'),[
+ {t:'Match the symbols',st:1,type:'match',intro:'Click a notation, then its meaning.',pairs:[['stick figure','actor'],['ellipse','use case'],['rectangle around ellipses','subject (system boundary)'],['solid line','association'],['dashed arrow «include»','always runs the included behaviour'],['dashed arrow «extend»','optional behaviour at an extension point'],['hollow triangle','generalization']]},
+ {t:'Acteur ou non ?',st:1,type:'mcq',intro:'A <b>cinema booking</b> system. Is each candidate an actor?',items:[
+   ['Customer',['Actor','Not an actor'],0,'A role that books tickets.'],['Payment provider',['Actor','Not an actor'],0,'An external system.'],['The seat table in the database',['Actor','Not an actor'],1,'Part of the system.'],['Cinema manager',['Actor','Not an actor'],0,'A role: schedules films and sessions.'],['The "Pay now" button',['Actor','Not an actor'],1,'A UI element inside the system.'],['A timer that releases unpaid held seats after 10 minutes',['Actor','Not an actor'],0,'Time as an actor.']]},
+ {t:'Which relationship?',st:2,type:'mcq',intro:'Choose the right relationship for each situation.',items:[
+   ['Every booking must check that the seats are still free.',['«include»','«extend»','Generalization'],0,'Mandatory, shared step.'],['A customer may add popcorn to the booking.',['«include»','«extend»','Generalization'],1,'Optional addition.'],['"Pay by card" and "Pay with voucher" are two ways to "Pay".',['«include»','«extend»','Generalization'],2,'Specialised use cases.'],
+   ['A VIP customer can do everything a customer can, plus book lounge seats.',['Actor generalization','«include»','Association between actors'],0,'VIP is a kind of Customer.'],['Both "Book ticket" and "Cancel booking" need the customer to log in.',['«include»','«extend»','Generalization'],0,'Shared mandatory behaviour (some modellers prefer a precondition instead).'],['If the session is full, the customer can join a waiting list.',['«include»','«extend»','Generalization'],1,'Conditional behaviour.']]},
+ {t:'Arrow directions',st:2,type:'mcq',intro:'Which way does each arrow point?',items:[
+   ['«include» between "Book ticket" and "Check seats"',['Book ticket → Check seats','Check seats → Book ticket'],0,'Base → included.'],['«extend» between "Add popcorn" and "Book ticket"',['Book ticket → Add popcorn','Add popcorn → Book ticket'],1,'Extension → base.'],['Generalization between "VIP" and "Customer"',['VIP → Customer (triangle at Customer)','Customer → VIP (triangle at VIP)'],0,'Child → parent, triangle at the parent.'],['Association between "Customer" and "Book ticket"',['A plain solid line','A dashed arrow'],0,'No arrowhead needed.']]},
+ {t:'Read the diagram',st:3,type:'mcq',intro:()=>`Answer using the library diagram.<div class="ucd" style="margin-top:8px">${ucSvg(LIB)}</div>`,items:[
+   ['How many use cases are in the subject?',['6','8','10'],1,'Search, Reserve, Borrow, Return, Manage, Pay fine, Identify member, Send overdue reminder.'],['Can a Student borrow a book?',['Yes, by inheritance from Member','No, Student has no association'],0,'Actor generalization.'],['Does "Pay fine" run every time a book is borrowed?',['Yes','No, only if the condition holds'],1,'It is an «extend».'],
+   ['Who starts "Send overdue reminder"?',['Librarian','Clock (time)','Member'],1,'A time actor.'],['What role does Payment Service play?',['Primary actor','Supporting (secondary) actor','A use case'],1,'The system calls on it.']]},
+ {t:'Put it in order',st:3,type:'order',intro:'Cliquez sur les étapes dans le bon ordre.',items:[
+   ['Building a use case model',['Define the system boundary','Identify the actors','Find each actor\'s goals (use cases)','Draw the associations','Factor out shared behaviour with «include»','Add optional behaviour with «extend»','Write a description for each use case','Review with the stakeholders']],
+   ['Main success scenario of "Withdraw cash" (ATM)',['Customer inserts the card','System asks for the PIN','Customer enters the PIN','System validates the PIN and shows the options','Customer chooses an amount','System returns the card','System dispenses the cash']]]},
+ {t:'Design it yourself',st:4,type:'tasks',intro:'Draw on paper or in a UML tool, then compare. Other answers can be just as good.',items:[
+   {stars:'★★★★',t:'Cinema booking: use case diagram',s:'Draw the use case diagram for the cinema app. Customers browse films, book tickets (always checking seats), may add snacks, and can cancel. VIP customers can also book lounge seats. A payment provider handles payments. The manager schedules sessions. Unpaid held seats are released after 10 minutes.',c:['one subject','at least one «include», one «extend» and one generalization','a time actor'],h:'Actors: Customer, VIP (child of Customer), Manager, Payment Provider, Timer.',
+    sol:()=>`<div class="ucd">${ucSvg({vb:[900,520],alt:'Cinema booking model answer',sys:{x:190,y:14,w:520,h:494,t:'Cinema Booking'},a:{cu:{x:85,y:170,n:'Customer'},vip:{x:85,y:400,n:'VIP'},mg:{x:810,y:80,n:'Manager'},pp:{x:800,y:250,n:'Payment Provider',k:'sys'},tm:{x:800,y:440,n:'Timer',k:'sys',kw:'«actor» (time)'}},
+     u:{br:{x:320,y:70,n:'Browse films'},bk:{x:320,y:190,n:'Book ticket',ep:{t:'extras'}},cn:{x:320,y:305,n:'Cancel booking'},lg:{x:320,y:430,n:'Book lounge seat'},sc:{x:570,y:80,n:'Schedule session'},ch:{x:570,y:185,n:'Check seats'},sn:{x:570,y:290,n:'Add snacks'},rl:{x:570,y:440,n:'Release held seats'}},
+     l:[{f:'cu',t:'br',k:'as'},{f:'cu',t:'bk',k:'as'},{f:'cu',t:'cn',k:'as'},{f:'vip',t:'cu',k:'gen'},{f:'vip',t:'lg',k:'as'},{f:'mg',t:'sc',k:'as'},{f:'bk',t:'ch',k:'inc'},{f:'sn',t:'bk',k:'ext'},{f:'bk',t:'pp',k:'as'},{f:'tm',t:'rl',k:'as'}]})}</div><p>The «extend» from Add snacks hooks into the extension point "extras" of Book ticket. VIP inherits all Customer use cases.</p>`},
+   {stars:'★★★★★',t:'Fully dressed description',s:'Write a fully dressed description of <b>Book ticket</b>: primary actor, preconditions, trigger, main success scenario (5–7 steps), at least 3 extensions, success and minimal guarantees.',c:['number the steps','extensions refer to step numbers (3a…)','one special requirement (NFR)'],h:'What can go wrong? Seats taken meanwhile, payment refused, hold expires.',
+    sol:'<table class="spec"><tr><th>Use case</th><td>UC-02 Book ticket · user goal</td></tr><tr><th>Primary actor</th><td>Customer · supporting: Payment Provider</td></tr><tr><th>Precondition</th><td>The customer is signed in.</td></tr><tr><th>Trigger</th><td>The customer chooses a session.</td></tr><tr><th>Main success scenario</th><td><ol><li>System shows the seat map.</li><li>Customer selects seats.</li><li>System checks the seats are free («include» Check seats) and holds them for 10 min.</li><li>System shows the total price.</li><li>Customer pays (Payment Provider).</li><li>System confirms the booking and emails the e-ticket.</li></ol></td></tr><tr><th>Extensions</th><td>3a. A seat was taken meanwhile: system shows the updated map; back to step 2.<br>4a. Extension point "extras": customer adds snacks («extend» Add snacks).<br>5a. Payment refused: system offers another try; after 3 failures, the hold is released and the use case ends.<br>*a. Hold expires before payment: seats are released (Timer).</td></tr><tr><th>Success guarantee</th><td>Seats are booked, paid, and the e-ticket is sent.</td></tr><tr><th>Minimal guarantee</th><td>The customer is never charged without a confirmed booking.</td></tr><tr><th>Special requirements</th><td>95% of seat-map loads within 1.5 s.</td></tr></table>'}]}]);
+
+/* ================= windows, nav, theme ================= */
+const WIN={req:$('#w-req'),uc:$('#w-uc')};let curWin='req';
+function openWin(w,scroll){if(w!==curWin){curWin=w;for(const k in WIN){WIN[k].hidden=k!==w;WIN[k].classList.toggle('enter',k===w)}
+  $('#toc-req').hidden=w!=='req';$('#toc-uc').hidden=w!=='uc';$$('.wsw button').forEach(b=>{const on=b.dataset.w===w;b.classList.toggle('on',on);b.setAttribute('aria-selected',on)});
+  document.querySelector('.top').className='top '+(w==='req'?'w-req':'w-uc');spy()}
+ if(scroll){const y=WIN[w].getBoundingClientRect().top+scrollY-64;scrollTo({top:y,behavior:REDUCE?'auto':'smooth'})}}
+$$('[data-open]').forEach(b=>b.addEventListener('click',()=>openWin(b.dataset.open,true)));
+$$('.wsw button').forEach(b=>b.onclick=()=>openWin(b.dataset.w,true));
+document.querySelector('.top').classList.add('w-req');
+(()=>{const h=location.hash&&document.getElementById(location.hash.slice(1));if(h&&WIN.uc.contains(h)){openWin('uc',false);h.scrollIntoView()}})();
+addEventListener('hashchange',()=>{const h=location.hash&&document.getElementById(location.hash.slice(1));if(h){for(const k in WIN)if(WIN[k].contains(h)&&k!==curWin){openWin(k,false);h.scrollIntoView()}}});
+function spy(){const nav=$('#toc-'+curWin),links=[...nav.querySelectorAll('a')],secs=links.map(a=>document.getElementById(a.getAttribute('href').slice(1)));let cur=-1;secs.forEach((s,i)=>{if(s&&s.getBoundingClientRect().top<160)cur=i});
+ links.forEach((a,i)=>{const act=i===cur;if(act&&!a.classList.contains('act'))nav.scrollTo({left:a.offsetLeft-nav.clientWidth/2+a.offsetWidth/2,behavior:'smooth'});a.classList.toggle('act',act)})}
+addEventListener('scroll',spy,{passive:true});spy();
+$('#theme').onclick=()=>{const r=document.documentElement,cur=r.dataset.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'),n=cur==='dark'?'light':'dark';r.dataset.theme=n;try{localStorage.setItem('rq-theme',n)}catch(e){}};
+</script>
+
+</body>
+</html>

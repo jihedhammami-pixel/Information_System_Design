@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Diagrammes d’activité UML</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Chapitre interactif sur les diagrammes d’activité UML : notation animée, simulateurs de jetons, méthode pour passer du texte au diagramme et six types d’exercices.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<script>try{var t=localStorage.getItem('ad-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<style>
+/* Layout: one reading column of chapter panels; each simulator splits into a diagram stage and a side panel; practice lives in tabs */
+:root{
+  --bg:#f6f3fb; --surface:#ffffff; --surface-2:#f2edfa; --ink:#1f1633; --muted:#5f5674; --line:#e2daf0;
+  --g1:#7c3aed; --g2:#db2777; --g3:#f97316;
+  --h1:#6d28d9; --h2:#be185d; --h3:#ea580c;
+  --act-a:#efe7ff; --act-b:#ffe5f0; --act-line:#8b5cf6;
+  --dia-bg:#fff2dc; --dia-line:#f59e0b;
+  --lane-a:#faf7ff; --lane-b:#fff6fa; --lane-hd:#ebe2fb;
+  --tok:#f97316; --tok-2:#db2777;
+  --ok:#15803d; --ok-bg:#dcfce7; --no:#dc2626; --no-bg:#fee2e2; --hl:#fde68a; --hl-ink:#3b2a06;
+  --k1:#bbf7d0; --k2:#ddd6fe; --k3:#fed7aa; --k4:#fbcfe8;
+  --f-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --f-body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#110d1c; --surface:#1b1529; --surface-2:#241c37; --ink:#efe9fb; --muted:#a99fc1; --line:#362c4d;
+  --g1:#a78bfa; --g2:#f472b6; --g3:#fb923c;
+  --h1:#5b21b6; --h2:#9d174d; --h3:#c2410c;
+  --act-a:#2b2150; --act-b:#3b1f3f; --act-line:#a78bfa;
+  --dia-bg:#3a2a12; --dia-line:#fbbf24;
+  --lane-a:#1d1730; --lane-b:#221a2e; --lane-hd:#2c2346;
+  --tok:#fb923c; --tok-2:#f472b6;
+  --ok:#4ade80; --ok-bg:#14361f; --no:#f87171; --no-bg:#3d1717; --hl:#fde68a; --hl-ink:#3b2a06;
+  --k1:#14532d; --k2:#3b2f78; --k3:#7c2d12; --k4:#701a43;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#110d1c; --surface:#1b1529; --surface-2:#241c37; --ink:#efe9fb; --muted:#a99fc1; --line:#362c4d;
+  --g1:#a78bfa; --g2:#f472b6; --g3:#fb923c;
+  --h1:#5b21b6; --h2:#9d174d; --h3:#c2410c;
+  --act-a:#2b2150; --act-b:#3b1f3f; --act-line:#a78bfa;
+  --dia-bg:#3a2a12; --dia-line:#fbbf24;
+  --lane-a:#1d1730; --lane-b:#221a2e; --lane-hd:#2c2346;
+  --tok:#fb923c; --tok-2:#f472b6;
+  --ok:#4ade80; --ok-bg:#14361f; --no:#f87171; --no-bg:#3d1717; --hl:#fde68a; --hl-ink:#3b2a06;
+  --k1:#14532d; --k2:#3b2f78; --k3:#7c2d12; --k4:#701a43;
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:calc(70px + env(safe-area-inset-top,0px))}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 var(--f-body)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:40;background:var(--surface)}
+a{color:var(--g1)}
+code{font:500 .86em var(--f-mono);background:var(--surface-2);padding:1px 6px;border-radius:6px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.12;margin:0}
+.wrap{max-width:1060px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* top bar */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:12px;padding-block:9px}
+.brand{display:flex;align-items:center;gap:9px;font:800 15px var(--f-display);color:var(--ink);text-decoration:none;white-space:nowrap}
+.brand i{width:26px;height:26px;border-radius:50%;background:conic-gradient(from 200deg,var(--g1),var(--g2),var(--g3),var(--g1));position:relative}
+.brand i::after{content:"";position:absolute;inset:7px;border-radius:50%;background:var(--surface)}
+.toc{display:flex;gap:2px;overflow-x:auto;flex:1;scrollbar-width:none;min-width:0}.toc::-webkit-scrollbar{display:none}
+.toc a{white-space:nowrap;padding:6px 11px;border-radius:99px;color:var(--muted);text-decoration:none;font-size:14px;font-weight:600}
+.toc a:hover{color:var(--ink);background:var(--surface-2)}
+.toc a.act{color:#fff;background:linear-gradient(100deg,var(--g1),var(--g2))}
+#theme{flex:none}
+@media(max-width:640px){.brand span{display:none}}
+
+/* hero */
+.hero{position:relative;overflow:hidden;color:#fff;background:linear-gradient(120deg,var(--h1),var(--h2) 55%,var(--h3))}
+.hero .blob{position:absolute;border-radius:50%;filter:blur(60px);opacity:.55;animation:drift 14s ease-in-out infinite alternate}
+.hero .b1{width:380px;height:380px;background:#f0abfc;top:-140px;left:-80px}
+.hero .b2{width:320px;height:320px;background:#fdba74;bottom:-160px;right:12%;animation-delay:-5s}
+.hero .b3{width:260px;height:260px;background:#a5b4fc;top:30%;left:45%;animation-delay:-9s}
+@keyframes drift{to{transform:translate(60px,40px) scale(1.15)}}
+.hero .wrap{position:relative;display:grid;grid-template-columns:1.1fr .9fr;gap:36px;align-items:center;padding-block:52px 56px}
+@media(max-width:820px){.hero .wrap{grid-template-columns:1fr;padding-block:36px 40px}}
+.eyebrow{font:700 12px var(--f-mono);letter-spacing:.14em;text-transform:uppercase;opacity:.9}
+.hero h1{font-size:clamp(34px,5.6vw,62px);font-weight:800;letter-spacing:-.02em;margin:10px 0 14px}
+.hero p.lead{font-size:18px;max-width:34em;margin:0 0 22px;opacity:.95}
+.hero .cta{display:flex;flex-wrap:wrap;gap:10px}
+.hero .btn.light{background:#fff;color:#4c1d95}
+.hero .btn.glass{background:#ffffff26;color:#fff;box-shadow:inset 0 0 0 1px #ffffff66}
+.herocard{background:var(--surface);border-radius:24px;padding:14px;box-shadow:0 30px 60px -20px #2e083f99;transform:rotate(1.5deg);animation:bob 6s ease-in-out infinite;max-width:360px;justify-self:center;width:100%}
+@keyframes bob{50%{transform:rotate(-1deg) translateY(-8px)}}
+.herocard .cap{font:600 12px var(--f-mono);color:var(--muted);text-align:center;margin-top:4px}
+
+/* chapters */
+main{padding-block:28px 10px}
+.ch{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:28px;margin:22px 0;position:relative;overflow:hidden}
+.ch::before{content:"";position:absolute;inset:0 0 auto;height:5px;background:linear-gradient(90deg,var(--g1),var(--g2),var(--g3))}
+@media(max-width:600px){.ch{padding:22px 16px;border-radius:20px}}
+.chh{display:flex;gap:14px;align-items:center;margin-bottom:14px}
+.num{flex:none;width:48px;height:48px;border-radius:16px;display:grid;place-items:center;color:#fff;font:800 20px var(--f-display);background:linear-gradient(135deg,var(--g1),var(--g2) 60%,var(--g3));box-shadow:0 8px 20px -6px var(--g2)}
+.ch h2{font-size:clamp(24px,3.6vw,32px);font-weight:800}
+.sub{margin:3px 0 0;color:var(--muted);font-size:15px}
+.ch h3{font-size:20px;margin:26px 0 8px}
+.ch p{max-width:68ch}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.grid>*{min-width:0}
+.tile{background:var(--surface-2);border-radius:16px;padding:16px}
+.tile h4{margin:0 0 4px;font:700 16px var(--f-display)}
+.tile p{margin:0;font-size:15px;color:var(--muted)}
+.callout{border-radius:16px;padding:14px 16px;margin:16px 0;background:linear-gradient(135deg,color-mix(in srgb,var(--g1) 12%,var(--surface)),color-mix(in srgb,var(--g3) 10%,var(--surface)))}
+.callout b.t{font-family:var(--f-display)}
+.vs{width:100%;border-collapse:collapse;font-size:15px}
+.vs th,.vs td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+.vs th{font:700 13px var(--f-mono);color:var(--g1);letter-spacing:.04em}
+.scroll{overflow-x:auto}
+
+/* buttons */
+.btn{font:600 15px var(--f-body);border:0;border-radius:12px;padding:9px 16px;cursor:pointer;color:var(--ink);background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line);transition:transform .15s,filter .2s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{transform:translateY(-1px)}.btn:active{transform:translateY(1px)}
+.btn.pri{color:#fff;background:linear-gradient(100deg,var(--g1),var(--g2));box-shadow:0 6px 16px -8px var(--g2)}
+.btn.sm{padding:6px 12px;font-size:14px}
+.btn:disabled{opacity:.45;cursor:default;transform:none}
+.btn:focus-visible,.opt:focus-visible,.toc a:focus-visible,.tab:focus-visible,.chip:focus-visible{outline:3px solid var(--g3);outline-offset:2px}
+
+/* diagrams */
+svg{display:block;max-width:100%;height:auto}
+svg text{font-family:var(--f-body)}
+.edge{fill:none;stroke:var(--muted);stroke-width:2;stroke-linejoin:round;marker-end:url(#arw)}
+.edge.hot{stroke:var(--g2);stroke-width:3;stroke-dasharray:7 6;animation:dash .5s linear infinite;marker-end:url(#arwh)}
+@keyframes dash{to{stroke-dashoffset:-13}}
+.abox{fill:url(#gAct);stroke:var(--act-line);stroke-width:1.6}
+.obox{fill:var(--surface);stroke:var(--ink);stroke-width:1.6}
+.dia{fill:var(--dia-bg);stroke:var(--dia-line);stroke-width:2}
+.ink{fill:var(--ink)}
+.ring{fill:none;stroke:var(--ink);stroke-width:2.5}
+.ffin circle{fill:var(--surface);stroke:var(--ink);stroke-width:2.5}.ffin path{stroke:var(--ink);stroke-width:2.5}
+.ntx{fill:var(--ink);font-weight:600;font-size:13px}
+.gtx{fill:var(--g2);font:700 11px var(--f-mono);paint-order:stroke;stroke:var(--surface);stroke-width:4px;stroke-linejoin:round}
+.lane-bg{fill:var(--lane-a)}.lane-bg.alt{fill:var(--lane-b)}
+.lane-hd{fill:var(--lane-hd)}
+.lane-bd{fill:none;stroke:var(--line);stroke-width:1.5}
+.lane-tx{fill:var(--ink);font:800 13px var(--f-display);letter-spacing:.02em}
+.tok{fill:url(#gTok);stroke:var(--surface);stroke-width:2;filter:drop-shadow(0 0 5px var(--tok))}
+.pulse-ring{fill:none;stroke:var(--g2);stroke-width:2}
+.node{transition:opacity .45s}
+.node.active .abox{stroke:var(--g2);stroke-width:3;animation:glowbox 1.4s ease-in-out infinite}
+.node.active .dia{stroke:var(--g2);stroke-width:3}
+.node.done .abox{stroke:var(--ok);stroke-width:2.2}
+@keyframes glowbox{50%{filter:drop-shadow(0 0 8px var(--g2))}}
+.glowbox{animation:glowbox 2.2s ease-in-out infinite}
+.off{opacity:.06}
+.edge,.guard{transition:opacity .45s}
+.dg .node,.dg .guard{transform-box:fill-box}
+
+/* symbol gallery */
+.sym{background:var(--surface-2);border-radius:18px;padding:12px 14px 14px;display:flex;flex-direction:column;gap:6px}
+.sym .pic{background:var(--surface);border-radius:12px;padding:6px}
+.sym h4{margin:4px 0 0;font:700 16px var(--f-display)}
+.sym p{margin:0;font-size:14px;color:var(--muted)}
+.syms{grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
+
+/* simulator */
+.sim{border-radius:20px;margin:18px 0;padding:3px;background:linear-gradient(135deg,var(--g1),var(--g2),var(--g3))}
+.sim-in{background:var(--surface);border-radius:17px;padding:16px}
+.sim-head{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-bottom:10px}
+.sim-head h4{margin:0;font:800 17px var(--f-display);display:flex;align-items:center;gap:8px}
+.live{font:700 11px var(--f-mono);color:#fff;background:var(--g2);padding:3px 8px;border-radius:99px;letter-spacing:.08em}
+.vars{font:700 13px var(--f-mono);background:var(--surface-2);padding:4px 10px;border-radius:8px;margin-left:auto}
+.sim-body{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:16px;align-items:start}
+@media(max-width:760px){.sim-body{grid-template-columns:1fr}}
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px;overflow-x:auto}
+.stage svg{min-width:400px;margin:auto}
+.side{display:flex;flex-direction:column;gap:12px;min-width:0}
+.say{background:var(--surface-2);border-radius:14px;padding:12px 14px;min-height:76px;font-size:15px}
+.say.end{background:linear-gradient(135deg,color-mix(in srgb,var(--g1) 18%,var(--surface)),color-mix(in srgb,var(--g3) 16%,var(--surface)))}
+.choices:empty{display:none}
+.choices{border:2px dashed var(--g2);border-radius:14px;padding:10px 12px}
+.choices p{margin:0 0 8px;font-size:14px;font-weight:600}
+.choices .row{display:flex;flex-wrap:wrap;gap:6px}
+.choices button{font:700 13px var(--f-mono)}
+.ctrl{display:flex;flex-wrap:wrap;gap:8px}
+.trail-h{font:700 12px var(--f-mono);color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.trail{margin:4px 0 0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:6px;counter-reset:t}
+.trail li{counter-increment:t;font-size:13px;font-weight:600;background:var(--surface-2);border-radius:99px;padding:3px 10px;animation:popin .35s both}
+.trail li::before{content:counter(t) ". ";color:var(--g2)}
+.trail:empty::after{content:"Rien pour l’instant";font-size:13px;color:var(--muted)}
+@keyframes popin{from{opacity:0;transform:scale(.8)}}
+.nudge{animation:shake .4s}
+
+/* builder */
+.story{font-size:17px;line-height:1.9;background:var(--surface-2);border-radius:16px;padding:16px 18px;margin:0}
+.k{border-radius:6px;padding:1px 4px;transition:background .35s,box-shadow .35s}
+.k.seen.k1,.k.lit.k1{background:var(--k1)}.k.seen.k2,.k.lit.k2{background:var(--k2)}.k.seen.k3,.k.lit.k3{background:var(--k3)}.k.seen.k4,.k.lit.k4{background:var(--k4)}
+.k.lit{box-shadow:0 0 0 2px var(--g2);font-weight:700}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0;padding:0;list-style:none;font-size:13px}
+.legend li{display:flex;align-items:center;gap:6px}.legend i{width:14px;height:14px;border-radius:4px}
+.steps{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.stepbtn{font:700 13px var(--f-body);border:0;cursor:pointer;border-radius:99px;padding:7px 13px;background:var(--surface-2);color:var(--muted)}
+.stepbtn.on{background:linear-gradient(100deg,var(--g1),var(--g2));color:#fff}
+.stepbtn.past{color:var(--ink)}
+
+/* rules */
+.rule{background:var(--surface-2);border-radius:16px;padding:14px 16px}
+.rule h4{margin:0 0 6px;font:700 16px var(--f-display)}
+.rule .bad,.rule .good{display:block;font:600 13px var(--f-mono);padding:4px 8px;border-radius:8px;margin-top:5px}
+.rule .bad{background:var(--no-bg);color:var(--no)}.rule .good{background:var(--ok-bg);color:var(--ok)}
+
+/* practice */
+.tabs{display:flex;flex-wrap:wrap;gap:6px;padding:5px;background:var(--surface-2);border-radius:16px;margin:6px 0 16px}
+.tab{font:700 14px var(--f-body);border:0;cursor:pointer;padding:8px 14px;border-radius:12px;background:transparent;color:var(--muted)}
+.tab.on{background:var(--surface);color:var(--ink);box-shadow:0 2px 8px -2px #0003}
+.tab b{display:inline-grid;place-items:center;min-width:20px;height:20px;border-radius:99px;font-size:11px;margin-left:6px;color:#fff;background:linear-gradient(100deg,var(--g1),var(--g2))}
+.panel>p.intro{margin-top:0;color:var(--muted)}
+.score{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 12px;font-size:15px}
+.meter{flex:1;min-width:120px;height:10px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--g1),var(--g2),var(--g3));transition:width .5s}
+.q{border:1px solid var(--line);border-radius:16px;padding:14px;margin:10px 0}
+.qh{display:flex;gap:10px;align-items:flex-start}
+.qn{flex:none;width:28px;height:28px;border-radius:9px;display:grid;place-items:center;font:800 13px var(--f-display);color:#fff;background:linear-gradient(135deg,var(--g1),var(--g2))}
+.qt{padding-top:2px}
+.qsvg{max-width:220px;margin:10px 0 0 38px;background:var(--surface-2);border-radius:12px;padding:6px}
+.opts{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0 38px}
+.opt{font:600 14px var(--f-body);border:0;cursor:pointer;border-radius:10px;padding:8px 13px;background:var(--surface-2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.opt:hover:not(:disabled){box-shadow:inset 0 0 0 2px var(--g1)}
+.opt:disabled{cursor:default}
+.opt.right{background:var(--ok);color:#fff;box-shadow:none}.opt.wrong{background:var(--no);color:#fff;box-shadow:none}
+.fb{margin:8px 0 0 38px;font-size:15px}.fb:empty{display:none}
+@media(max-width:520px){.opts,.fb,.qsvg{margin-left:0}}
+.good{color:var(--ok)}.bad{color:var(--no)}
+.shake{animation:shake .4s}@keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.pair{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));margin-bottom:8px}
+.pair figure{margin:0;background:var(--surface-2);border-radius:16px;padding:10px}
+.pair figcaption{font:700 13px var(--f-mono);color:var(--muted);text-align:center;margin-bottom:6px}
+/* order puzzle */
+.ord{border:1px solid var(--line);border-radius:16px;padding:14px;margin:12px 0}
+.ord h4{margin:0 0 8px;font:700 17px var(--f-display)}
+.pool,.ans{display:flex;flex-wrap:wrap;gap:8px;min-height:46px;padding:8px;border-radius:12px}
+.pool{background:var(--surface-2)}
+.ans{border:2px dashed var(--line);counter-reset:o}
+.ans:empty::after{content:"Cliquez sur les étapes dans le bon ordre";color:var(--muted);font-size:14px;align-self:center}
+.chip{font:600 14px var(--f-body);border:0;cursor:pointer;border-radius:99px;padding:7px 14px;color:var(--ink);background:var(--surface);box-shadow:inset 0 0 0 1px var(--act-line)}
+.ans .chip{counter-increment:o;background:linear-gradient(100deg,var(--act-a),var(--act-b))}
+.ans .chip::before{content:counter(o) ". ";color:var(--g2);font-weight:800}
+.ans .chip.okc{box-shadow:inset 0 0 0 2px var(--ok)}.ans .chip.noc{box-shadow:inset 0 0 0 2px var(--no)}
+.ord .row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center}
+.ord .res{font-weight:600;font-size:15px}
+.ord .mini{max-width:300px;margin-top:10px}
+/* spot the error */
+.spots{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(290px,1fr))}
+.spot{border:1px solid var(--line);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.spot h4{margin:0;font:700 16px var(--f-display)}
+.spot .pic{background:var(--surface-2);border-radius:12px;padding:6px}
+.spot .node{cursor:pointer}
+.spot .node:focus{outline:none}
+.spot .node:focus-visible{filter:drop-shadow(0 0 4px var(--g3))}
+.spot .node.wrongpick{filter:drop-shadow(0 0 6px var(--no))}
+.spot .node.rightpick{filter:drop-shadow(0 0 7px var(--ok))}
+.spot .fb{margin:0}
+.spot.solved{border-color:var(--ok)}
+/* model it */
+.model{border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0}
+.model h4{margin:0 0 6px;font:700 17px var(--f-display);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.lvl{font:700 11px var(--f-mono);padding:3px 8px;border-radius:99px;letter-spacing:.04em}
+.lvl.l1{background:var(--ok-bg);color:var(--ok)}.lvl.l2{background:var(--k3);color:var(--ink)}.lvl.l3{background:var(--k4);color:var(--ink)}
+.model .scen{background:var(--surface-2);border-radius:12px;padding:12px 14px;margin:8px 0;font-size:16px}
+.model ul{margin:6px 0;padding-left:20px;font-size:15px}
+.model .sol{margin-top:10px;background:var(--surface-2);border-radius:14px;padding:8px;max-width:600px;animation:popin .4s both}
+/* cheat */
+.cheat td:first-child{width:130px}
+.cheat .mini{width:120px;background:var(--surface-2);border-radius:10px;padding:3px}
+footer{text-align:center;color:var(--muted);font-size:14px;padding:26px 16px 44px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 z" style="fill:var(--muted)"/></marker>
+    <marker id="arwh" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" style="fill:var(--g2)"/></marker>
+    <linearGradient id="gAct" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--act-a)"/><stop offset="1" style="stop-color:var(--act-b)"/></linearGradient>
+    <radialGradient id="gTok" cx=".35" cy=".35" r=".75"><stop offset="0" style="stop-color:#fff7ed"/><stop offset=".45" style="stop-color:var(--tok)"/><stop offset="1" style="stop-color:var(--tok-2)"/></radialGradient>
+  </defs>
+</svg>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#start"><i></i><span>Diagrammes d’activité</span></a>
+    <nav class="toc" id="toc" aria-label="Chapitres">
+      <a href="#intro">Bases</a><a href="#symbols">Symboles</a><a href="#decisions">Décisions</a><a href="#parallel">Parallélisme</a><a href="#lanes">Couloirs</a><a href="#build">Texte → Diagramme</a><a href="#rules">Règles</a><a href="#practice">Pratique</a><a href="#cheat">Aide-mémoire</a>
+    </nav>
+    <button class="btn sm" id="theme" type="button" aria-label="Basculer entre le thème clair et le thème sombre"><svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 2a8 8 0 0 1 0 16z" fill="currentColor"/></svg></button>
+  </div>
+</header>
+
+<section class="hero" id="start">
+  <span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span>
+  <div class="wrap">
+    <div>
+      <div class="eyebrow">UML 2.5 · Diagrammes de comportement</div>
+      <h1>Diagrammes d’activité</h1>
+      <p class="lead">Apprenez à lire et à dessiner le diagramme qui montre <b>comment un processus se déroule</b> : ses étapes, ses choix, et ce qui se passe en même temps. Vous l’apprendrez en suivant un jeton dans le diagramme.</p>
+      <div class="cta"><a class="btn light" href="#decisions">▶ Ouvrir les simulateurs</a><a class="btn glass" href="#practice">Aller à la pratique</a></div>
+    </div>
+    <div class="herocard"><div id="herodg"></div><div class="cap">Un jeton suit un seul chemin à chaque exécution</div></div>
+  </div>
+</section>
+
+<main class="wrap">
+
+<!-- 1 -->
+<section class="ch" id="intro">
+  <div class="chh"><div class="num">1</div><div><h2>Qu’est-ce qu’un diagramme d’activité ?</h2><p class="sub">Une image d’un processus, étape par étape</p></div></div>
+  <p>Un <b>diagramme d’activité</b> montre les <b>actions</b> d’un processus et l’<b>ordre</b> dans lequel elles se déroulent. Il montre où le flot <b>choisit</b> entre plusieurs chemins, où il se <b>répète</b>, et quelles étapes s’exécutent <b>en parallèle</b>. C’est l’un des diagrammes de <i>comportement</i> d’UML.</p>
+  <div class="grid">
+    <div class="tile"><h4>Processus métier</h4><p>Comment une boutique traite une commande, comment une bibliothèque prête un livre.</p></div>
+    <div class="tile"><h4>Scénarios de cas d’utilisation</h4><p>Le flot détaillé d’un cas d’utilisation, comme « Retirer de l’argent ».</p></div>
+    <div class="tile"><h4>Algorithmes</h4><p>La logique d’une méthode : boucles, conditions et étapes.</p></div>
+  </div>
+  <div class="callout"><b class="t">Comment en lire un : suivez le jeton.</b> Imaginez un petit jeton <svg width="16" height="16" viewBox="0 0 16 16" style="display:inline;vertical-align:-3px"><circle cx="8" cy="8" r="6" class="tok"/></svg> qui part du nœud initial et suit les flèches. Chaque action qu’il atteint est exécutée. Sur une décision, il prend <b>un seul</b> chemin. Sur un fork, il se divise en <b>plusieurs</b> jetons. Quand il atteint le nœud final, l’activité est terminée. Les simulateurs de ce chapitre fonctionnent exactement ainsi.</div>
+  <h3>Diagramme d’activité ou logigramme ?</h3>
+  <div class="scroll"><table class="vs">
+    <tr><th></th><th>Logigramme</th><th>Diagramme d’activité UML</th></tr>
+    <tr><td><b>Norme</b></td><td>De nombreux styles informels</td><td>Définie par la spécification UML</td></tr>
+    <tr><td><b>Étapes parallèles</b></td><td>Non prises en charge</td><td>Barres de fork et de join</td></tr>
+    <tr><td><b>Qui fait quoi</b></td><td>Rarement montré</td><td>Couloirs (partitions)</td></tr>
+    <tr><td><b>Données transmises</b></td><td>Non montrées</td><td>Nœuds objet</td></tr>
+  </table></div>
+</section>
+
+<!-- 2 -->
+<section class="ch" id="symbols">
+  <div class="chh"><div class="num">2</div><div><h2>Les symboles</h2><p class="sub">Douze formes suffisent pour la plupart des diagrammes. Observez le comportement du jeton sur chacune.</p></div></div>
+  <div class="grid syms" id="gallery"></div>
+</section>
+
+<!-- 3 -->
+<section class="ch" id="decisions">
+  <div class="chh"><div class="num">3</div><div><h2>Décisions, fusions et boucles</h2><p class="sub">Choisir un chemin, et revenir en arrière</p></div></div>
+  <p>Un losange de <b>décision</b> a un flot entrant et plusieurs flots sortants. Chaque flot sortant porte une <b>garde</b>, une condition entre crochets comme <code>[valide]</code>. Le jeton emprunte <b>l’unique</b> branche dont la garde est vraie. Un losange de <b>fusion</b> fait l’inverse : plusieurs flots entrants, un seul flot sortant. Faire repartir un flot <b>vers le haut</b> jusqu’à une fusion crée une <b>boucle</b>.</p>
+  <div class="grid">
+    <div class="tile"><h4>Les gardes ne doivent pas se chevaucher</h4><p><code>[âge ≥ 18]</code> et <code>[âge &lt; 18]</code>, jamais <code>[âge ≥ 18]</code> et <code>[âge ≥ 16]</code>.</p></div>
+    <div class="tile"><h4>Les gardes doivent couvrir tous les cas</h4><p>Utilisez <code>[sinon]</code> pour « tout le reste », afin que le jeton ne reste jamais bloqué.</p></div>
+    <div class="tile"><h4>Une fusion n’attend pas</h4><p>Chaque jeton qui arrive passe directement. Seul un join attend.</p></div>
+  </div>
+  <div class="sim" id="sim-login"><div class="sim-in">
+    <div class="sim-head"><h4><span class="live">SIMULATEUR</span> Connexion, avec 3 essais</h4><span class="vars"></span></div>
+    <div class="sim-body"><div class="stage"></div>
+      <div class="side"><div class="say" aria-live="polite"></div><div class="choices"></div>
+        <div class="ctrl"><button class="btn pri step" type="button">Étape ▶</button><button class="btn play" type="button">Lecture auto</button><button class="btn reset" type="button">↺ Réinitialiser</button></div>
+        <div><div class="trail-h">Actions exécutées</div><ol class="trail"></ol></div></div></div>
+  </div></div>
+  <div class="callout"><b class="t">Essayez ceci :</b> choisissez trois fois un mauvais mot de passe. Surveillez les gardes : quand <code>essais</code> atteint 3, seule <code>[incorrect et essais = 3]</code> peut être choisie.</div>
+</section>
+
+<!-- 4 -->
+<section class="ch" id="parallel">
+  <div class="chh"><div class="num">4</div><div><h2>Flots parallèles : fork et join</h2><p class="sub">Faire plusieurs choses en même temps</p></div></div>
+  <p>Un <b>fork</b> (bifurcation) est une barre épaisse avec un flot entrant et plusieurs flots sortants. Il transforme un jeton en un jeton <b>par branche</b>, et toutes les branches s’exécutent <b>en même temps</b>. Un <b>join</b> (jonction) est une barre avec plusieurs flots entrants et un seul sortant. Il <b>attend</b> qu’un jeton soit arrivé de <b>chaque</b> branche, puis laisse continuer un seul jeton.</p>
+  <div class="sim" id="sim-order"><div class="sim-in">
+    <div class="sim-head"><h4><span class="live">SIMULATEUR</span> Traiter une commande en ligne</h4></div>
+    <div class="sim-body"><div class="stage"></div>
+      <div class="side"><div class="say" aria-live="polite"></div><div class="choices"></div>
+        <div class="ctrl"><button class="btn pri step" type="button">Étape ▶</button><button class="btn play" type="button">Lecture auto</button><button class="btn reset" type="button">↺ Réinitialiser</button></div>
+        <div><div class="trail-h">Actions exécutées</div><ol class="trail"></ol></div></div></div>
+  </div></div>
+  <div class="grid">
+    <div class="tile"><h4>Nœud final d’activité ◉</h4><p>Met fin à <b>toute</b> l’activité d’un coup. Tous les autres jetons sont détruits.</p></div>
+    <div class="tile"><h4>Nœud final de flot ⊗</h4><p>Ne termine que <b>le jeton qui l’atteint</b>. Les autres branches continuent.</p></div>
+    <div class="tile"><h4>Parallèle ≠ simultané</h4><p>« Parallèle » signifie que l’ordre entre les branches n’a pas d’importance. Elles peuvent vraiment s’exécuter en même temps, ou l’une après l’autre.</p></div>
+  </div>
+</section>
+
+<!-- 5 -->
+<section class="ch" id="lanes">
+  <div class="chh"><div class="num">5</div><div><h2>Couloirs : qui fait quoi ?</h2><p class="sub">Les partitions découpent le diagramme par acteur, rôle ou système</p></div></div>
+  <p>Un <b>couloir</b> (UML parle de <i>partition d’activité</i>) est une colonne, ou une ligne, étiquetée avec une personne, un rôle, un service ou un système. Chaque action est placée dans le couloir de celui qui l’exécute. Quand un flot <b>franchit la bordure d’un couloir</b>, la responsabilité passe à quelqu’un d’autre.</p>
+  <div class="sim" id="sim-atm"><div class="sim-in">
+    <div class="sim-head"><h4><span class="live">SIMULATEUR</span> Retirer de l’argent à un distributeur</h4></div>
+    <div class="sim-body"><div class="stage"></div>
+      <div class="side"><div class="say" aria-live="polite"></div><div class="choices"></div>
+        <div class="ctrl"><button class="btn pri step" type="button">Étape ▶</button><button class="btn play" type="button">Lecture auto</button><button class="btn reset" type="button">↺ Réinitialiser</button></div>
+        <div><div class="trail-h">Actions exécutées</div><ol class="trail"></ol></div></div></div>
+  </div></div>
+</section>
+
+<!-- 6 -->
+<section class="ch" id="build">
+  <div class="chh"><div class="num">6</div><div><h2>Du texte au diagramme en 5 étapes</h2><p class="sub">La méthode que vous utiliserez dans chaque exercice et examen</p></div></div>
+  <p>Lisez le scénario et repérez ses mots par catégorie. Chaque catégorie de mots devient un type de symbole. Cliquez sur les étapes pour construire le diagramme.</p>
+  <p class="story" id="story">Un membre se présente au comptoir pour emprunter un livre <span class="k k1" data-k="1">(début)</span>. Le bibliothécaire <span class="k k2" data-k="2">scanne la carte du membre</span>. <span class="k k3" data-k="3">Si la carte est expirée</span>, le bibliothécaire <span class="k k2" data-k="2">demande au membre de la renouveler</span> et <span class="k k1" data-k="1">le prêt s’arrête</span>. <span class="k k3" data-k="3">Sinon</span>, le bibliothécaire <span class="k k2" data-k="2">scanne le livre</span>. <span class="k k4" data-k="4">Ensuite, en même temps,</span> le système <span class="k k2" data-k="2">enregistre le prêt</span> et <span class="k k2" data-k="2">imprime un reçu</span>. <span class="k k4" data-k="4">Quand les deux sont terminés</span>, le bibliothécaire <span class="k k2" data-k="2">remet le livre</span> et <span class="k k1" data-k="1">le prêt est terminé</span>.</p>
+  <ul class="legend"><li><i style="background:var(--k1)"></i>Début et fin → nœuds initial / final</li><li><i style="background:var(--k2)"></i>Verbes → actions</li><li><i style="background:var(--k3)"></i>si / sinon → décision + gardes</li><li><i style="background:var(--k4)"></i>en même temps → fork / join</li></ul>
+  <div class="steps" id="bsteps"></div>
+  <div class="sim-body" style="grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)">
+    <div class="stage" id="bstage"></div>
+    <div class="side"><div class="say" id="bsay" aria-live="polite"></div><div class="ctrl"><button class="btn" id="bprev" type="button">◀ Retour</button><button class="btn pri" id="bnext" type="button">Étape suivante ▶</button></div></div>
+  </div>
+</section>
+
+<!-- 7 -->
+<section class="ch" id="rules">
+  <div class="chh"><div class="num">7</div><div><h2>Règles d’or</h2><p class="sub">Les erreurs que les enseignants voient le plus souvent, et comment les éviter</p></div></div>
+  <div class="grid">
+    <div class="rule"><h4>Nommez les actions avec un verbe</h4>Une action est une étape de travail.<span class="bad">✗ Base de données</span><span class="good">✓ Interroger la base de données</span></div>
+    <div class="rule"><h4>Mettez des gardes sur chaque décision</h4>Sinon personne ne sait quel chemin prendre.<span class="bad">✗ deux flèches sans étiquette</span><span class="good">✓ [payé] / [non payé]</span></div>
+    <div class="rule"><h4>Couvrez tous les cas</h4>Ne laissez aucun trou entre les gardes.<span class="bad">✗ [t &gt; 30] / [t &lt; 30]</span><span class="good">✓ [t &gt; 30] / [sinon]</span></div>
+    <div class="rule"><h4>Décision ↔ fusion, fork ↔ join</h4>Fermez les alternatives par une fusion, les branches parallèles par un join.<span class="bad">✗ décision … join</span><span class="good">✓ décision … fusion</span></div>
+    <div class="rule"><h4>Rien ne sort d’un nœud final</h4>Le nœud final d’activité met fin à tout.<span class="bad">✗ ◉ → Envoyer le rapport</span><span class="good">✓ Envoyer le rapport → ◉</span></div>
+    <div class="rule"><h4>Gardez une seule direction</h4>Dessinez de haut en bas (ou de gauche à droite). Seules les boucles remontent.<span class="bad">✗ des flèches dans tous les sens</span><span class="good">✓ un axe vertical clair</span></div>
+  </div>
+</section>
+
+<!-- 8 -->
+<section class="ch" id="practice">
+  <div class="chh"><div class="num">8</div><div><h2>Pratique</h2><p class="sub">Six types d’exercices. Commencez où vous voulez.</p></div></div>
+  <div class="tabs" role="tablist" id="tabs">
+    <button class="tab on" type="button" role="tab" data-p="p-sym">Symboles<b>8</b></button>
+    <button class="tab" type="button" role="tab" data-p="p-tf">Vrai ou faux<b>11</b></button>
+    <button class="tab" type="button" role="tab" data-p="p-trace">Suivre le flot<b>6</b></button>
+    <button class="tab" type="button" role="tab" data-p="p-order">Remettre en ordre<b>3</b></button>
+    <button class="tab" type="button" role="tab" data-p="p-spot">Trouver l’erreur<b>6</b></button>
+    <button class="tab" type="button" role="tab" data-p="p-model">Modélisation<b>3</b></button>
+  </div>
+  <div class="panel" id="p-sym" role="tabpanel"><p class="intro">Nommez chaque symbole.</p><div class="score"></div><div class="qs"></div></div>
+  <div class="panel" id="p-tf" role="tabpanel" hidden><p class="intro">Décidez si chaque affirmation est vraie.</p><div class="score"></div><div class="qs"></div></div>
+  <div class="panel" id="p-trace" role="tabpanel" hidden><p class="intro">Suivez le jeton dans ces deux diagrammes pour répondre.</p>
+    <div class="pair"><figure><figcaption>Diagramme A · Commande en ligne</figcaption><div id="trA"></div></figure><figure><figcaption>Diagramme B · Connexion</figcaption><div id="trB"></div></figure></div>
+    <div class="score"></div><div class="qs"></div></div>
+  <div class="panel" id="p-order" role="tabpanel" hidden><p class="intro">Cliquez sur les actions dans l’ordre où elles se produisent. Quand c’est juste, le diagramme apparaît.</p><div id="ords"></div></div>
+  <div class="panel" id="p-spot" role="tabpanel" hidden><p class="intro">Chaque diagramme contient une erreur. Cliquez sur le symbole incorrect.</p><div class="score" id="spot-score"></div><div class="spots" id="spots"></div></div>
+  <div class="panel" id="p-model" role="tabpanel" hidden><p class="intro">Dessinez chaque diagramme sur papier ou dans un outil UML (draw.io, StarUML, PlantUML), puis comparez avec le corrigé.</p><div id="models"></div></div>
+</section>
+
+<!-- 9 -->
+<section class="ch" id="cheat">
+  <div class="chh"><div class="num">9</div><div><h2>Aide-mémoire</h2><p class="sub">Chaque symbole et sa règle, sur un seul écran</p></div></div>
+  <div class="scroll"><table class="vs cheat" id="cheattab"></table></div>
+</section>
+
+</main>
+<footer>Diagrammes d’activité UML · chapitre interactif · notation conforme à UML 2.5</footer>
+
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const NS='http://www.w3.org/2000/svg';
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const REDUCE=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const YES=['Correct !','Exactement.','Bien joué !','Parfait !','Juste !'];const pick=a=>a[Math.floor(Math.random()*a.length)];
+
+/* ================= diagram engine ================= */
+function size(n){
+  if(n.t==='action'||n.t==='obj')return{w:n.w||150,h:n.h||42};
+  if(n.t==='dec'||n.t==='merge')return{w:44,h:44};
+  if(n.t==='fork'||n.t==='join')return{w:n.w||240,h:8};
+  if(n.t==='start')return{w:24,h:24};
+  return{w:28,h:28};
+}
+function anc(D,r){if(Array.isArray(r))return r;const[id,s]=r.split('.');const n=D.n[id],{w,h}=size(n);
+  return s==='T'?[n.x,n.y-h/2]:s==='B'?[n.x,n.y+h/2]:s==='L'?[n.x-w/2,n.y]:s==='R'?[n.x+w/2,n.y]:[n.x,n.y]}
+function pts(D,e){return(e.p||[e.f+'.B',e.t+'.T']).map(r=>anc(D,r))}
+function label(x,y,txt,cls,anchor='middle',lh=15){const L=String(txt).split('\n');const y0=y-(L.length-1)*lh/2;
+  return `<text class="${cls}" x="${x}" y="${y0}" text-anchor="${anchor}" dominant-baseline="middle">${L.map((l,i)=>`<tspan x="${x}" dy="${i?lh:0}">${esc(l)}</tspan>`).join('')}</text>`}
+function nodeSvg(id,n){const{w,h}=size(n),x=n.x,y=n.y;let b='';
+  switch(n.t){
+    case 'start':b=`<circle cx="${x}" cy="${y}" r="11" class="ink"/>`;break;
+    case 'final':b=`<circle cx="${x}" cy="${y}" r="14" class="ring"/><circle cx="${x}" cy="${y}" r="8.5" class="ink"/>`;break;
+    case 'flowfinal':b=`<g class="ffin"><circle cx="${x}" cy="${y}" r="12"/><path d="M${x-8} ${y-8}L${x+8} ${y+8}M${x+8} ${y-8}L${x-8} ${y+8}"/></g>`;break;
+    case 'action':b=`<rect class="abox" x="${x-w/2}" y="${y-h/2}" width="${w}" height="${h}" rx="17"/>`+label(x,y+1,n.label,'ntx');break;
+    case 'obj':b=`<rect class="obox" x="${x-w/2}" y="${y-h/2}" width="${w}" height="${h}" rx="2"/>`+label(x,y+1,n.label,'ntx');break;
+    case 'dec':case 'merge':b=`<polygon class="dia" points="${x},${y-22} ${x+22},${y} ${x},${y+22} ${x-22},${y}"/>`;break;
+    case 'fork':case 'join':b=`<rect class="ink" x="${x-w/2}" y="${y-4}" width="${w}" height="8" rx="3"/>`;break;
+  }
+  const lbl=n.label?esc(n.label.replace(/\n/g,' ')):({start:'nœud initial',final:'nœud final d’activité',flowfinal:'nœud final de flot',dec:'nœud de décision',merge:'nœud de fusion',fork:'barre de fork',join:'barre de join'})[n.t];
+  return `<g class="node n-${n.t}" data-id="${id}" data-s="${n.s||''}" aria-label="${lbl}">${b}</g>`}
+function render(D){const[W,H]=D.vb;let s=`<svg class="dg" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(D.alt||'Diagramme d’activité')}">`;
+  if(D.lanes){D.lanes.forEach((l,i)=>{s+=`<rect class="lane-bg${i%2?' alt':''}" x="${l.x}" y="0" width="${l.w}" height="${H}"/><rect class="lane-hd" x="${l.x}" y="0" width="${l.w}" height="34"/>${label(l.x+l.w/2,18,l.name,'lane-tx')}<rect class="lane-bd" x="${l.x}" y="0" width="${l.w}" height="${H}"/>`})}
+  D.e.forEach((e,i)=>{const P=pts(D,e);s+=`<polyline class="edge" data-i="${i}" data-s="${e.s||''}" points="${P.map(p=>p.join(',')).join(' ')}"/>`});
+  D.e.forEach(e=>{if(e.g)s+=`<g class="guard" data-s="${e.s||''}">${label(e.gp[0],e.gp[1],e.g,'gtx',e.ga||'middle',13)}</g>`});
+  for(const id in D.n)s+=nodeSvg(id,D.n[id]);
+  return s+'</svg>'}
+
+/* ================= token simulator ================= */
+function Sim(root,D){
+  const stage=root.querySelector('.stage');stage.innerHTML=render(D);
+  const svg=stage.querySelector('svg'),layer=document.createElementNS(NS,'g');svg.append(layer);
+  const sayEl=root.querySelector('.say'),ch=root.querySelector('.choices'),trail=root.querySelector('.trail'),vEl=root.querySelector('.vars');
+  const bStep=root.querySelector('.step'),bPlay=root.querySelector('.play'),bReset=root.querySelector('.reset');
+  const outs=id=>D.e.filter(e=>e.f===id),ins=id=>D.e.filter(e=>e.t===id);
+  const startId=Object.keys(D.n).find(k=>D.n[k].t==='start');
+  let toks=[],vars={},busy=false,over=false,timer=null;
+  function rest(id,end){const n=D.n[id];if(n.t==='join')return end;if(n.t==='action'){const{w}=size(n);return[n.x-w/2+13,n.y]}return[n.x,n.y]}
+  function put(t,p){t.pos=p;t.el.setAttribute('cx',p[0].toFixed(1));t.el.setAttribute('cy',p[1].toFixed(1))}
+  function mk(at,p){const c=document.createElementNS(NS,'circle');c.setAttribute('r','7.5');c.setAttribute('class','tok');layer.append(c);const t={at,el:c};put(t,p);toks.push(t);return t}
+  function kill(t){t.el.remove();toks=toks.filter(x=>x!==t)}
+  const nodeEl=id=>svg.querySelector(`.node[data-id="${id}"]`);
+  function mark(){svg.querySelectorAll('.node').forEach(g=>g.classList.toggle('active',toks.some(t=>t.at===g.dataset.id)))}
+  function updVars(){if(vEl&&D.showVars)vEl.textContent=D.showVars(vars)}
+  function anim(list){return new Promise(res=>{
+    const data=list.map(m=>{const sg=[];let L=0;for(let i=1;i<m.p.length;i++){const d=Math.hypot(m.p[i][0]-m.p[i-1][0],m.p[i][1]-m.p[i-1][1]);sg.push(d);L+=d}return{...m,sg,L}});
+    const dur=REDUCE?0:Math.min(1300,Math.max(520,Math.max(...data.map(d=>d.L))*3.2)),t0=performance.now();
+    function fr(now){const k=dur?Math.min(1,(now-t0)/dur):1,e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+      data.forEach(d=>{let dist=e*d.L,i=0;while(i<d.sg.length-1&&dist>d.sg[i]){dist-=d.sg[i];i++}const a=d.p[i],b=d.p[i+1]||a,r=d.sg[i]?Math.min(1,dist/d.sg[i]):1;put(d.t,[a[0]+(b[0]-a[0])*r,a[1]+(b[1]-a[1])*r])});
+      if(k<1)requestAnimationFrame(fr);else res()}
+    requestAnimationFrame(fr)})}
+  const hot=(e,on)=>svg.querySelector(`.edge[data-i="${D.e.indexOf(e)}"]`).classList.toggle('hot',on);
+  function decTok(){return toks.find(t=>D.n[t.at].t==='dec')}
+  function choices(){const t=decTok();if(!t||over){ch.innerHTML='';return}
+    const es=outs(t.at);ch.innerHTML=`<p>Le jeton est sur une décision. Quelle garde est vraie ?</p><div class="row">${es.map((e,i)=>{const ok=!e.ok||e.ok(vars);return `<button type="button" class="btn sm${ok?' pri':''}" data-i="${i}" ${ok?'':'disabled title="Cette garde est fausse pour l’instant"'}>${esc(e.g.replace(/\n/g,' '))}</button>`}).join('')}</div>${es.some(e=>e.ok&&!e.ok(vars))?'<p style="margin:8px 0 0;font-weight:400;font-size:13px">Les gardes grisées sont fausses avec les valeurs actuelles.</p>':''}`;
+    ch.querySelectorAll('button').forEach(b=>b.onclick=()=>{ch.innerHTML='';run([{t,e:es[+b.dataset.i]}],D.n[t.at].pick)})}
+  function setBtns(){bStep.disabled=busy||over||(!!decTok()&&!toks.some(t=>!['dec'].includes(D.n[t.at].t)&&!(D.n[t.at].t==='join'&&toks.filter(x=>x.at===t.at).length<ins(t.at).length)));
+    bPlay.textContent=timer?'❚❚ Pause':'Lecture auto';bPlay.disabled=over}
+  async function step(){if(busy||over)return;const moves=[];const msgs=[];
+    const atJ={};toks.forEach(t=>{if(D.n[t.at].t==='join')(atJ[t.at]=atJ[t.at]||[]).push(t)});
+    for(const j in atJ){if(atJ[j].length>=ins(j).length){atJ[j].forEach(kill);moves.push({t:mk(j,[D.n[j].x,D.n[j].y]),e:outs(j)[0]});msgs.push(D.n[j].say)}}
+    for(const t of [...toks]){if(moves.some(m=>m.t===t))continue;const n=D.n[t.at];
+      if(n.t==='join'||n.t==='dec'||n.t==='final')continue;
+      if(n.t==='fork'){kill(t);outs(t.at).forEach(e=>moves.push({t:mk(t.at,[n.x,n.y]),e}));msgs.push(n.say);continue}
+      const e=outs(t.at)[0];if(e)moves.push({t,e})}
+    if(!moves.length){if(decTok()){ch.classList.remove('nudge');void ch.offsetWidth;ch.classList.add('nudge')}return}
+    await run(moves,msgs.filter(Boolean).join('<br>'))}
+  async function run(moves,lead){busy=true;setBtns();moves.forEach(m=>hot(m.e,true));
+    await anim(moves.map(m=>{const P=pts(D,m.e);return{t:m.t,p:[m.t.pos,...P,rest(m.e.t,P[P.length-1])]}}));
+    moves.forEach(m=>hot(m.e,false));const txt=lead?[lead]:[];
+    for(const m of moves){m.t.at=m.e.t;const id=m.e.t,n=D.n[id];
+      if(n.t==='action'){D.enter&&D.enter(id,vars);const li=document.createElement('li');li.textContent=n.label.replace(/\n/g,' ');trail.append(li);nodeEl(id).classList.add('done')}
+      if(n.t==='join'){const c=toks.filter(x=>x.at===id).length,need=ins(id).length;txt.push(c<need?`Un jeton a atteint le <b>join</b> et <b>attend</b> : ${c} branche(s) sur ${need} sont arrivées.`:`Les ${need} branches ont atteint le <b>join</b>. À l’étape suivante, un seul jeton continue.`);continue}
+      if(n.t==='flowfinal'){kill(m.t);txt.push(n.say||'Un nœud <b>final de flot</b> ne détruit que ce jeton.');continue}
+      if(n.t==='final'){over=true;toks.filter(x=>x!==m.t).forEach(kill)}
+      if(n.say)txt.push(typeof n.say==='function'?n.say(vars):n.say)}
+    sayEl.innerHTML=[...new Set(txt)].join('<br>');sayEl.classList.toggle('end',over);
+    busy=false;updVars();mark();choices();if(over)stop();setBtns()}
+  function stop(){clearInterval(timer);timer=null;setBtns()}
+  function reset(){stop();toks.slice().forEach(kill);vars=D.vars?{...D.vars}:{};over=false;busy=false;trail.innerHTML='';
+    svg.querySelectorAll('.node.done').forEach(g=>g.classList.remove('done'));svg.querySelectorAll('.edge.hot').forEach(e=>e.classList.remove('hot'));
+    const s=D.n[startId];mk(startId,[s.x,s.y]);sayEl.innerHTML=D.intro;sayEl.classList.remove('end');ch.innerHTML='';updVars();mark();setBtns()}
+  bStep.onclick=step;bReset.onclick=reset;
+  bPlay.onclick=()=>{if(timer){stop();return}timer=setInterval(()=>{if(over){stop();return}if(!busy&&!decTok())step()},1500);setBtns();if(!busy&&!decTok())step()};
+  reset();
+}
+
+/* ================= diagram data ================= */
+const FINAL_SAY='Le jeton a atteint le nœud <b>final d’activité</b>. Toute l’activité se termine.';
+const LOGIN={vb:[560,395],alt:'Activité de connexion : saisir le mot de passe, décision avec trois gardes, boucle de nouvel essai via une fusion',
+  n:{st:{t:'start',x:280,y:26},m:{t:'merge',x:280,y:84,say:'La <b>fusion</b> permet à plusieurs flots d’entrer dans un même chemin. Ici, elle réunit la première tentative et chaque nouvel essai.'},
+    enter:{t:'action',x:280,y:148,label:'Saisir le mot de passe',w:200,say:v=>`Action <b>Saisir le mot de passe</b>. Tentative numéro ${v.tries}.`},
+    d:{t:'dec',x:280,y:222,say:'Une <b>décision</b>. Une seule garde peut être vraie. Choisissez la branche.'},
+    err:{t:'action',x:80,y:222,label:'Afficher l’erreur',w:150,say:'Action <b>Afficher l’erreur</b>. Le flot remonte maintenant <b>vers le haut</b> jusqu’à la fusion : une boucle.'},
+    lock:{t:'action',x:470,y:222,label:'Verrouiller le compte',w:170,say:'Action <b>Verrouiller le compte</b>.'},
+    dash:{t:'action',x:280,y:300,label:'Ouvrir le tableau de bord',w:200,say:'Action <b>Ouvrir le tableau de bord</b>. L’utilisateur est connecté.'},
+    f1:{t:'final',x:280,y:366,say:FINAL_SAY},f2:{t:'final',x:470,y:300,say:FINAL_SAY}},
+  e:[{f:'st',t:'m'},{f:'m',t:'enter'},{f:'enter',t:'d'},
+    {f:'d',t:'dash',g:'[valide]',gp:[290,258],ga:'start'},
+    {f:'d',t:'err',p:['d.L','err.R'],g:'[incorrect et\nessais < 3]',gp:[199,200],ok:v=>v.tries<3},
+    {f:'d',t:'lock',p:['d.R','lock.L'],g:'[incorrect et\nessais = 3]',gp:[344,198],ok:v=>v.tries>=3},
+    {f:'err',t:'m',p:['err.T',[80,84],'m.L']},{f:'dash',t:'f1'},{f:'lock',t:'f2'}],
+  vars:{tries:0},enter:(id,v)=>{if(id==='enter')v.tries++},showVars:v=>`essais = ${v.tries}`,
+  intro:'Le <b>nœud initial</b> contient un jeton. Appuyez sur <b>Étape</b> pour le déplacer le long des flèches.'};
+
+const ORDER={vb:[560,650],alt:'Activité de commande en ligne avec une décision sur le stock, un fork vers le paiement et l’emballage, et un join avant l’expédition',
+  n:{st:{t:'start',x:250,y:26},recv:{t:'action',x:250,y:86,label:'Recevoir la commande',w:160,say:'Action <b>Recevoir la commande</b>.'},
+    chk:{t:'action',x:250,y:154,label:'Vérifier le stock',w:160,say:'Action <b>Vérifier le stock</b>.'},
+    d:{t:'dec',x:250,y:226,say:'Une <b>décision</b> : l’article est-il en stock ?'},
+    cancel:{t:'action',x:440,y:226,label:'Annuler la commande',w:170,say:'Action <b>Annuler la commande</b>.'},fc:{t:'final',x:440,y:300,say:FINAL_SAY},
+    fork:{t:'fork',x:250,y:296,w:260,say:'Le <b>fork</b> a divisé un jeton en <b>deux</b>. Les deux branches s’exécutent maintenant en parallèle.'},
+    pay:{t:'action',x:150,y:362,label:'Débiter le paiement',w:160,say:'Action <b>Débiter le paiement</b>.'},
+    inv:{t:'action',x:150,y:432,label:'Envoyer la facture',w:160,say:'Action <b>Envoyer la facture</b>.'},
+    pack:{t:'action',x:365,y:396,label:'Emballer les articles',w:170,say:'Action <b>Emballer les articles</b>.'},
+    join:{t:'join',x:250,y:500,w:260,say:'Le <b>join</b> a reçu un jeton de chaque branche, donc un seul jeton continue.'},
+    ship:{t:'action',x:250,y:562,label:'Expédier la commande',w:160,say:'Action <b>Expédier la commande</b>.'},f:{t:'final',x:250,y:624,say:FINAL_SAY}},
+  e:[{f:'st',t:'recv'},{f:'recv',t:'chk'},{f:'chk',t:'d'},
+    {f:'d',t:'fork',g:'[en stock]',gp:[260,264],ga:'start'},
+    {f:'d',t:'cancel',p:['d.R','cancel.L'],g:'[rupture]',gp:[313,214]},{f:'cancel',t:'fc'},
+    {f:'fork',t:'pay',p:[[150,300],'pay.T']},{f:'fork',t:'pack',p:[[365,300],'pack.T']},
+    {f:'pay',t:'inv'},{f:'inv',t:'join',p:['inv.B',[150,496]]},{f:'pack',t:'join',p:['pack.B',[365,496]]},
+    {f:'join',t:'ship',p:[[250,504],'ship.T']},{f:'ship',t:'f'}],
+  intro:'Un jeton attend au <b>nœud initial</b>. Appuyez sur <b>Étape</b>, ou sur <b>Lecture auto</b> pour regarder.'};
+
+const ATM={vb:[600,580],alt:'Retrait au distributeur avec trois couloirs : Client, Distributeur et Banque',
+  lanes:[{name:'Client',x:0,w:200},{name:'Distributeur',x:200,w:200},{name:'Banque',x:400,w:200}],
+  n:{st:{t:'start',x:100,y:66},ins:{t:'action',x:100,y:122,label:'Insérer la carte',w:140,say:'Couloir <b>Client</b> : insérer la carte.'},
+    read:{t:'action',x:300,y:122,label:'Lire la carte',w:140,say:'Le flot est passé dans le couloir <b>Distributeur</b>. La machine lit la carte.'},
+    pin:{t:'action',x:100,y:196,label:'Saisir le code PIN',w:140,say:'De retour chez le <b>Client</b> : saisir le code PIN.'},
+    ver:{t:'action',x:500,y:266,label:'Vérifier le code PIN',w:170,say:'Maintenant la <b>Banque</b> est responsable : elle vérifie le code PIN.'},
+    d:{t:'dec',x:500,y:340,say:'Une <b>décision</b> dans le couloir Banque. Le code PIN est-il valide ?'},
+    ej:{t:'action',x:300,y:340,label:'Éjecter la carte',w:140,say:'Le <b>distributeur</b> éjecte la carte.'},fe:{t:'final',x:300,y:408,say:FINAL_SAY},
+    deb:{t:'action',x:500,y:412,label:'Débiter le compte',w:150,say:'La <b>Banque</b> débite le compte.'},
+    disp:{t:'action',x:300,y:476,label:'Distribuer les billets',w:180,say:'Le <b>distributeur</b> distribue les billets.'},
+    take:{t:'action',x:100,y:476,label:'Prendre les billets',w:160,say:'Le <b>Client</b> prend les billets.'},f:{t:'final',x:100,y:542,say:FINAL_SAY}},
+  e:[{f:'st',t:'ins'},{f:'ins',t:'read',p:['ins.R','read.L']},{f:'read',t:'pin',p:['read.B',[300,196],'pin.R']},
+    {f:'pin',t:'ver',p:['pin.B',[100,266],'ver.L']},{f:'ver',t:'d'},
+    {f:'d',t:'ej',p:['d.L','ej.R'],g:'[PIN invalide]',gp:[424,328]},{f:'ej',t:'fe'},
+    {f:'d',t:'deb',g:'[PIN valide]',gp:[510,376],ga:'start'},
+    {f:'deb',t:'disp',p:['deb.B',[500,476],'disp.R']},{f:'disp',t:'take',p:['disp.L','take.R']},{f:'take',t:'f'}],
+  intro:'Regardez le jeton se déplacer <b>entre les couloirs</b> : chaque franchissement confie le travail à un autre acteur.'};
+
+const BUILD={vb:[520,580],alt:'Diagramme d’activité d’un prêt en bibliothèque construit étape par étape',
+  n:{st:{t:'start',x:230,y:26,s:1},card:{t:'action',x:230,y:88,label:'Scanner la carte',w:170,s:2},d:{t:'dec',x:230,y:158,s:3},
+    renew:{t:'action',x:415,y:158,label:'Renouveler la carte',w:160,s:2},f2:{t:'final',x:415,y:232,s:1},
+    book:{t:'action',x:230,y:232,label:'Scanner le livre',w:150,s:2},fork:{t:'fork',x:230,y:296,w:270,s:4},
+    rec:{t:'action',x:125,y:360,label:'Enregistrer le prêt',w:150,s:2},prt:{t:'action',x:340,y:360,label:'Imprimer le reçu',w:150,s:2},
+    join:{t:'join',x:230,y:424,w:270,s:4},hand:{t:'action',x:230,y:486,label:'Remettre le livre',w:170,s:2},f:{t:'final',x:230,y:550,s:1}},
+  e:[{f:'st',t:'card',s:5},{f:'card',t:'d',s:5},{f:'d',t:'renew',p:['d.R','renew.L'],g:'[carte expirée]',gp:[294,146],s:5},{f:'renew',t:'f2',s:5},
+    {f:'d',t:'book',g:'[carte valide]',gp:[240,192],ga:'start',s:5},{f:'book',t:'fork',s:5},
+    {f:'fork',t:'rec',p:[[125,300],'rec.T'],s:5},{f:'fork',t:'prt',p:[[340,300],'prt.T'],s:5},
+    {f:'rec',t:'join',p:['rec.B',[125,420]],s:5},{f:'prt',t:'join',p:['prt.B',[340,420]],s:5},{f:'join',t:'hand',p:[[230,428],'hand.T'],s:5},{f:'hand',t:'f',s:5}]};
+
+/* ================= hero ================= */
+(()=>{const H={vb:[300,330],alt:'Petit diagramme d’activité : se réveiller, puis aller en cours ou traîner au lit, puis terminer',
+  n:{st:{t:'start',x:150,y:22},a:{t:'action',x:150,y:72,label:'Se réveiller',w:130},d:{t:'dec',x:150,y:134},
+    l:{t:'action',x:62,y:196,label:'Aller en cours',w:112},r:{t:'action',x:238,y:196,label:'Traîner au lit',w:112},m:{t:'merge',x:150,y:258},f:{t:'final',x:150,y:306}},
+  e:[{f:'st',t:'a'},{f:'a',t:'d'},{f:'d',t:'l',p:['d.L',[62,134],'l.T'],g:'[semaine]',gp:[96,124]},{f:'d',t:'r',p:['d.R',[238,134],'r.T'],g:'[week-end]',gp:[204,124]},
+    {f:'l',t:'m',p:['l.B',[62,258],'m.L']},{f:'r',t:'m',p:['r.B',[238,258],'m.R']},{f:'m',t:'f'}]};
+  const box=$('#herodg');box.innerHTML=render(H);const svg=box.querySelector('svg');
+  const L='M150 22 L150 72 L150 134 L62 134 L62 196 L62 258 L150 258 L150 306',R='M150 22 L150 72 L150 134 L238 134 L238 196 L238 258 L150 258 L150 306';
+  const g=document.createElementNS(NS,'g');g.innerHTML=REDUCE?`<circle class="tok" r="7.5" cx="150" cy="22"/>`:`<circle class="tok" r="7.5"><animateMotion dur="9s" repeatCount="indefinite" path="${L} M150 22 ${R.slice(8)}" keyPoints="0;1" keyTimes="0;1" calcMode="linear"/></circle>`;svg.append(g)})();
+
+/* ================= symbol gallery ================= */
+const tok=(path,extra='')=>`<circle class="tok" r="6"><animateMotion dur="${extra||'2.4s'}" repeatCount="indefinite" path="${path}"/></circle>`;
+const SYM={
+start:{n:'Nœud initial',d:'Là où l’activité commence. Il contient le premier jeton.',r:'Généralement un seul par diagramme.',
+  b:`<circle cx="90" cy="34" r="12" class="ink"/><polyline class="edge" points="90,46 90,94"/>`,
+  a:`<circle cx="90" cy="34" r="12" class="pulse-ring"><animate attributeName="r" values="12;28" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" values=".8;0" dur="2s" repeatCount="indefinite"/></circle>`+tok('M90 34 L90 92','2s')},
+action:{n:'Action',d:'Une étape de travail. Nommée avec un groupe verbal.',r:'Rectangle aux coins arrondis ; nommez-le « verbe + complément ».',
+  b:`<polyline class="edge" points="90,2 90,28"/><rect class="abox glowbox" x="20" y="28" width="140" height="44" rx="18"/><text class="ntx" x="90" y="51" text-anchor="middle" dominant-baseline="middle">Vérifier le stock</text><polyline class="edge" points="90,72 90,98"/>`,
+  a:tok('M90 2 L90 28 L42 50 L90 72 L90 98','3s')},
+flow:{n:'Flot de contrôle',d:'Une flèche qui fait passer le jeton d’un nœud au suivant.',r:'Toujours orientée.',
+  b:`<polyline class="edge" points="14,50 166,50"/>`,a:tok('M14 50 L160 50','2s')},
+dec:{n:'Décision',d:'Un flot entrant, plusieurs sortants. Le jeton prend l’unique branche dont la garde est vraie.',r:'Chaque flot sortant a besoin d’une garde.',
+  b:`<polyline class="edge" points="90,2 90,24"/><polygon class="dia" points="90,24 112,46 90,68 68,46"/><polyline class="edge" points="68,46 26,46 26,96"/><polyline class="edge" points="112,46 154,46 154,96"/><text class="gtx" x="46" y="37" text-anchor="middle">[oui]</text><text class="gtx" x="134" y="37" text-anchor="middle">[non]</text>`,
+  a:`<circle class="tok" r="6"><animateMotion dur="5s" repeatCount="indefinite" path="M90 2 L90 46 L26 46 L26 94 M90 2 L90 46 L154 46 L154 94" calcMode="linear" keyPoints="0;1" keyTimes="0;1"/></circle>`},
+merge:{n:'Fusion',d:'Plusieurs flots entrants, un seul sortant. Réunit des chemins alternatifs.',r:'N’attend pas : chaque jeton passe.',
+  b:`<polyline class="edge" points="26,4 26,46 68,46"/><polyline class="edge" points="154,4 154,46 112,46"/><polygon class="dia" points="90,24 112,46 90,68 68,46"/><polyline class="edge" points="90,68 90,98"/>`,
+  a:`<circle class="tok" r="6"><animateMotion dur="5s" repeatCount="indefinite" path="M26 4 L26 46 L90 46 L90 96 M154 4 L154 46 L90 46 L90 96" calcMode="linear" keyPoints="0;1" keyTimes="0;1"/></circle>`},
+fork:{n:'Fork (bifurcation)',d:'Un flot entrant, plusieurs sortants. Divise le jeton pour que toutes les branches s’exécutent en parallèle.',r:'Pas de gardes sur ses flots sortants.',
+  b:`<polyline class="edge" points="90,2 90,34"/><rect class="ink" x="30" y="34" width="120" height="8" rx="3"/><polyline class="edge" points="50,42 50,98"/><polyline class="edge" points="130,42 130,98"/>`,
+  a:tok('M90 2 L90 38 L50 38 L50 96','2.6s')+tok('M90 2 L90 38 L130 38 L130 96','2.6s')},
+join:{n:'Join (jonction)',d:'Plusieurs flots entrants, un sortant. Attend un jeton de chaque branche.',r:'Fermez chaque fork par un join.',
+  b:`<polyline class="edge" points="50,2 50,52"/><polyline class="edge" points="130,2 130,52"/><rect class="ink" x="30" y="52" width="120" height="8" rx="3"/><polyline class="edge" points="90,60 90,98"/>`,
+  a:`<circle class="tok" r="6"><animateMotion dur="3.4s" repeatCount="indefinite" path="M50 2 L50 52" calcMode="linear" keyPoints="0;1;1" keyTimes="0;.55;1"/><animate attributeName="opacity" dur="3.4s" repeatCount="indefinite" values="1;1;0;0" keyTimes="0;.56;.57;1"/></circle>
+     <circle class="tok" r="6"><animateMotion dur="3.4s" repeatCount="indefinite" path="M130 2 L130 52" calcMode="linear" keyPoints="0;1;1" keyTimes="0;.28;1"/><animate attributeName="opacity" dur="3.4s" repeatCount="indefinite" values="1;1;0;0" keyTimes="0;.56;.57;1"/></circle>
+     <circle class="tok" r="6"><animateMotion dur="3.4s" repeatCount="indefinite" path="M90 58 L90 96" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;.57;.95;1"/><animate attributeName="opacity" dur="3.4s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.56;.57;.95;1"/></circle>`},
+final:{n:'Nœud final d’activité',d:'Termine toute l’activité, y compris toutes les autres branches encore en cours.',r:'Rien ne peut en sortir.',
+  b:`<polyline class="edge" points="90,2 90,34"/><circle class="ring" cx="90" cy="50" r="15"/><circle class="ink" cx="90" cy="50" r="9"/>`,
+  a:`<circle cx="90" cy="50" r="15" class="pulse-ring"><animate attributeName="r" dur="2.6s" repeatCount="indefinite" values="15;15;30" keyTimes="0;.5;1"/><animate attributeName="opacity" dur="2.6s" repeatCount="indefinite" values="0;.9;0" keyTimes="0;.5;1"/></circle><circle class="tok" r="6"><animateMotion dur="2.6s" repeatCount="indefinite" path="M90 2 L90 50" calcMode="linear" keyPoints="0;1;1" keyTimes="0;.5;1"/><animate attributeName="opacity" dur="2.6s" repeatCount="indefinite" values="1;1;0;0" keyTimes="0;.5;.52;1"/></circle>`},
+flowfinal:{n:'Nœud final de flot',d:'Ne termine que le jeton qui l’atteint. Les autres flots continuent.',r:'Servez-vous-en pour arrêter une seule branche parallèle.',
+  b:`<polyline class="edge" points="12,32 104,32"/><g class="ffin"><circle cx="118" cy="32" r="13"/><path d="M109 23 L127 41 M127 23 L109 41"/></g><polyline class="edge" points="12,74 168,74"/>`,
+  a:`<circle class="tok" r="6"><animateMotion dur="2.6s" repeatCount="indefinite" path="M12 32 L118 32" calcMode="linear" keyPoints="0;1;1" keyTimes="0;.6;1"/><animate attributeName="opacity" dur="2.6s" repeatCount="indefinite" values="1;1;0;0" keyTimes="0;.6;.62;1"/></circle>`+tok('M12 74 L164 74','2.6s')},
+lane:{n:'Couloir',d:'Une partition qui montre qui ou quoi exécute les actions qu’elle contient.',r:'Un couloir par acteur, rôle ou système.',
+  b:`<rect class="lane-bg" x="4" y="4" width="86" height="92"/><rect class="lane-bg alt" x="90" y="4" width="86" height="92"/><rect class="lane-hd" x="4" y="4" width="172" height="24"/><text class="lane-tx" x="47" y="20" text-anchor="middle" style="font-size:11px">Étudiant</text><text class="lane-tx" x="133" y="20" text-anchor="middle" style="font-size:11px">Système</text><rect class="lane-bd" x="4" y="4" width="86" height="92"/><rect class="lane-bd" x="90" y="4" width="86" height="92"/><rect class="abox" x="14" y="48" width="66" height="30" rx="12"/><text class="ntx" x="47" y="64" text-anchor="middle" dominant-baseline="middle" style="font-size:11px">Envoyer</text><rect class="abox" x="100" y="48" width="66" height="30" rx="12"/><text class="ntx" x="133" y="64" text-anchor="middle" dominant-baseline="middle" style="font-size:11px">Vérifier</text><polyline class="edge" points="80,63 100,63"/>`,
+  a:tok('M28 63 L116 63','2.4s')},
+obj:{n:'Nœud objet',d:'Des données ou un objet transmis entre des actions, comme une facture.',r:'Rectangle simple avec un nom.',
+  b:`<rect class="abox" x="6" y="32" width="52" height="36" rx="14"/><text class="ntx" x="32" y="51" text-anchor="middle" dominant-baseline="middle" style="font-size:12px">Payer</text><rect class="obox" x="70" y="34" width="44" height="32" rx="2"/><text class="ntx" x="92" y="51" text-anchor="middle" dominant-baseline="middle" style="font-size:12px">Reçu</text><rect class="abox" x="126" y="32" width="50" height="36" rx="14"/><text class="ntx" x="151" y="51" text-anchor="middle" dominant-baseline="middle" style="font-size:12px">Livrer</text><polyline class="edge" points="58,50 70,50"/><polyline class="edge" points="114,50 126,50"/>`,
+  a:tok('M30 50 L150 50','2.6s')},
+guard:{n:'Garde',d:'Une condition entre crochets sur un flot. Le flot ne peut être emprunté que si elle est vraie.',r:'Les gardes d’une même décision ne doivent pas se chevaucher.',
+  b:`<polyline class="edge" points="14,58 166,58"/><text class="gtx" x="90" y="44" text-anchor="middle" style="font-size:14px">[âge ≥ 18]</text>`,
+  a:tok('M14 58 L160 58','2.4s')}};
+const symSvg=(k,anim)=>`<svg viewBox="0 0 180 100" role="img" aria-label="Symbole : ${SYM[k].n}">${SYM[k].b}${anim&&!REDUCE?SYM[k].a:''}</svg>`;
+$('#gallery').innerHTML=Object.keys(SYM).map(k=>`<div class="sym"><div class="pic">${symSvg(k,true)}</div><h4>${SYM[k].n}</h4><p>${SYM[k].d}</p></div>`).join('');
+
+/* ================= simulators ================= */
+Sim($('#sim-login'),LOGIN);Sim($('#sim-order'),ORDER);Sim($('#sim-atm'),ATM);
+
+/* ================= text → diagram builder ================= */
+(()=>{const stage=$('#bstage');stage.innerHTML=render(BUILD);
+  const ST=[
+   ['1 · Début et fin','Repérez où le processus <b>commence</b> et où il <b>se termine</b>. Cette histoire se termine à deux endroits : le prêt s’arrête ou le prêt est terminé. Cela donne un nœud initial et <b>deux</b> nœuds finaux d’activité.'],
+   ['2 · Actions','Soulignez chaque <b>verbe</b> décrivant un travail. Chacun devient une <b>action</b>, nommée « verbe + complément » : <i>Scanner la carte</i>, <i>Scanner le livre</i>…'],
+   ['3 · Décisions','« <b>Si</b> … <b>sinon</b> » indique un losange de <b>décision</b>. Chaque branche reçoit une garde : <code>[carte expirée]</code> et <code>[carte valide]</code>.'],
+   ['4 · Parallélisme','« <b>En même temps</b> » indique un <b>fork</b>. « <b>Quand les deux sont terminés</b> » indique un <b>join</b> qui attend les deux branches.'],
+   ['5 · Relier','Reliez tout avec des <b>flots de contrôle</b>, de haut en bas, et écrivez les gardes sur les branches de la décision. Le diagramme est complet.']];
+  let cur=0;const sb=$('#bsteps');
+  sb.innerHTML=ST.map((s,i)=>`<button type="button" class="stepbtn" data-i="${i}">${s[0]}</button>`).join('');
+  function go(i){cur=Math.max(0,Math.min(4,i));const lvl=cur+1;
+    stage.querySelectorAll('[data-s]').forEach(el=>{const s=+el.dataset.s;el.classList.toggle('off',s>lvl)});
+    $$('#story .k').forEach(k=>{const n=+k.dataset.k;k.classList.toggle('lit',n===lvl||lvl===5);k.classList.toggle('seen',n<lvl)});
+    sb.querySelectorAll('.stepbtn').forEach((b,j)=>{b.classList.toggle('on',j===cur);b.classList.toggle('past',j<cur)});
+    $('#bsay').innerHTML=`<b>${ST[cur][0]}</b><br>${ST[cur][1]}`;$('#bprev').disabled=cur===0;$('#bnext').disabled=cur===4}
+  sb.querySelectorAll('.stepbtn').forEach(b=>b.onclick=()=>go(+b.dataset.i));
+  $('#bprev').onclick=()=>go(cur-1);$('#bnext').onclick=()=>go(cur+1);go(0)})();
+
+/* ================= practice: tabs ================= */
+$$('#tabs .tab').forEach(t=>t.onclick=()=>{$$('#tabs .tab').forEach(x=>{x.classList.toggle('on',x===t);x.setAttribute('aria-selected',x===t)});$$('.panel').forEach(p=>p.hidden=p.id!==t.dataset.p)});
+
+function mcq(panel,items){const sc=panel.querySelector('.score'),list=panel.querySelector('.qs');let ok=0;
+  function upd(){sc.innerHTML=`<span><b>${ok}</b> / ${items.length} bonnes réponses</span><span class="meter"><i style="width:${ok/items.length*100}%"></i></span><button type="button" class="btn sm">↺ Recommencer</button>`;sc.querySelector('button').onclick=draw}
+  function draw(){ok=0;list.innerHTML=items.map((it,i)=>`<div class="q"><div class="qh"><span class="qn">${i+1}</span><div class="qt">${it.q}</div></div>${it.svg?`<div class="qsvg">${it.svg}</div>`:''}<div class="opts">${it.o.map((o,j)=>`<button type="button" class="opt" data-j="${j}">${o}</button>`).join('')}</div><div class="fb" aria-live="polite"></div></div>`).join('');
+    list.querySelectorAll('.q').forEach((q,i)=>q.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{if(q.dataset.done)return;q.dataset.done=1;const it=items[i],good=+b.dataset.j===it.a;if(good)ok++;
+      q.querySelectorAll('.opt').forEach((x,k)=>{x.disabled=true;if(k===it.a)x.classList.add('right');else if(x===b)x.classList.add('wrong')});
+      if(!good){q.classList.add('shake');setTimeout(()=>q.classList.remove('shake'),450)}
+      q.querySelector('.fb').innerHTML=`<b class="${good?'good':'bad'}">${good?pick(YES):'Pas tout à fait.'}</b> ${it.w}`;upd()}));upd()}
+  draw()}
+
+mcq($('#p-sym'),[
+ {q:'Quel est ce symbole ?',svg:symSvg('start'),o:['Nœud final d’activité','Nœud initial','Nœud objet','Fusion'],a:1,w:'Un disque noir plein est le <b>nœud initial</b>, là où l’activité commence.'},
+ {q:'Quel est ce symbole ?',svg:symSvg('final'),o:['Nœud initial','Nœud final de flot','Nœud final d’activité','Décision'],a:2,w:'Une « cible » est le nœud <b>final d’activité</b>. Il met fin à toute l’activité.'},
+ {q:'Quel est ce symbole ?',svg:symSvg('flowfinal'),o:['Nœud final de flot','Nœud final d’activité','Action d’annulation','Join'],a:0,w:'Un cercle barré d’une croix est le nœud <b>final de flot</b>. Il ne termine qu’un seul flot.'},
+ {q:'Quel est ce symbole ?',svg:symSvg('dec'),o:['Fusion','Fork','Décision','Join'],a:2,w:'Un flot entrant et plusieurs flots sortants avec gardes : une <b>décision</b>.'},
+ {q:'Quel est ce symbole ?',svg:symSvg('merge'),o:['Décision','Fusion','Join','Fork'],a:1,w:'Plusieurs flots entrants et un sortant sur un losange : une <b>fusion</b>.'},
+ {q:'Quel est ce symbole ?',svg:symSvg('fork'),o:['Join','Couloir','Fork','Décision'],a:2,w:'Un flot entre dans une barre et plusieurs en sortent : un <b>fork</b>, qui lance des branches parallèles.'},
+ {q:'Quel est ce symbole ?',svg:symSvg('join'),o:['Fork','Join','Fusion','Nœud final de flot'],a:1,w:'Plusieurs flots entrent dans une barre et un seul en sort : un <b>join</b>, qui attend toutes les branches.'},
+ {q:'Dans cette image, que représente la boîte à angles droits « Reçu » ?',svg:symSvg('obj'),o:['Une action','Une note','Un nœud objet','Un couloir'],a:2,w:'Un rectangle simple avec un nom est un <b>nœud objet</b> : des données transmises de « Payer » à « Livrer ».'}]);
+
+mcq($('#p-tf'),[
+ {q:'Un diagramme d’activité peut avoir plus d’un nœud final d’activité.',o:['Vrai','Faux'],a:0,w:'Des chemins différents peuvent se terminer à des endroits différents, comme dans les simulateurs de commande et de connexion.'},
+ {q:'Chaque flot qui sort d’un nœud de décision doit avoir une garde.',o:['Vrai','Faux'],a:0,w:'Les gardes indiquent quelle branche le jeton emprunte.'},
+ {q:'Un fork choisit l’un de ses flots sortants.',o:['Vrai','Faux'],a:1,w:'Un fork lance <b>tous</b> ses flots sortants. Choisir un flot est le rôle d’une décision.'},
+ {q:'Un join attend qu’un jeton soit arrivé sur chaque flot entrant.',o:['Vrai','Faux'],a:0,w:'C’est ainsi qu’il synchronise les branches parallèles.'},
+ {q:'Une fusion attend que tous les flots entrants soient arrivés.',o:['Vrai','Faux'],a:1,w:'Une fusion laisse passer chaque jeton immédiatement. Attendre, c’est ce que fait un join.'},
+ {q:'Un nœud final d’activité termine tous les flots ; un nœud final de flot ne termine que le jeton qui l’atteint.',o:['Vrai','Faux'],a:0,w:'C’est exactement la différence entre ◉ et ⊗.'},
+ {q:'Les couloirs montrent qui ou quoi exécute chaque action.',o:['Vrai','Faux'],a:0,w:'Chaque couloir est un acteur, un rôle, un service ou un système.'},
+ {q:'Les gardes d’une même décision peuvent se chevaucher, p. ex. [âge ≥ 18] et [âge ≥ 16].',o:['Vrai','Faux'],a:1,w:'Elles doivent s’exclure mutuellement, sinon le diagramme est ambigu pour l’âge 18.'},
+ {q:'« Vérifier le stock » est une action bien nommée.',o:['Vrai','Faux'],a:0,w:'C’est un verbe suivi d’un complément.'},
+ {q:'Les diagrammes d’activité montrent surtout les messages échangés entre objets au fil du temps.',o:['Vrai','Faux'],a:1,w:'C’est un <b>diagramme de séquence</b>. Les diagrammes d’activité montrent l’enchaînement des actions.'},
+ {q:'[sinon] peut servir de garde pour « tous les autres cas ».',o:['Vrai','Faux'],a:0,w:'Cela garantit que les gardes couvrent tous les cas.'}]);
+
+$('#trA').innerHTML=render(ORDER);$('#trB').innerHTML=render(LOGIN);
+mcq($('#p-trace'),[
+ {q:'<b>Diagramme A.</b> L’article n’est plus en stock. Quelles actions s’exécutent ?',o:['Recevoir la commande → Vérifier le stock → Annuler la commande','Recevoir la commande → Vérifier le stock → Annuler la commande → Expédier la commande','Recevoir la commande → Annuler la commande'],a:0,w:'La garde <code>[rupture]</code> mène à Annuler la commande puis au nœud final.'},
+ {q:'<b>Diagramme A.</b> Quelles deux actions peuvent s’exécuter en même temps ?',o:['Vérifier le stock et Annuler la commande','Débiter le paiement et Emballer les articles','Expédier la commande et Emballer les articles'],a:1,w:'Elles sont sur des branches différentes du fork.'},
+ {q:'<b>Diagramme A.</b> Emballer les articles est terminé, mais pas Envoyer la facture. Que se passe-t-il ?',o:['Expédier la commande démarre aussitôt','Le jeton venant d’Emballer les articles attend au join','L’activité se termine'],a:1,w:'Le join attend un jeton de <b>chaque</b> branche.'},
+ {q:'<b>Diagramme B.</b> L’utilisateur saisit deux fois un mauvais mot de passe, puis le bon. Combien de fois « Saisir le mot de passe » s’exécute-t-il ?',o:['1','2','3','4'],a:2,w:'Deux échecs plus la tentative réussie : 3 fois.'},
+ {q:'<b>Diagramme B.</b> Qu’est-ce que le losange situé juste sous le nœud initial ?',o:['Une décision','Une fusion qui réunit la première tentative et chaque nouvel essai','Un fork'],a:1,w:'Deux flots arrivent (depuis le début et depuis la boucle) et un seul sort.'},
+ {q:'<b>Diagramme B.</b> L’utilisateur se trompe trois fois. Quelle est la dernière action ?',o:['Afficher l’erreur','Verrouiller le compte','Ouvrir le tableau de bord'],a:1,w:'Au troisième échec, seule <code>[incorrect et essais = 3]</code> est vraie.'}]);
+
+/* ================= practice: order ================= */
+function linear(steps){const D={vb:[300,90+steps.length*62],alt:'Diagramme d’activité linéaire',n:{st:{t:'start',x:150,y:24}},e:[]};let prev='st';
+  steps.forEach((s,i)=>{const id='a'+i;D.n[id]={t:'action',x:150,y:82+i*62,label:s,w:250};D.e.push({f:prev,t:id});prev=id});
+  D.n.f={t:'final',x:150,y:82+steps.length*62-8};D.e.push({f:prev,t:'f'});return D}
+const ORD=[['Retirer de l’argent à un distributeur',['Insérer la carte','Saisir le code PIN','Choisir le montant','Reprendre la carte','Prendre les billets']],
+ ['Rendre un devoir en ligne',['Se connecter','Ouvrir le cours','Téléverser le fichier','Cliquer sur Envoyer','Lire la confirmation']],
+ ['Préparer une tasse de thé',['Faire bouillir l’eau','Mettre le sachet dans la tasse','Verser l’eau','Attendre 3 minutes','Retirer le sachet']]];
+$('#ords').innerHTML=ORD.map((o,i)=>`<div class="ord" data-i="${i}"><h4>${i+1}. ${o[0]}</h4><div class="pool"></div><div class="ans"></div><div class="row"><button type="button" class="btn pri chk">Vérifier</button><button type="button" class="btn clr">Effacer</button><button type="button" class="btn sh">Voir la réponse</button><span class="res" aria-live="polite"></span></div><div class="mini" hidden></div></div>`).join('');
+$$('.ord').forEach(el=>{const[,steps]=ORD[+el.dataset.i];const pool=el.querySelector('.pool'),ans=el.querySelector('.ans'),res=el.querySelector('.res'),mini=el.querySelector('.mini');
+  const chip=t=>{const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=t;b.onclick=()=>{b.classList.remove('okc','noc');(b.parentNode===pool?ans:pool).append(b);res.textContent=''};return b};
+  function fill(){pool.innerHTML='';ans.innerHTML='';mini.hidden=true;res.textContent='';let s=shuffle(steps);while(s.join()===steps.join())s=shuffle(steps);s.forEach(t=>pool.append(chip(t)))}
+  function show(){mini.innerHTML=render(linear(steps));mini.hidden=false}
+  el.querySelector('.chk').onclick=()=>{const got=[...ans.children].map(c=>c.textContent);
+    if(got.length<steps.length){res.innerHTML=`<span class="bad">Placez d’abord les ${steps.length} étapes.</span>`;return}
+    let right=0;[...ans.children].forEach((c,i)=>{const ok=c.textContent===steps[i];if(ok)right++;c.classList.toggle('okc',ok);c.classList.toggle('noc',!ok)});
+    if(right===steps.length){res.innerHTML='<span class="good">Ordre parfait ! Voici le diagramme.</span>';show()}else res.innerHTML=`<span class="bad">${right} étape(s) sur ${steps.length} bien placée(s). Cliquez sur une étape rouge pour la renvoyer.</span>`};
+  el.querySelector('.clr').onclick=fill;
+  el.querySelector('.sh').onclick=()=>{pool.innerHTML='';ans.innerHTML='';steps.forEach(t=>{const c=chip(t);c.classList.add('okc');ans.append(c)});res.innerHTML='Ordre correct affiché.';show()};
+  fill()});
+
+/* ================= practice: find the error ================= */
+const SPOT=[
+ {t:'Quel chemin ?',bad:'d',w:'La décision n’a <b>aucune garde</b> : personne ne sait quelle branche prendre. Ajoutez <code>[âge ≥ 18]</code> et <code>[âge &lt; 18]</code>.',
+  D:{vb:[380,300],n:{st:{t:'start',x:190,y:22},a:{t:'action',x:190,y:78,label:'Vérifier l’âge',w:140},d:{t:'dec',x:190,y:144},l:{t:'action',x:70,y:210,label:'Laisser entrer',w:120},r:{t:'action',x:310,y:210,label:'Refuser l’accès',w:120},f1:{t:'final',x:70,y:272},f2:{t:'final',x:310,y:272}},
+   e:[{f:'st',t:'a'},{f:'a',t:'d'},{f:'d',t:'l',p:['d.L',[70,144],'l.T']},{f:'d',t:'r',p:['d.R',[310,144],'r.T']},{f:'l',t:'f1'},{f:'r',t:'f2'}]}},
+ {t:'Paiement',bad:'j',w:'Après une décision, une seule branche s’exécute : ce <b>join</b> attend donc indéfiniment le second jeton, c’est un interblocage. Utilisez plutôt un losange de <b>fusion</b>.',
+  D:{vb:[380,400],n:{st:{t:'start',x:190,y:22},a:{t:'action',x:190,y:78,label:'Choisir le paiement',w:160},d:{t:'dec',x:190,y:144},l:{t:'action',x:80,y:210,label:'Payer par carte',w:130},r:{t:'action',x:300,y:210,label:'Payer en espèces',w:130},j:{t:'join',x:190,y:272,w:240},p:{t:'action',x:190,y:322,label:'Imprimer le reçu',w:150},f:{t:'final',x:190,y:378}},
+   e:[{f:'st',t:'a'},{f:'a',t:'d'},{f:'d',t:'l',p:['d.L',[80,144],'l.T'],g:'[carte]',gp:[110,134]},{f:'d',t:'r',p:['d.R',[300,144],'r.T'],g:'[espèces]',gp:[270,134]},{f:'l',t:'j',p:['l.B',[80,268]]},{f:'r',t:'j',p:['r.B',[300,268]]},{f:'j',t:'p',p:[[190,276],'p.T']},{f:'p',t:'f'}]}},
+ {t:'Température de la pièce',bad:'d',w:'Si <code>t</code> vaut exactement 30, <b>aucune garde n’est vraie</b> et le jeton est bloqué. Utilisez <code>[t &gt; 30]</code> et <code>[sinon]</code>.',
+  D:{vb:[380,300],n:{st:{t:'start',x:190,y:22},a:{t:'action',x:190,y:78,label:'Lire la température t',w:180},d:{t:'dec',x:190,y:144},l:{t:'action',x:70,y:210,label:'Allumer ventilo',w:120},r:{t:'action',x:310,y:210,label:'Éteindre ventilo',w:120},f1:{t:'final',x:70,y:272},f2:{t:'final',x:310,y:272}},
+   e:[{f:'st',t:'a'},{f:'a',t:'d'},{f:'d',t:'l',p:['d.L',[70,144],'l.T'],g:'[t > 30]',gp:[118,134]},{f:'d',t:'r',p:['d.R',[310,144],'r.T'],g:'[t < 30]',gp:[262,134]},{f:'l',t:'f1'},{f:'r',t:'f2'}]}},
+ {t:'Résultats de recherche',bad:'b',w:'« Base de données » est un nom. Une action est une <b>étape de travail</b> : nommez-la avec un verbe, par exemple <i>Interroger la base de données</i>.',
+  D:{vb:[380,300],n:{st:{t:'start',x:190,y:22},a:{t:'action',x:190,y:78,label:'Saisir des mots-clés',w:150},b:{t:'action',x:190,y:146,label:'Base de données',w:150},c:{t:'action',x:190,y:214,label:'Afficher les résultats',w:190},f:{t:'final',x:190,y:276}},
+   e:[{f:'st',t:'a'},{f:'a',t:'b'},{f:'b',t:'c'},{f:'c',t:'f'}]}},
+ {t:'Rapport hebdomadaire',bad:'f1',w:'Rien ne peut sortir d’un nœud <b>final d’activité</b> : il met fin à tout. Supprimez-le et ne gardez que le nœud final après « Envoyer le rapport ».',
+  D:{vb:[380,300],n:{st:{t:'start',x:190,y:22},a:{t:'action',x:190,y:78,label:'Rédiger le rapport',w:150},f1:{t:'final',x:190,y:140},b:{t:'action',x:190,y:204,label:'Envoyer le rapport',w:150},f2:{t:'final',x:190,y:268}},
+   e:[{f:'st',t:'a'},{f:'a',t:'f1'},{f:'f1',t:'b'},{f:'b',t:'f2'}]}},
+ {t:'Connexion',bad:'k',w:'Un <b>fork</b> lance <b>toutes</b> ses branches et n’a jamais de gardes. Pour choisir un seul chemin, utilisez un losange de <b>décision</b>.',
+  D:{vb:[380,300],n:{st:{t:'start',x:190,y:22},a:{t:'action',x:190,y:78,label:'Vérifier l’identifiant',w:190},k:{t:'fork',x:190,y:138,w:240},l:{t:'action',x:90,y:206,label:'Ouvrir l’accueil',w:130},r:{t:'action',x:290,y:206,label:'Afficher l’erreur',w:130},f1:{t:'final',x:90,y:270},f2:{t:'final',x:290,y:270}},
+   e:[{f:'st',t:'a'},{f:'a',t:'k'},{f:'k',t:'l',p:[[90,142],'l.T'],g:'[ok]',gp:[100,163],ga:'start'},{f:'k',t:'r',p:[[290,142],'r.T'],g:'[échec]',gp:[300,163],ga:'start'},{f:'l',t:'f1'},{f:'r',t:'f2'}]}}];
+(()=>{const box=$('#spots'),sc=$('#spot-score');let first=0,solved=0;
+  const upd=()=>sc.innerHTML=`<span><b>${first}</b> / ${SPOT.length} trouvées au premier clic · ${solved} résolues</span><span class="meter"><i style="width:${solved/SPOT.length*100}%"></i></span>`;
+  box.innerHTML=SPOT.map((s,i)=>`<div class="spot" data-i="${i}"><h4>${i+1}. ${s.t}</h4><div class="pic">${render(s.D)}</div><div class="fb" aria-live="polite">Cliquez sur le symbole incorrect.</div></div>`).join('');
+  $$('.spot').forEach(card=>{const s=SPOT[+card.dataset.i];let tries=0;const fb=card.querySelector('.fb');
+    card.querySelectorAll('.node').forEach(g=>{g.setAttribute('tabindex','0');g.setAttribute('role','button');
+      const act=()=>{if(card.classList.contains('solved'))return;tries++;
+        if(g.dataset.id===s.bad){g.classList.add('rightpick');card.classList.add('solved');solved++;if(tries===1)first++;fb.innerHTML=`<b class="good">Trouvé !</b> ${s.w}`;upd()}
+        else{g.classList.add('wrongpick');setTimeout(()=>g.classList.remove('wrongpick'),700);fb.innerHTML='<b class="bad">Celui-ci est correct.</b> Observez comment le jeton se comporterait à chaque nœud.'}};
+      g.onclick=act;g.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();act()}}})});upd()})();
+
+/* ================= practice: model it ================= */
+const MODELS=[
+ {l:1,t:'Machine à café',s:'L’utilisateur insère une capsule. Si le réservoir d’eau est vide, l’utilisateur le remplit. Puis il appuie sur Start et prend le café.',
+  c:['4 actions','1 décision avec 2 gardes','1 fusion avant « Appuyer sur Start »'],
+  D:{vb:[450,425],n:{st:{t:'start',x:200,y:24},cap:{t:'action',x:200,y:80,label:'Insérer la capsule',w:150},d:{t:'dec',x:200,y:146},fill:{t:'action',x:360,y:146,label:'Remplir le réservoir',w:170},m:{t:'merge',x:200,y:216},press:{t:'action',x:200,y:282,label:'Appuyer sur Start',w:150},take:{t:'action',x:200,y:346,label:'Prendre le café',w:150},f:{t:'final',x:200,y:404}},
+   e:[{f:'st',t:'cap'},{f:'cap',t:'d'},{f:'d',t:'fill',p:['d.R','fill.L'],g:'[plus d’eau]',gp:[256,134]},{f:'fill',t:'m',p:['fill.B',[360,216],'m.R']},{f:'d',t:'m',g:'[eau présente]',gp:[210,182],ga:'start'},{f:'m',t:'press'},{f:'press',t:'take'},{f:'take',t:'f'}]}},
+ {l:2,t:'Commande au restaurant',s:'Un serveur prend la commande. Ensuite, la cuisine prépare le plat pendant que le bar prépare les boissons. Quand les deux sont prêts, le serveur sert la table.',
+  c:['4 actions','1 fork et 1 join','Aucune garde : rien n’est choisi'],
+  D:{vb:[420,400],n:{st:{t:'start',x:210,y:24},take:{t:'action',x:210,y:80,label:'Prendre la commande',w:150},k:{t:'fork',x:210,y:140,w:250},cook:{t:'action',x:115,y:204,label:'Cuisiner le plat',w:140},drk:{t:'action',x:305,y:204,label:'Préparer les boissons',w:170},j:{t:'join',x:210,y:266,w:250},srv:{t:'action',x:210,y:322,label:'Servir la table',w:150},f:{t:'final',x:210,y:380}},
+   e:[{f:'st',t:'take'},{f:'take',t:'k'},{f:'k',t:'cook',p:[[115,144],'cook.T']},{f:'k',t:'drk',p:[[305,144],'drk.T']},{f:'cook',t:'j',p:['cook.B',[115,262]]},{f:'drk',t:'j',p:['drk.B',[305,262]]},{f:'j',t:'srv',p:[[210,270],'srv.T']},{f:'srv',t:'f'}]}},
+ {l:3,t:'Examen en ligne, avec couloirs',s:'L’étudiant remet l’examen en ligne. Le système vérifie la date limite. Si la remise est en retard, le système la rejette et le processus se termine. Sinon, l’enseignant corrige l’examen, le système publie la note et l’étudiant la consulte.',
+  c:['3 couloirs : Étudiant, Système, Enseignant','6 actions, chacune dans le bon couloir','1 décision avec [en retard] / [à temps]','2 nœuds finaux d’activité'],
+  D:{vb:[570,520],lanes:[{name:'Étudiant',x:0,w:190},{name:'Système',x:190,w:190},{name:'Enseignant',x:380,w:190}],
+   n:{st:{t:'start',x:95,y:64},sub:{t:'action',x:95,y:118,label:'Remettre l’examen',w:140},chk:{t:'action',x:285,y:118,label:'Vérifier la date limite',w:170},d:{t:'dec',x:285,y:190},
+    rej:{t:'action',x:285,y:262,label:'Rejeter la copie',w:160},f1:{t:'final',x:285,y:326},grade:{t:'action',x:475,y:240,label:'Corriger l’examen',w:140},
+    pub:{t:'action',x:285,y:400,label:'Publier la note',w:150},view:{t:'action',x:95,y:400,label:'Consulter la note',w:140},f2:{t:'final',x:95,y:470}},
+   e:[{f:'st',t:'sub'},{f:'sub',t:'chk',p:['sub.R','chk.L']},{f:'chk',t:'d'},{f:'d',t:'rej',g:'[en retard]',gp:[295,226],ga:'start'},{f:'rej',t:'f1'},
+    {f:'d',t:'grade',p:['d.R',[475,190],'grade.T'],g:'[à temps]',gp:[392,180]},{f:'grade',t:'pub',p:['grade.B',[475,400],'pub.R']},{f:'pub',t:'view',p:['pub.L','view.R']},{f:'view',t:'f2'}]}}];
+$('#models').innerHTML=MODELS.map((m,i)=>`<div class="model"><h4>${i+1}. ${m.t} <span class="lvl l${m.l}">${'★'.repeat(m.l)} ${['','Facile','Moyen','Défi'][m.l]}</span></h4><div class="scen">${m.s}</div><div class="row" style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn hint">Liste de contrôle</button><button type="button" class="btn pri solb">Voir le corrigé</button></div><ul hidden>${m.c.map(c=>`<li>${c}</li>`).join('')}</ul><div class="sol" hidden></div></div>`).join('');
+$$('.model').forEach((el,i)=>{el.querySelector('.hint').onclick=()=>{const u=el.querySelector('ul');u.hidden=!u.hidden};
+  el.querySelector('.solb').onclick=e=>{const s=el.querySelector('.sol');if(!s.innerHTML)s.innerHTML=render(MODELS[i].D);s.hidden=!s.hidden;e.target.textContent=s.hidden?'Voir le corrigé':'Masquer le corrigé'}});
+
+/* ================= cheat sheet ================= */
+$('#cheattab').innerHTML='<tr><th>Symbole</th><th>Nom</th><th>Signification</th><th>Règle</th></tr>'+Object.keys(SYM).map(k=>`<tr><td><div class="mini">${symSvg(k,false)}</div></td><td><b>${SYM[k].n}</b></td><td>${SYM[k].d}</td><td>${SYM[k].r}</td></tr>`).join('');
+
+/* ================= theme + nav ================= */
+$('#theme').onclick=()=>{const r=document.documentElement,cur=r.dataset.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'),n=cur==='dark'?'light':'dark';r.dataset.theme=n;try{localStorage.setItem('ad-theme',n)}catch(e){}};
+(()=>{const links=$$('#toc a'),secs=links.map(a=>$(a.getAttribute('href')));
+  const on=()=>{let cur=-1;secs.forEach((s,i)=>{if(s&&s.getBoundingClientRect().top<160)cur=i});links.forEach((a,i)=>{const act=i===cur;if(act&&!a.classList.contains('act'))a.scrollIntoView({block:'nearest',inline:'center'});a.classList.toggle('act',act)})};
+  addEventListener('scroll',on,{passive:true});on()})();
+</script>
+
+</body>
+</html>
