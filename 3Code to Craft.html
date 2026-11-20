@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Code to Craft</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: one dark digital world fixed behind a single scrolling column of chapters;
+   the scroll position flies the camera, the content floats over it on translucent navy panels. Single theme by choice. */
+:root{
+  color-scheme:dark;
+  --bg:#080B12; --blue:#6C8CFF; --cyan:#65D9E8; --violet:#A78BFA;
+  --text:#F4F5FA; --mute:#9298A8;
+  --panel:rgba(13,18,32,.80); --panel2:rgba(20,27,46,.86); --line:rgba(140,160,255,.17); --line2:rgba(140,160,255,.34);
+  --ok:#7EE0AC; --bad:#FF9A9A; --warn:#F2C879;
+  --soft:#C9CEDC; --on-acc:#0A0E1A; --surf:rgba(6,9,16,.66); --surf2:rgba(13,18,32,.7); --grn-h:#EFFFF6;
+  --display:"Space Grotesk","Segoe UI",system-ui,sans-serif;
+  --body:"Inter","Segoe UI",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  --r:14px; --gut:clamp(16px,4vw,56px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:400 16px/1.6 var(--body);overflow-x:hidden}
+h1,h2,h3,h4{font-family:var(--display);margin:0;text-wrap:balance;letter-spacing:-.02em;line-height:1.08}
+p{margin:0}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:6px}
+.mono{font-family:var(--mono)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- world ---------- */
+#world{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0}
+.fallback{position:fixed;inset:0;z-index:0;display:none;
+  background:
+    radial-gradient(60% 50% at 70% 20%,rgba(108,140,255,.20),transparent 70%),
+    radial-gradient(50% 45% at 20% 75%,rgba(167,139,250,.14),transparent 70%),
+    radial-gradient(40% 35% at 55% 60%,rgba(101,217,232,.10),transparent 70%),var(--bg)}
+.fallback::after{content:"";position:absolute;inset:0;
+  background-image:linear-gradient(rgba(140,160,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(140,160,255,.06) 1px,transparent 1px);
+  background-size:56px 56px;mask-image:radial-gradient(70% 70% at 50% 50%,#000,transparent)}
+.no3d #world{display:none}.no3d .fallback{display:block}
+.vignette{position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(120% 90% at 50% 45%,transparent 45%,rgba(4,6,10,.72) 100%)}
+.topbar{position:fixed;left:0;top:0;height:2px;width:100%;z-index:60;background:rgba(255,255,255,.04)}
+.topbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--cyan))}
+
+/* ---------- header ---------- */
+header.site{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:16px var(--gut);transition:background .4s,backdrop-filter .4s}
+header.site.solid{background:rgba(8,11,18,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font:700 15px/1 var(--display);letter-spacing:.14em;text-decoration:none;white-space:nowrap}
+.cursor-mark{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--cyan);position:relative;box-shadow:0 0 14px rgba(101,217,232,.55)}
+.cursor-mark::after{content:"";position:absolute;left:50%;top:4px;bottom:4px;width:2px;margin-left:-1px;background:var(--cyan);animation:blink 1.2s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+nav.main{display:flex;align-items:center;gap:clamp(12px,2vw,28px)}
+nav.main a{font:500 11.5px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;text-decoration:none;color:var(--mute);padding:8px 0;transition:color .2s}
+nav.main a:hover,nav.main a.on{color:var(--text)}
+nav.main a.pill,nav.main a.pill:hover{color:var(--on-acc);padding:11px 18px}
+.pill{font:600 11.5px/1 var(--body);letter-spacing:.12em;text-transform:uppercase;padding:11px 18px;border-radius:99px;
+  background:var(--blue);color:var(--on-acc);text-decoration:none;white-space:nowrap;transition:transform .2s,box-shadow .2s}
+.pill:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(108,140,255,.45)}
+.menu-btn{display:none;font:500 11.5px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;padding:10px 14px;border:1px solid var(--line2);border-radius:99px}
+.sheet{position:fixed;inset:0;z-index:70;background:rgba(8,11,18,.96);display:none;flex-direction:column;padding:76px var(--gut) 24px;gap:4px;overflow:auto}
+.sheet.open{display:flex}
+.sheet a{font:600 clamp(22px,6vw,30px)/1.2 var(--display);text-decoration:none;padding:12px 0;border-bottom:1px solid var(--line);display:flex;gap:14px;align-items:baseline}
+.sheet a span{font:400 12px var(--mono);color:var(--cyan);min-width:2.2em}
+.sheet .x{position:absolute;top:16px;right:var(--gut)}
+
+/* ---------- rail ---------- */
+.rail{position:fixed;right:14px;top:50%;transform:translateY(-50%);z-index:40;display:flex;flex-direction:column;gap:2px;align-items:flex-end}
+.rail button{display:flex;align-items:center;gap:8px;padding:5px 4px;font:400 10.5px/1 var(--mono);letter-spacing:.08em;color:var(--mute)}
+.rail button b{font-weight:400;opacity:0;transform:translateX(6px);transition:.25s;white-space:nowrap;text-transform:uppercase;
+  background:rgba(8,11,18,.85);padding:5px 8px;border-radius:6px;border:1px solid var(--line);pointer-events:none}
+.rail button i{width:14px;height:2px;background:currentColor;opacity:.5;transition:.25s;border-radius:2px}
+.rail button:hover b,.rail button:focus-visible b{opacity:1;transform:none}
+.rail button.on{color:var(--cyan)}.rail button.on i{width:26px;opacity:1}
+.rail button.on b{opacity:1;transform:none;color:var(--text)}
+
+/* ---------- dock (sound / top) ---------- */
+.dock{position:fixed;right:var(--gut);bottom:18px;z-index:45;display:flex;align-items:center;gap:12px}
+.dock .hint{font:400 10.5px/1 var(--mono);letter-spacing:.2em;color:var(--mute);transition:opacity .4s}
+.dock .hint::after{content:"";display:inline-block;width:28px;height:1px;background:var(--mute);vertical-align:middle;margin-left:10px}
+.rnd{width:42px;height:42px;border-radius:50%;border:1px solid var(--line2);background:rgba(8,11,18,.7);display:grid;place-items:center;transition:.2s}
+.rnd:hover{border-color:var(--cyan)}
+.eq{display:flex;gap:2px;align-items:flex-end;height:14px}
+.eq i{width:2px;height:3px;background:var(--mute);border-radius:1px}
+.snd.on .eq i{background:var(--cyan);animation:eq 1s ease-in-out infinite}
+.snd.on .eq i:nth-child(2){animation-delay:.2s}.snd.on .eq i:nth-child(3){animation-delay:.45s}.snd.on .eq i:nth-child(4){animation-delay:.1s}
+@keyframes eq{0%,100%{height:3px}50%{height:14px}}
+#toTop{opacity:0;pointer-events:none}#toTop.show{opacity:1;pointer-events:auto}
+
+/* ---------- sections ---------- */
+main{position:relative;z-index:2}
+section{position:relative;padding:clamp(88px,13vh,150px) calc(var(--gut) + 44px) clamp(72px,10vh,120px) var(--gut);scroll-margin-top:0}
+.wrap{max-width:1180px;margin:0 auto}
+.eyebrow{font:500 11.5px/1 var(--mono);letter-spacing:.24em;color:var(--cyan);text-transform:uppercase;display:flex;align-items:center;gap:12px}
+.eyebrow::before{content:"";width:28px;height:1px;background:var(--cyan)}
+.st-head{max-width:860px;margin-bottom:clamp(32px,5vh,56px);display:grid;gap:20px}
+.st-head h2{font-size:clamp(2.1rem,5.4vw,4.4rem);font-weight:700}
+.lead{font-size:clamp(1.02rem,1.4vw,1.2rem);color:var(--soft);max-width:66ch}
+.grad{background:linear-gradient(92deg,var(--text) 30%,var(--cyan) 70%,var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent}
+h3.sub{font-size:clamp(1.25rem,2.2vw,1.7rem);margin:clamp(40px,6vh,64px) 0 18px}
+h3.sub small{display:block;font:400 11px/1 var(--mono);letter-spacing:.2em;color:var(--mute);margin-bottom:10px;text-transform:uppercase}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:clamp(18px,2.4vw,28px)}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr))}
+.muted{color:var(--mute)}
+.small{font-size:.9rem}
+ul.clean{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+ul.tick li{padding-left:22px;position:relative}
+ul.tick li::before{content:"";position:absolute;left:2px;top:.62em;width:8px;height:2px;background:var(--cyan)}
+.tag{display:inline-flex;align-items:center;gap:6px;font:500 10.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;padding:6px 9px;border-radius:6px;border:1px solid var(--line2);color:var(--soft);white-space:nowrap}
+.tag.rec::before{content:"◆";color:var(--cyan)}
+.tag.ver::before{content:"⚑";color:var(--warn)}
+.note{border-left:2px solid var(--warn);background:rgba(242,200,121,.07);padding:14px 18px;border-radius:0 10px 10px 0;color:var(--soft)}
+.note b{color:var(--warn);font-family:var(--mono);font-weight:500;font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;display:block;margin-bottom:4px}
+.rv.on{animation:rise .8s cubic-bezier(.2,.7,.2,1) both}
+@keyframes rise{from{opacity:.0;transform:translateY(26px)}to{opacity:1;transform:none}}
+
+/* ---------- hero ---------- */
+#home{min-height:100vh;min-height:100svh;display:grid;place-items:center;text-align:center;padding-top:110px;padding-right:var(--gut)}
+#home .eyebrow{justify-content:center}#home .eyebrow::after{content:"";width:28px;height:1px;background:var(--cyan)}
+#home h1{font-size:clamp(2.7rem,8.6vw,7.6rem);font-weight:700;margin:26px 0 24px;letter-spacing:-.035em;line-height:.98}
+#home h1 span{display:block}
+#home .cap{font-size:clamp(1rem,1.5vw,1.25rem);color:var(--soft);max-width:46ch;margin:0 auto}
+.cta-row{display:flex;flex-direction:column;align-items:center;gap:20px;margin-top:40px}
+.orb{width:148px;height:148px;border-radius:50%;border:1px solid var(--line2);display:grid;place-items:center;text-decoration:none;
+  font:600 12.5px/1.35 var(--body);letter-spacing:.12em;text-transform:uppercase;position:relative;transition:.5s;background:radial-gradient(circle at 50% 40%,rgba(108,140,255,.22),rgba(8,11,18,.5) 70%)}
+.orb::before{content:"";position:absolute;inset:-9px;border-radius:50%;border:1px dashed rgba(101,217,232,.35);animation:spin 26s linear infinite}
+.orb:hover,.orb:focus-visible{border-color:var(--cyan);box-shadow:0 0 0 1px rgba(101,217,232,.5),0 0 60px rgba(101,217,232,.32),inset 0 0 30px rgba(101,217,232,.14)}
+.orb span{display:block}.orb em{font-style:normal;color:var(--cyan);font-size:18px;display:block;margin-top:4px;transition:transform .3s}
+.orb:hover em{transform:translateX(5px)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.txt-link{font:500 13px/1 var(--body);color:var(--mute);text-underline-offset:6px;text-decoration-color:var(--line2)}
+.txt-link:hover{color:var(--text)}
+.intro h1 span{animation:rise 1.1s cubic-bezier(.2,.7,.2,1) both}.intro h1 span+span{animation-delay:.14s}
+
+/* ---------- stage 1 ---------- */
+.qcard{text-align:left;display:grid;gap:10px;align-content:start;transition:transform .35s,border-color .3s;width:100%}
+.qcard:hover{transform:translateY(-4px);border-color:var(--line2)}
+.qcard .k{font:400 11px var(--mono);color:var(--cyan);letter-spacing:.14em}
+.qcard h4{font-size:1.14rem}
+.qcard .more{display:none;color:var(--soft);font-size:.93rem;border-top:1px solid var(--line);padding-top:10px}
+.qcard[aria-expanded="true"] .more{display:block}
+.qcard .tog{font:400 11px var(--mono);color:var(--mute);letter-spacing:.1em}
+.chain{counter-reset:c;display:grid;gap:0}
+.chain li{counter-increment:c;display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;padding:13px 0;border-bottom:1px solid var(--line)}
+.chain li::before{content:counter(c,decimal-leading-zero);font:400 12px var(--mono);color:var(--cyan)}
+.chain li span:last-child{font:400 11px var(--mono);color:var(--mute);text-align:right}
+.versus{display:grid;grid-template-columns:1fr 1fr;gap:0;border-radius:var(--r);overflow:hidden;border:1px solid var(--line)}
+.versus>div{padding:clamp(20px,3vw,36px);display:grid;gap:14px;align-content:start}
+.versus .weak{background:rgba(22,16,22,.82)}
+.versus .pro{background:linear-gradient(160deg,rgba(28,40,84,.9),rgba(13,18,32,.9));box-shadow:inset 2px 0 0 var(--cyan)}
+.versus blockquote{margin:0;font:500 clamp(1.05rem,1.7vw,1.4rem)/1.45 var(--display)}
+.versus .weak blockquote{color:var(--red-t)}
+.lbl{font:500 11px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase}
+.lbl.w{color:var(--bad)}.lbl.w::before{content:"✕  "}
+.lbl.p{color:var(--ok)}.lbl.p::before{content:"✓  "}
+
+/* ---------- stage 2 ---------- */
+.chapters{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,255px),1fr));gap:16px;perspective:1400px}
+.chap{text-align:left;background:linear-gradient(170deg,rgba(24,32,58,.9),rgba(12,16,29,.88));border:1px solid var(--line);border-radius:6px 16px 16px 6px;
+  padding:22px 20px 18px 24px;display:grid;gap:12px;align-content:start;position:relative;transition:transform .45s cubic-bezier(.2,.7,.2,1),border-color .3s,box-shadow .3s;transform-origin:left center}
+.chap::before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:3px;background:linear-gradient(var(--blue),var(--violet));border-radius:3px}
+.chap:hover,.chap:focus-visible{transform:rotateY(-7deg) translateY(-6px);border-color:var(--line2);box-shadow:-18px 22px 50px rgba(0,0,0,.45)}
+.chap .n{font:400 11px var(--mono);letter-spacing:.16em;color:var(--cyan)}
+.chap h4{font-size:1.2rem}
+.chap ul{list-style:none;margin:0;padding:0;font:400 12px/1.75 var(--mono);color:var(--mute)}
+.chap .open{font:500 11px var(--mono);letter-spacing:.12em;color:var(--text);margin-top:4px}
+
+/* ---------- modal ---------- */
+.modal{position:fixed;inset:0;z-index:90;display:none;background:rgba(5,7,12,.86);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);overflow:auto;padding:0}
+.modal.open{display:block;animation:fade .3s both}
+@keyframes fade{from{opacity:0}}
+.modal .in{max-width:1080px;margin:0 auto;padding:clamp(72px,10vh,110px) var(--gut) 80px;animation:rise .5s both}
+.modal .close{position:fixed;top:16px;right:var(--gut);z-index:2}
+.modal h2{font-size:clamp(1.9rem,4.6vw,3.4rem);margin:14px 0 26px}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:16px}
+.mgrid .wide{grid-column:1/-1}
+.mgrid h3{font:500 11px/1 var(--mono);letter-spacing:.18em;color:var(--cyan);text-transform:uppercase;margin-bottom:12px}
+.example{font:400 .9rem/1.7 var(--mono);color:var(--soft);background:var(--surf);border:1px solid var(--line);border-radius:10px;padding:16px 18px;white-space:pre-wrap;overflow-x:auto}
+.mini label{display:flex;gap:10px;align-items:flex-start;padding:5px 0;cursor:pointer}
+
+/* ---------- tabs / lab ---------- */
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.tabs button,.seg button{font:500 12px/1 var(--mono);letter-spacing:.06em;padding:11px 14px;border-radius:9px;border:1px solid var(--line);color:var(--mute);background:var(--surf2);transition:.2s}
+.tabs button:hover,.seg button:hover{color:var(--text);border-color:var(--line2)}
+.tabs button[aria-selected="true"],.seg button[aria-pressed="true"]{color:var(--on-acc);background:var(--cyan);border-color:var(--cyan)}
+.seg{display:inline-flex;gap:6px;flex-wrap:wrap}
+.tabpanel{display:grid;gap:18px}
+.tabpanel h4{font-size:1.35rem}
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}
+.pair>div{border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:grid;gap:10px;align-content:start;background:var(--surf)}
+.pair>div.good{border-color:rgba(126,224,172,.35)}
+.qs{counter-reset:q}
+.qs li{counter-increment:q;display:grid;grid-template-columns:34px 1fr;gap:8px}
+.qs li::before{content:"Q" counter(q);font:400 11px/1.9 var(--mono);color:var(--cyan)}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:500 10.5px/1.2 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+.tw{overflow-x:auto}
+.req{display:grid;grid-template-columns:76px 1fr;gap:6px 14px;padding:14px 0;border-bottom:1px solid var(--line)}
+.req .id{font:500 12px/1.7 var(--mono);color:var(--cyan)}
+.req .meta{grid-column:2;font-size:.86rem;color:var(--mute)}
+.req .meta b{color:var(--soft);font-weight:500}
+.quiz{display:grid;gap:14px}
+.quiz .stmt{font:500 1.08rem/1.5 var(--display)}
+.quiz .fb{min-height:3.2em;font-size:.92rem}
+.btn{font:600 12px/1 var(--body);letter-spacing:.08em;text-transform:uppercase;padding:13px 18px;border-radius:99px;border:1px solid var(--line2);transition:.2s;text-decoration:none;display:inline-block}
+.btn:hover{border-color:var(--cyan);background:rgba(101,217,232,.08)}
+.btn.fill{background:var(--blue);color:var(--on-acc);border-color:var(--blue)}.btn.fill:hover{background:#86A0FF}
+.editor{border:1px solid var(--line2);border-radius:var(--r);overflow:hidden;background:var(--surf)}
+.editor .bar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--line);background:rgba(20,27,46,.7)}
+.editor .dots{display:flex;gap:6px}.editor .dots i{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.14)}
+.editor .body{padding:clamp(18px,3vw,34px);display:grid;gap:18px}
+.editor .txt{font:500 clamp(1.05rem,1.8vw,1.42rem)/1.6 var(--display);min-height:6.4em}
+.editor .txt.before{color:var(--red-t)}
+mark{background:rgba(101,217,232,.14);color:var(--text);border-bottom:1.5px solid var(--cyan);padding:1px 2px;border-radius:3px}
+mark sup{font:500 10px var(--mono);color:var(--cyan);margin-left:3px}
+.ann{display:grid;gap:8px;font-size:.92rem;color:var(--soft)}
+.ann li{display:grid;grid-template-columns:26px 1fr;gap:8px}
+.ann li b{font:500 11px/1.8 var(--mono);color:var(--cyan)}
+.dont{color:var(--red-t)}.dont::before{content:"✕ ";color:var(--bad);font-family:var(--mono)}
+.do::before{content:"✓ ";color:var(--ok);font-family:var(--mono)}
+
+/* ---------- diagrams ---------- */
+.gal{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,255px),1fr));gap:16px}
+.gcard{text-align:left;display:grid;gap:12px;padding:14px;transition:transform .35s,border-color .3s}
+.gcard:hover,.gcard:focus-visible{transform:translateY(-6px) rotate(-.4deg);border-color:var(--line2)}
+.gcard .thumb{border-radius:9px;background:#0A0E18;border:1px solid var(--line);aspect-ratio:16/10;display:grid;place-items:center;overflow:hidden;padding:6px}
+.gcard h4{font-size:1.05rem}
+.gcard p{font-size:.86rem;color:var(--mute)}
+.dg{overflow-x:auto;background:#0A0E18;border:1px solid var(--line);border-radius:12px;padding:12px}
+.dg svg{display:block;width:100%;min-width:520px;height:auto}
+.thumb svg{width:100%;height:100%}
+svg .b{fill:rgba(108,140,255,.10);stroke:#6C8CFF;stroke-width:1.2}
+svg .b2{fill:rgba(101,217,232,.08);stroke:#65D9E8;stroke-width:1.2}
+svg .b3{fill:rgba(167,139,250,.10);stroke:#A78BFA;stroke-width:1.2}
+svg .bd{fill:none;stroke:#9298A8;stroke-width:1;stroke-dasharray:5 4}
+svg .l{stroke:#9298A8;stroke-width:1.2;fill:none}
+svg .ld{stroke:#9298A8;stroke-width:1.1;fill:none;stroke-dasharray:4 4}
+svg text{font:500 11px var(--mono);fill:#F4F5FA}
+svg text.s{font-size:9.5px;fill:#9298A8;font-weight:400}
+svg text.h{font:600 12px var(--display)}
+svg .pg{fill:#EEF0F6}svg text.d{fill:#1B2233}svg text.ds{fill:#5A6275;font-size:9px;font-weight:400}
+
+/* ---------- testing ---------- */
+.ttype{display:grid;gap:8px;align-content:start}
+.ttype .k{font:400 11px var(--mono);letter-spacing:.14em;color:var(--cyan)}
+.ttype h4{font-size:1.05rem}.ttype p{font-size:.9rem;color:var(--soft)}
+.tc{display:grid;grid-template-columns:minmax(180px,250px) 1fr;gap:16px}
+.tclist{display:grid;gap:8px;align-content:start}
+.tclist button{text-align:left;padding:12px 14px;border:1px solid var(--line);border-radius:10px;display:grid;gap:5px;background:var(--surf2);transition:.2s}
+.tclist button[aria-pressed="true"]{border-color:var(--cyan);background:rgba(101,217,232,.08)}
+.tclist .id{font:500 11.5px var(--mono);color:var(--cyan)}
+.status{display:inline-flex;align-items:center;gap:6px;font:500 11px/1 var(--mono);letter-spacing:.12em;padding:6px 9px;border-radius:6px;border:1px solid}
+.status.pass{color:var(--ok);border-color:rgba(126,224,172,.45)}.status.pass::before{content:"✓"}
+.status.fail{color:var(--bad);border-color:rgba(255,154,154,.45)}.status.fail::before{content:"✕"}
+.tcbody dl{display:grid;grid-template-columns:120px 1fr;gap:10px 16px;margin:0}
+.tcbody dt{font:500 10.5px/1.9 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+.tcbody dd{margin:0}
+.tcbody ol{margin:0;padding-left:20px}
+.ea{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.ea>div{border:1px solid var(--line);border-radius:10px;padding:14px;background:var(--surf)}
+.ea h5{font:500 10.5px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin:0 0 8px}
+.ea .diff{border-color:rgba(255,154,154,.45)}
+
+/* ---------- polish ---------- */
+.topic{display:grid;gap:8px;align-content:start}
+.topic h4{font-size:1.02rem}.topic p{font-size:.9rem;color:var(--soft)}
+.ref{font:400 .88rem/1.7 var(--mono);color:var(--soft);padding:10px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
+.ref b{color:var(--cyan);font-weight:500;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;display:block}
+.pages{display:grid;grid-template-columns:1fr 1fr;gap:clamp(12px,2.5vw,28px)}
+.pgwrap{display:grid;gap:10px}
+.paper{position:relative;background:#EEF0F6;color:#1B2233;border-radius:4px;aspect-ratio:210/270;padding:8% 9%;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.55);font-size:clamp(6px,1.05vw,11px);line-height:1.5}
+.paper .ln{height:.55em;background:#B9BFCD;border-radius:2px;margin:.5em 0}
+.paper .fig{border:1px solid #8E96A8;display:grid;place-items:center;color:#5A6275}
+.paper.bad{padding:4% 5% 3% 11%}
+.paper.bad .t1{font:italic 700 2.1em Georgia,serif;text-decoration:underline;margin-bottom:.1em}
+.paper.bad .t2{font:700 1em Arial;text-transform:uppercase;margin-top:2.6em}
+.paper.bad .p1 .ln{height:.5em;margin:.22em 0}
+.paper.bad .p2 .ln{height:.75em;margin:.9em 0;background:#9AA1B2}
+.paper.bad .fig{width:118%;height:24%;margin:.3em 0 3em -4%;background:repeating-linear-gradient(90deg,#D6DAE4 0 6px,#E6E9F0 6px 12px)}
+.paper.good .hd{display:flex;justify-content:space-between;font-size:.8em;color:#5A6275;border-bottom:1px solid #C3C8D4;padding-bottom:.5em;margin-bottom:1.6em}
+.paper.good .t1{font:700 1.5em var(--display);margin-bottom:.8em}
+.paper.good .t2{font:600 1.15em var(--display);margin:1.3em 0 .6em}
+.paper.good .fig{width:74%;height:22%;margin:1.2em auto .5em;background:#E2E6EF}
+.paper.good .cap{text-align:center;font-size:.85em;color:#3A4254;margin-bottom:1.2em}
+.paper.good .ft{position:absolute;bottom:4.5%;left:0;right:0;text-align:center;font-size:.8em;color:#5A6275}
+.hs{position:absolute;width:26px;height:26px;border-radius:50%;background:var(--blue);color:var(--on-acc);font:600 12px/26px var(--mono);text-align:center;box-shadow:0 0 0 4px rgba(108,140,255,.3);transition:.2s}
+.paper.bad .hs{background:#E26D6D;box-shadow:0 0 0 4px rgba(226,109,109,.3);color:#fff}
+.hs[aria-pressed="true"]{transform:scale(1.25);box-shadow:0 0 0 7px rgba(101,217,232,.45)}
+.insp{min-height:5.5em;margin-top:16px}
+
+/* ---------- mistakes ---------- */
+.acc{border-bottom:1px solid var(--line)}
+.acc>button{width:100%;text-align:left;display:grid;grid-template-columns:44px 1fr 24px;gap:10px;align-items:center;padding:18px 0;font:600 clamp(1rem,1.6vw,1.2rem)/1.3 var(--display)}
+.acc>button span:first-child{font:400 11.5px var(--mono);color:var(--bad)}
+.acc>button span:last-child{font:400 18px var(--mono);color:var(--mute);transition:transform .3s}
+.acc>button[aria-expanded="true"] span:last-child{transform:rotate(45deg)}
+.acc .ab{display:none;padding:0 0 22px 54px;gap:12px}
+.acc>button[aria-expanded="true"]+.ab{display:grid}
+
+/* ---------- checklist ---------- */
+.ckl{display:grid;grid-template-columns:minmax(220px,300px) 1fr;gap:20px;align-items:start}
+.meter{position:sticky;top:84px;display:grid;gap:16px;justify-items:center;text-align:center}
+.ring{width:170px;height:170px;position:relative}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:8}
+.ring .tr{stroke:rgba(140,160,255,.15)}.ring .pr{stroke:var(--cyan);stroke-linecap:round;transition:stroke-dashoffset .5s}
+.ring .num{position:absolute;inset:0;display:grid;place-items:center;font:700 2.5rem var(--display);font-variant-numeric:tabular-nums}
+.ckgroups{display:grid;gap:16px}
+.ckg h4{font-size:1.1rem;display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.ckg h4 span{font:400 11px var(--mono);color:var(--mute);font-variant-numeric:tabular-nums}
+.ck{display:flex;gap:12px;align-items:flex-start;padding:9px 0;cursor:pointer;border-bottom:1px solid rgba(140,160,255,.08)}
+.ck input,.mini input{appearance:none;-webkit-appearance:none;flex:none;width:20px;height:20px;border:1.5px solid var(--line2);border-radius:5px;margin:2px 0 0;display:grid;place-items:center;cursor:pointer;transition:.2s}
+.ck input:checked,.mini input:checked{background:var(--cyan);border-color:var(--cyan)}
+.ck input:checked::after,.mini input:checked::after{content:"";width:10px;height:5px;border:2px solid var(--on-acc);border-top:0;border-right:0;transform:rotate(-45deg) translateY(-1px)}
+.ck input:checked+span{color:var(--mute);text-decoration:line-through;text-decoration-color:rgba(146,152,168,.5)}
+.final{margin-top:clamp(40px,7vh,80px);text-align:center;display:grid;gap:22px;justify-items:center}
+.final h3{font-size:clamp(1.8rem,4.6vw,3.6rem)}
+.final .state{font:400 12px var(--mono);letter-spacing:.14em;color:var(--mute);text-transform:uppercase}
+.final.done .state{color:var(--ok)}
+
+/* ---------- closing ---------- */
+#closing{min-height:100vh;min-height:100svh;display:grid;place-items:center;text-align:center;padding-right:var(--gut)}
+#closing h2{font-size:clamp(2.6rem,9vw,8rem);font-weight:700;letter-spacing:-.035em;line-height:.96}
+#closing .wm{font:700 14px var(--display);letter-spacing:.3em;margin-top:44px}
+footer{position:relative;z-index:2;padding:24px var(--gut) 90px;text-align:center;color:var(--mute);font-size:.82rem;border-top:1px solid var(--line);background:rgba(8,11,18,.7)}
+
+
+/* ---------- per-chapter colour identity ---------- */
+section{--acc:var(--blue)}
+#home{--acc:#6C8CFF}#foundation{--acc:#6C8CFF}#structure{--acc:#65D9E8}#writing{--acc:#A78BFA}#visuals{--acc:#FFB07A}
+#testing{--acc:#7EE0AC}#polish{--acc:#F29BD0}#mistakes{--acc:#FF8F8F}#checklist{--acc:#C8F27A}#closing{--acc:#65D9E8}
+section[data-n]{border-top:1px solid color-mix(in srgb,var(--acc) 55%,transparent);
+  background:
+    linear-gradient(180deg,color-mix(in srgb,var(--acc) 15%,transparent) 0,color-mix(in srgb,var(--acc) 5%,transparent) 320px,transparent 900px),
+    linear-gradient(180deg,rgba(8,11,18,.55),rgba(8,11,18,.35))}
+section[data-n]::before{content:"";position:absolute;left:0;top:-1px;width:min(46%,520px);height:3px;background:var(--acc);box-shadow:0 0 24px var(--acc)}
+section[data-n]::after{content:attr(data-n);position:absolute;right:calc(var(--gut) + 44px);top:clamp(70px,10vh,120px);font:700 clamp(5rem,16vw,13rem)/.8 var(--display);
+  color:transparent;-webkit-text-stroke:1px color-mix(in srgb,var(--acc) 38%,transparent);pointer-events:none;z-index:-1}
+section .eyebrow{color:var(--acc)}section .eyebrow::before,#home .eyebrow::after{background:var(--acc)}
+section[data-n] .st-head{border-left:3px solid var(--acc);padding-left:clamp(14px,2vw,26px)}
+section[data-n] .panel{border-color:color-mix(in srgb,var(--acc) 26%,transparent)}
+section[data-n] h3.sub small{color:var(--acc)}
+section[data-n] ul.tick li::before,.modal ul.tick li::before{background:var(--acc)}
+section[data-n] .tabs button[aria-selected="true"],section[data-n] .seg button[aria-pressed="true"],.modal .seg button[aria-pressed="true"]{background:var(--acc);border-color:var(--acc)}
+section[data-n] .qcard .k,section[data-n] .ttype .k,section[data-n] .chap .n,section[data-n] .req .id,section[data-n] .tclist .id{color:var(--acc)}
+section[data-n] .chap::before{background:var(--acc)}
+section[data-n] .tclist button[aria-pressed="true"]{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 10%,transparent)}
+.ring .pr{stroke:var(--acc,var(--cyan))}
+.ck input:checked{background:var(--acc,var(--cyan));border-color:var(--acc,var(--cyan))}
+.topbar i{background:var(--cur,var(--cyan))!important;box-shadow:0 0 12px var(--cur,var(--cyan))}
+.rail button.on{color:var(--cur,var(--cyan))}
+header.site.solid{border-bottom-color:color-mix(in srgb,var(--cur,var(--blue)) 45%,transparent)}
+nav.main a.on{color:var(--cur,var(--text))}
+
+/* ---------- detail panel: a lighter framed sheet, clearly above the page ---------- */
+.modal{background:rgba(3,4,8,.78);padding:clamp(56px,8vh,84px) var(--gut) 40px}
+.modal .in{max-width:1080px;margin:0 auto;padding:0 0 clamp(24px,4vw,40px);background:linear-gradient(180deg,#1B2342,#141A31 340px);
+  border:1px solid color-mix(in srgb,var(--acc) 60%,transparent);border-top:4px solid var(--acc);border-radius:18px;
+  box-shadow:0 0 0 6px color-mix(in srgb,var(--acc) 10%,transparent),0 0 90px color-mix(in srgb,var(--acc) 22%,transparent),0 50px 120px rgba(0,0,0,.8)}
+.modal .mbar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;padding:12px clamp(18px,3vw,36px);border-bottom:1px solid color-mix(in srgb,var(--acc) 30%,transparent);
+  background:color-mix(in srgb,var(--acc) 12%,transparent);border-radius:14px 14px 0 0;font:500 10.5px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--acc)}
+.modal .mbar span+span{color:var(--mute)}
+.modal .mbody{padding:clamp(22px,3.4vw,40px) clamp(18px,3vw,36px) 0}
+.modal .eyebrow{color:var(--acc)}.modal .eyebrow::before{background:var(--acc)}
+.modal .mgrid h3{color:var(--acc)}
+.modal .panel{background:rgba(8,11,20,.62);border-color:color-mix(in srgb,var(--acc) 22%,transparent)}
+.modal .close{background:var(--acc);color:var(--on-acc);border-color:var(--acc);font-weight:600}
+body.modal-open main,body.modal-open header.site,body.modal-open .rail{filter:saturate(.35) brightness(.55)}
+
+
+/* ---------- weak = red, strong = green, everywhere ---------- */
+:root{--red:#FF7B7B;--red-t:#F5B5B5;--grn:#5FE0A0;--grn-t:#C9F5DC}
+.lbl.w{color:var(--red)}.lbl.p{color:var(--grn)}
+.versus{border-color:rgba(255,255,255,.12)}
+.versus .weak{background:linear-gradient(160deg,rgba(92,20,30,.9),rgba(40,12,18,.9));box-shadow:inset 3px 0 0 var(--red)}
+.versus .weak blockquote,.versus .weak p{color:var(--red-t)}
+.versus .pro{background:linear-gradient(160deg,rgba(14,78,52,.9),rgba(10,34,26,.92));box-shadow:inset 3px 0 0 var(--grn)}
+.versus .pro blockquote{color:var(--grn-h)}.versus .pro p{color:var(--grn-t)!important}
+.pair>div{background:rgba(92,20,30,.34);border-color:rgba(255,123,123,.5);color:var(--red-t)}
+.pair>div .muted{color:#D9A3A3}
+.pair>div.good{background:rgba(14,78,52,.36);border-color:rgba(95,224,160,.55);color:var(--grn-t)}
+.dont,li.dont{color:var(--red-t)}.dont::before{color:var(--red)}
+.do{color:var(--grn-t)}.do::before{color:var(--grn)}
+td.dont{background:rgba(92,20,30,.28)}td.do{background:rgba(14,78,52,.28)}
+.editor[data-v="before"]{border-color:rgba(255,123,123,.6);box-shadow:0 0 50px rgba(255,123,123,.12)}
+.editor[data-v="before"] .body{background:rgba(92,20,30,.22)}
+.editor .txt.before{color:var(--red-t)}
+.editor[data-v="after"]{border-color:rgba(95,224,160,.6);box-shadow:0 0 50px rgba(95,224,160,.12)}
+.editor[data-v="after"] .body{background:rgba(14,78,52,.2)}
+.editor[data-v="after"] .txt{color:var(--grn-h)}
+.editor[data-v="after"] mark{background:rgba(95,224,160,.16);border-bottom-color:var(--grn)}
+.editor[data-v="after"] mark sup,.editor[data-v="after"] .ann li b{color:var(--grn)}
+section[data-n] #vBefore[aria-pressed="true"]{background:var(--red);border-color:var(--red)}
+section[data-n] #vAfter[aria-pressed="true"]{background:var(--grn);border-color:var(--grn)}
+.acc .ab p{padding:12px 16px;border-radius:10px;border:1px solid}
+.acc .ab p:first-child{background:rgba(92,20,30,.3);border-color:rgba(255,123,123,.45);color:var(--red-t)}
+.acc .ab p:last-child{background:rgba(14,78,52,.3);border-color:rgba(95,224,160,.5);color:var(--grn-t)}
+.acc>button span:first-child{color:var(--red)}
+.status.pass{color:var(--grn);border-color:rgba(95,224,160,.55);background:rgba(14,78,52,.3)}
+.status.fail{color:var(--red);border-color:rgba(255,123,123,.55);background:rgba(92,20,30,.3)}
+.ea .diff{border-color:rgba(255,123,123,.6);background:rgba(92,20,30,.3);color:var(--red-t)}
+.pgwrap:first-child .paper{outline:2px solid rgba(255,123,123,.6);outline-offset:3px}
+.pgwrap:last-child .paper{outline:2px solid rgba(95,224,160,.6);outline-offset:3px}
+/* ---------- structure: one colour per chapter ---------- */
+.chap{border-color:color-mix(in srgb,var(--acc) 50%,transparent);border-top:3px solid var(--acc);
+  background:linear-gradient(170deg,color-mix(in srgb,var(--acc) 22%,#10162A),rgba(12,16,29,.92) 70%)}
+.chap h4{color:color-mix(in srgb,var(--acc) 35%,#fff)}
+.chap .open{color:var(--acc)}
+.chap:hover,.chap:focus-visible{border-color:var(--acc);box-shadow:-18px 22px 50px rgba(0,0,0,.45),0 0 40px color-mix(in srgb,var(--acc) 25%,transparent)}
+
+.chap:nth-child(1){--acc:#B8C0D8}.chap:nth-child(2){--acc:#6C8CFF}.chap:nth-child(3){--acc:#65D9E8}.chap:nth-child(4){--acc:#A78BFA}
+.chap:nth-child(5){--acc:#FFB07A}.chap:nth-child(6){--acc:#7EE0AC}.chap:nth-child(7){--acc:#F29BD0}.chap:nth-child(8){--acc:#F2C879}
+
+/* ---------- cursor spotlight over clickable elements ---------- */
+#spot{position:fixed;left:0;top:0;width:300px;height:300px;margin:-150px 0 0 -150px;border-radius:50%;pointer-events:none;z-index:95;opacity:0;transform:translate(-999px,-999px) scale(.5);
+  transition:opacity .25s;mix-blend-mode:screen;
+  background:radial-gradient(circle,rgba(255,255,255,.30) 0,color-mix(in srgb,var(--cur,#6C8CFF) 46%,transparent) 14%,color-mix(in srgb,var(--cur,#6C8CFF) 16%,transparent) 42%,transparent 68%)}
+#spot.on{opacity:1}
+:root[data-mode="light"] #spot{mix-blend-mode:multiply;background:radial-gradient(circle,color-mix(in srgb,var(--cur,#3F5BD9) 42%,transparent) 0,color-mix(in srgb,var(--cur,#3F5BD9) 18%,transparent) 40%,transparent 68%)}
+
+/* ---------- light theme (chosen with the sun button) ---------- */
+:root[data-mode="light"]{color-scheme:light;
+  --bg:#EEF1F8; --blue:#3F5BD9; --cyan:#0E8FA3; --violet:#7250D6; --text:#131A2E; --mute:#566078; --soft:#2F384F;
+  --panel:rgba(255,255,255,.88); --panel2:rgba(255,255,255,.94); --line:rgba(40,60,140,.18); --line2:rgba(40,60,140,.38);
+  --ok:#12804E; --bad:#C62F3A; --warn:#8A5E00; --on-acc:#FFFFFF; --surf:rgba(238,241,250,.9); --surf2:rgba(255,255,255,.85);
+  --red:#C62F3A; --red-t:#8A1C27; --grn:#12804E; --grn-t:#0D5535; --grn-h:#0A3A25}
+:root[data-mode="light"] #home,:root[data-mode="light"] #foundation{--acc:#3F5BD9}
+:root[data-mode="light"] #structure,:root[data-mode="light"] #closing{--acc:#0E8FA3}
+:root[data-mode="light"] #writing{--acc:#7250D6}:root[data-mode="light"] #visuals{--acc:#C2621B}:root[data-mode="light"] #testing{--acc:#12804E}
+:root[data-mode="light"] #polish{--acc:#B8408A}:root[data-mode="light"] #mistakes{--acc:#C62F3A}:root[data-mode="light"] #checklist{--acc:#557D0A}
+:root[data-mode="light"] .chap:nth-child(1){--acc:#5E6B8C}:root[data-mode="light"] .chap:nth-child(2){--acc:#3F5BD9}:root[data-mode="light"] .chap:nth-child(3){--acc:#0E8FA3}:root[data-mode="light"] .chap:nth-child(4){--acc:#7250D6}
+:root[data-mode="light"] .chap:nth-child(5){--acc:#C2621B}:root[data-mode="light"] .chap:nth-child(6){--acc:#12804E}:root[data-mode="light"] .chap:nth-child(7){--acc:#B8408A}:root[data-mode="light"] .chap:nth-child(8){--acc:#8A5E00}
+:root[data-mode="light"] .fallback{background:radial-gradient(60% 50% at 70% 20%,rgba(63,91,217,.16),transparent 70%),radial-gradient(50% 45% at 20% 75%,rgba(114,80,214,.12),transparent 70%),radial-gradient(40% 35% at 55% 60%,rgba(14,143,163,.10),transparent 70%),var(--bg)}
+:root[data-mode="light"] .fallback::after{background-image:linear-gradient(rgba(40,60,140,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(40,60,140,.08) 1px,transparent 1px)}
+:root[data-mode="light"] .vignette{background:radial-gradient(120% 90% at 50% 45%,transparent 50%,rgba(190,200,228,.6) 100%)}
+:root[data-mode="light"] header.site.solid{background:rgba(244,246,252,.82)}
+:root[data-mode="light"] .sheet{background:rgba(244,246,252,.98)}
+:root[data-mode="light"] .rail button b,:root[data-mode="light"] .rnd{background:rgba(255,255,255,.9)}
+:root[data-mode="light"] .topbar{background:rgba(20,30,70,.08)}
+:root[data-mode="light"] section[data-n]{background:linear-gradient(180deg,color-mix(in srgb,var(--acc) 16%,transparent) 0,color-mix(in srgb,var(--acc) 6%,transparent) 320px,transparent 900px),linear-gradient(180deg,rgba(238,241,248,.72),rgba(238,241,248,.5))}
+:root[data-mode="light"] section[data-n]::after{-webkit-text-stroke-color:color-mix(in srgb,var(--acc) 45%,transparent)}
+:root[data-mode="light"] .panel{box-shadow:0 10px 34px rgba(30,45,100,.08)}
+:root[data-mode="light"] .orb{background:radial-gradient(circle at 50% 40%,rgba(63,91,217,.2),rgba(255,255,255,.7) 70%)}
+:root[data-mode="light"] .chap{background:linear-gradient(170deg,color-mix(in srgb,var(--acc) 16%,#fff),#fff 70%)}
+:root[data-mode="light"] .chap h4{color:color-mix(in srgb,var(--acc) 70%,#000)}
+:root[data-mode="light"] .chap:hover,:root[data-mode="light"] .chap:focus-visible{box-shadow:-14px 18px 40px rgba(30,45,100,.2)}
+:root[data-mode="light"] .versus .weak{background:linear-gradient(160deg,#FBD9DC,#FDEEEF)}
+:root[data-mode="light"] .versus .pro{background:linear-gradient(160deg,#CFF0DE,#EAF9F1)}
+:root[data-mode="light"] .pair>div{background:#FCE6E8;border-color:rgba(198,47,58,.45)}:root[data-mode="light"] .pair>div .muted{color:#8A4A50}
+:root[data-mode="light"] .pair>div.good{background:#DDF5E8;border-color:rgba(18,128,78,.5)}
+:root[data-mode="light"] td.dont,:root[data-mode="light"] .acc .ab p:first-child,:root[data-mode="light"] .ea .diff,:root[data-mode="light"] .status.fail{background:#FCE6E8}
+:root[data-mode="light"] td.do,:root[data-mode="light"] .acc .ab p:last-child,:root[data-mode="light"] .status.pass{background:#DDF5E8}
+:root[data-mode="light"] .editor .bar{background:rgba(225,230,245,.9)}:root[data-mode="light"] .editor .dots i{background:rgba(20,30,70,.2)}
+:root[data-mode="light"] .editor[data-v="before"] .body{background:#FCE6E8}:root[data-mode="light"] .editor[data-v="after"] .body{background:#E3F6EC}
+:root[data-mode="light"] .note{background:rgba(242,200,121,.22)}
+:root[data-mode="light"] .modal{background:rgba(30,38,70,.6)}
+:root[data-mode="light"] .modal .in{background:linear-gradient(180deg,#FFFFFF,#F4F6FC 340px);box-shadow:0 0 0 6px color-mix(in srgb,var(--acc) 14%,transparent),0 50px 120px rgba(20,30,70,.45)}
+:root[data-mode="light"] .modal .panel{background:#fff}
+:root[data-mode="light"] body.modal-open main,:root[data-mode="light"] body.modal-open header.site,:root[data-mode="light"] body.modal-open .rail{filter:saturate(.3) brightness(.8)}
+:root[data-mode="light"] .ring .tr{stroke:rgba(40,60,140,.15)}
+:root[data-mode="light"] footer{background:rgba(238,241,248,.8)}
+:root[data-mode="light"] .pill:hover{box-shadow:0 6px 24px rgba(63,91,217,.35)}
+:root[data-mode="light"] .btn.fill:hover{background:#2F49BF}
+#themeBtn{font-size:17px}
+/* ---------- shooting stars ---------- */
+#stars{position:fixed;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
+.dock .lbl2{font:400 10px/1 var(--mono);letter-spacing:.14em;color:var(--mute);text-transform:uppercase}
+#starBtn{font-size:16px;position:relative;color:var(--warn)}
+#starBtn[aria-pressed="false"]{color:var(--mute)}
+#starBtn[aria-pressed="false"]::after{content:"";position:absolute;left:9px;right:9px;top:50%;height:1.5px;background:var(--mute);transform:rotate(-45deg)}
+@media (max-width:900px){section[data-n]::after{right:var(--gut);opacity:.6}}
+@media (max-width:900px){
+  nav.main a:not(.pill){display:none}.menu-btn{display:inline-block}
+  .rail{display:none}
+  section{padding-right:var(--gut)}
+  .versus,.tc,.ckl{grid-template-columns:1fr}
+  .versus .pro{box-shadow:inset 0 2px 0 var(--cyan)}
+  .meter{position:static}
+  .ea{grid-template-columns:1fr}
+  .dock .hint{display:none}
+  .tcbody dl{grid-template-columns:1fr;gap:2px 0}.tcbody dd{margin-bottom:10px}
+  .chain li{grid-template-columns:34px 1fr}.chain li span:last-child{grid-column:2;text-align:left}
+  .acc .ab{padding-left:0}
+}
+@media (max-width:520px){nav.main a.pill{display:none}.orb{width:128px;height:128px}}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body class="intro">
+<canvas id="world" aria-hidden="true"></canvas>
+<div class="fallback" aria-hidden="true"></div>
+<canvas id="stars" aria-hidden="true"></canvas>
+<div id="spot" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+<div class="topbar" aria-hidden="true"><i id="bar"></i></div>
+
+<header class="site" id="hdr">
+  <a class="brand" href="#home" data-go="home"><span class="cursor-mark" aria-hidden="true"></span>CODE TO CRAFT</a>
+  <nav class="main" aria-label="Primary">
+    <a href="#foundation" data-go="foundation">Explore</a>
+    <a href="#structure" data-go="structure">The Report</a>
+    <a href="#writing" data-go="writing">Writing Guide</a>
+    <a href="#visuals" data-go="visuals">Examples</a>
+    <a href="#mistakes" data-go="mistakes">Resources</a>
+    <button class="menu-btn" id="menuBtn" aria-haspopup="dialog" aria-controls="sheet">Chapters</button>
+    <a class="pill" href="#foundation" data-go="foundation">Start Learning</a>
+  </nav>
+</header>
+
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Chapter navigation">
+  <button class="rnd x" id="sheetX" aria-label="Close chapter navigation">✕</button>
+</div>
+
+<div class="rail" id="rail" role="navigation" aria-label="Journey progress"></div>
+
+<div class="dock">
+  <span class="hint" id="hint">SCROLL TO EXPLORE</span>
+  <button class="rnd" id="toTop" aria-label="Back to top">↑</button>
+  <button class="rnd" id="themeBtn" aria-pressed="false" aria-label="Switch to light theme" title="Theme: dark">☀</button>
+  <button class="rnd" id="starBtn" aria-pressed="true" aria-label="Turn shooting stars off" title="Shooting stars: on">✦</button>
+  <button class="rnd snd" id="snd" aria-pressed="false" aria-label="Turn sound on"><span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span></button>
+</div>
+
+<main id="main">
+
+<!-- ================= HOME ================= -->
+<section id="home" data-st="Home">
+  <div class="wrap">
+    <div class="eyebrow">The Computer Science Project Guide</div>
+    <h1><span>From Code to a</span><span class="grad">Professional Report.</span></h1>
+    <p class="cap">You built the software. Now learn how to document, explain and present it like a professional.</p>
+    <div class="cta-row">
+      <a class="orb" id="orb" href="#foundation" data-go="foundation"><span>Explore<br>the guide<em aria-hidden="true">→</em></span></a>
+      <a class="txt-link" href="#structure" data-go="structure">Discover the report structure</a>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 01 ================= -->
+<section id="foundation" data-st="The foundation" data-n="01">
+  <div class="wrap">
+    <div class="st-head rv">
+      <div class="eyebrow">01 / The Foundation</div>
+      <h2>Before writing, understand what you're documenting.</h2>
+      <p class="lead">A Final Year Project report documents the complete lifecycle of a software project. It communicates the decisions, the technical work and the outcomes behind the system, so that someone who never saw you build it can judge the engineering.</p>
+    </div>
+    <div class="grid g3 rv" id="qcards"></div>
+
+    <h3 class="sub rv"><small>What the report must demonstrate</small>Seven questions every reader will ask</h3>
+    <div class="panel rv">
+      <ol class="clean chain" style="padding:0;margin:0">
+        <li><span>What problem the software addresses</span><span>Introduction</span></li>
+        <li><span>Who the intended users are</span><span>Introduction · Requirements</span></li>
+        <li><span>What the system must do</span><span>Requirements</span></li>
+        <li><span>How the software was designed</span><span>Analysis and design</span></li>
+        <li><span>How it was implemented</span><span>Implementation</span></li>
+        <li><span>How it was tested</span><span>Testing and validation</span></li>
+        <li><span>What was achieved</span><span>Conclusion</span></li>
+      </ol>
+    </div>
+
+    <h3 class="sub rv"><small>Describing versus documenting</small>The same fact, written twice</h3>
+    <div class="versus rv">
+      <div class="weak">
+        <span class="lbl w">Weak approach</span>
+        <blockquote>“I developed a website using React and Node.js.”</blockquote>
+        <p class="small muted">Names two tools. The reader learns nothing about the structure of the system or why it was built this way.</p>
+      </div>
+      <div class="pro">
+        <span class="lbl p">Professional approach</span>
+        <blockquote>“The system was developed using a React-based frontend and a Node.js backend. This architecture separates the presentation layer from business logic, improving maintainability and allowing the application to evolve independently.”</blockquote>
+        <p class="small" style="color:var(--soft)">States the structure, gives the reason for it and names the benefit. A professional software project report focuses on the engineering process, the technical decisions, the implementation and the validation of a working solution.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 02 ================= -->
+<section id="structure" data-st="Report structure" data-n="02">
+  <div class="wrap">
+    <div class="st-head rv">
+      <div class="eyebrow">02 / Structure</div>
+      <h2>Every great report has a structure.</h2>
+      <p class="lead">Open the document. Each page below is one part of a typical software project report. Select a part to see what it is for, what belongs in it, how to write it, an example, the usual mistakes and a short checklist.</p>
+    </div>
+    <div class="chapters rv" id="chapters"></div>
+    <div class="note rv" style="margin-top:22px"><b>Recommended structure, not a universal rule</b>Chapter names and their order differ between departments. Some merge requirements into the design chapter, some require a literature review, some ask for a separate project management chapter. Your department's official FYP guidelines always take priority over this outline.</div>
+  </div>
+</section>
+
+<!-- ================= 03 ================= -->
+<section id="writing" data-st="Writing laboratory" data-n="03">
+  <div class="wrap">
+    <div class="st-head rv">
+      <div class="eyebrow">03 / Writing</div>
+      <h2>Good engineering. Clear communication.</h2>
+      <p class="lead">The writing laboratory turns technical work into professional academic prose. Each bench covers one kind of writing you will need, with weak and strong versions side by side.</p>
+    </div>
+    <div class="rv">
+      <div class="tabs" role="tablist" aria-label="Writing topics" id="labTabs"></div>
+      <div class="panel tabpanel" id="labPanel" role="tabpanel"></div>
+    </div>
+
+    <h3 class="sub rv"><small>Interactive writing transformation</small>Before and after</h3>
+    <div class="editor rv">
+      <div class="bar">
+        <div class="seg" id="exSeg" role="group" aria-label="Choose an example"></div>
+        <div class="seg" role="group" aria-label="Choose version">
+          <button id="vBefore" aria-pressed="false">Before</button>
+          <button id="vAfter" aria-pressed="true">After</button>
+        </div>
+      </div>
+      <div class="body">
+        <p class="txt" id="edTxt" aria-live="polite"></p>
+        <ul class="clean ann" id="edAnn"></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 04 ================= -->
+<section id="visuals" data-st="Visual documentation" data-n="04">
+  <div class="wrap">
+    <div class="st-head rv">
+      <div class="eyebrow">04 / Visuals</div>
+      <h2>Show the system. Don't just describe it.</h2>
+      <p class="lead">A diagram answers in ten seconds what a page of prose answers in two minutes. Every sample below documents the same example project, a clinic appointment system with a mobile client, an admin web client and a REST API. Select one to open it with guidance.</p>
+    </div>
+    <div class="gal rv" id="gallery"></div>
+    <div class="note rv" style="margin-top:22px"><b>Screenshots are evidence</b>A screenshot belongs in the report because it demonstrates a real, implemented feature. Capture the important interfaces, the main functions, the authentication flow, dashboards, key user interactions and administrative screens. Each one needs a caption and a sentence in the text that says what the reader should notice.</div>
+  </div>
+</section>
+
+<!-- ================= 05 ================= -->
+<section id="testing" data-st="Testing" data-n="05">
+  <div class="wrap">
+    <div class="st-head rv">
+      <div class="eyebrow">05 / Testing</div>
+      <h2>If it works, prove that it works.</h2>
+      <p class="lead">"The system works well" is a claim. A test case with an expected result, an observed result and a status is evidence. The testing chapter shows what you checked, how you checked it and what happened, including what failed.</p>
+    </div>
+    <div class="grid g4 rv" id="ttypes"></div>
+
+    <h3 class="sub rv"><small>Testing table explorer</small>Expected versus actual</h3>
+    <div class="tc rv">
+      <div class="tclist" id="tcList" role="group" aria-label="Sample test cases"></div>
+      <div class="panel tcbody" id="tcBody" aria-live="polite"></div>
+    </div>
+
+    <h3 class="sub rv"><small>Documenting defects</small>A failure you found and fixed is a strength</h3>
+    <div class="panel rv tw">
+      <table>
+        <thead><tr><th>Defect</th><th>Found by</th><th>Description</th><th>Cause</th><th>Correction</th><th>Retest</th></tr></thead>
+        <tbody><tr><td class="mono">D-004</td><td class="mono">TC-003</td><td>Two patients could book the same slot when requests arrived at the same moment.</td><td>Availability was checked in application code before the insert, with no lock, so both requests saw the slot as free.</td><td>Added a unique constraint on the slot for active appointments and wrapped the booking in a transaction. The second request now receives 409 Conflict.</td><td><span class="status pass">PASS</span></td></tr></tbody>
+      </table>
+    </div>
+    <div class="note rv" style="margin-top:18px"><b>Report what you observed</b>Test results must reflect testing you carried out. Do not write "100% of tests passed" or "95% accuracy" unless you ran the tests and can show the records. An honest table with two documented failures and their corrections is more convincing than a perfect score nobody can verify.</div>
+  </div>
+</section>
+
+<!-- ================= 06 ================= -->
+<section id="polish" data-st="Formatting" data-n="06">
+  <div class="wrap">
+    <div class="st-head rv">
+      <div class="eyebrow">06 / Polish</div>
+      <h2>The details make the difference.</h2>
+      <p class="lead">Formatting does not add marks for content you lack, but poor formatting hides content you have. Each topic below is marked as a recommended practice or as something your department decides.</p>
+    </div>
+    <div class="grid g4 rv" id="topics"></div>
+
+    <h3 class="sub rv"><small>Interactive report comparison</small>Inspect two versions of the same page</h3>
+    <div class="panel rv">
+      <div class="pages">
+        <div class="pgwrap"><span class="lbl w">Needs work</span>
+          <div class="paper bad">
+            <div class="t1">3.2 system architecture</div>
+            <div class="p1"><div class="ln"></div><div class="ln"></div><div class="ln" style="width:92%"></div><div class="ln"></div><div class="ln" style="width:40%"></div></div>
+            <div class="fig">architecture.png</div>
+            <div class="p2"><div class="ln"></div><div class="ln" style="width:70%"></div></div>
+            <div class="t2">Database</div>
+            <div class="p1"><div class="ln"></div><div class="ln"></div><div class="ln" style="width:55%"></div></div>
+          </div>
+        </div>
+        <div class="pgwrap"><span class="lbl p">Professional</span>
+          <div class="paper good">
+            <div class="hd"><span>Chapter 3 · System Analysis and Design</span><span>ClinicFlow</span></div>
+            <div class="t1">3.2 System Architecture</div>
+            <div><div class="ln"></div><div class="ln"></div><div class="ln" style="width:86%"></div></div>
+            <div class="fig">Figure 3.2</div>
+            <div class="cap">Figure 3.2: Three-tier architecture of the system</div>
+            <div><div class="ln"></div><div class="ln" style="width:64%"></div></div>
+            <div class="t2">3.2.1 Data Layer</div>
+            <div><div class="ln"></div><div class="ln" style="width:78%"></div></div>
+            <div class="ft">24</div>
+          </div>
+        </div>
+      </div>
+      <p class="insp" id="insp" aria-live="polite"></p>
+    </div>
+
+    <h3 class="sub rv"><small>Academic integrity</small>Whose work is on the page</h3>
+    <div class="grid g3 rv" id="integrity"></div>
+
+    <h3 class="sub rv"><small>Reference formats</small>The same three sources in two styles</h3>
+    <div class="panel rv">
+      <div class="seg" role="group" aria-label="Reference style" style="margin-bottom:12px">
+        <button id="rIEEE" aria-pressed="true">IEEE</button><button id="rAPA" aria-pressed="false">APA 7</button>
+      </div>
+      <div id="refs" aria-live="polite"></div>
+      <p class="small muted" style="margin-top:14px">The required style is set by your department. Whichever it is, use one style throughout and manage sources with a reference manager such as Zotero or Mendeley, or BibTeX if you write in LaTeX.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= MISTAKES ================= -->
+<section id="mistakes" data-st="Common mistakes" data-n="!">
+  <div class="wrap">
+    <div class="st-head rv">
+      <div class="eyebrow">Field notes / Common mistakes</div>
+      <h2>Eight ways good projects lose marks.</h2>
+      <p class="lead">These appear in reports every year, usually in projects where the software itself is sound. Each one has a reason it hurts and a better alternative.</p>
+    </div>
+    <div class="panel rv" id="mistakeList" style="padding-top:6px;padding-bottom:6px"></div>
+  </div>
+</section>
+
+<!-- ================= 07 ================= -->
+<section id="checklist" data-st="Final checklist" data-n="07">
+  <div class="wrap">
+    <div class="st-head rv">
+      <div class="eyebrow">07 / Ready to Submit</div>
+      <h2>From working software to a finished report.</h2>
+      <p class="lead">Go through the list with the final PDF open beside it. Progress is kept for this browser session.</p>
+    </div>
+    <div class="ckl rv">
+      <div class="panel meter">
+        <div class="ring"><svg viewBox="0 0 100 100" aria-hidden="true"><circle class="tr" cx="50" cy="50" r="44"/><circle class="pr" id="ringP" cx="50" cy="50" r="44" stroke-dasharray="276.46" stroke-dashoffset="276.46"/></svg><div class="num" id="ringN">0%</div></div>
+        <p class="mono small" id="ringT" aria-live="polite">0 of 23 items complete</p>
+        <button class="btn" id="ckReset">Clear all items</button>
+      </div>
+      <div class="ckgroups" id="ckGroups"></div>
+    </div>
+    <div class="final rv" id="final">
+      <span class="state" id="finalState">Checklist in progress</span>
+      <h3>Your project is built.<br><span class="grad">Now make your work understood.</span></h3>
+      <div style="display:flex;gap:18px;flex-wrap:wrap;justify-content:center;align-items:center">
+        <a class="btn fill" href="#structure" data-go="structure">Explore the report again</a>
+        <a class="txt-link" href="#home" data-go="home">Back to the beginning</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CLOSING ================= -->
+<section id="closing" data-st="Closing">
+  <div class="wrap rv">
+    <h2>YOU BUILT IT.<br><span class="grad">NOW DOCUMENT IT.</span></h2>
+    <p class="lead" style="margin:28px auto 0">Turn your code into a professional story.</p>
+    <p class="wm">CODE TO CRAFT</p>
+    <p class="muted" style="margin:10px 0 34px">A practical guide to writing your Final Year Project report.</p>
+    <a class="btn fill" href="#foundation" data-go="foundation">Start your journey →</a>
+  </div>
+</section>
+</main>
+<footer>Guidance on this site describes common practice in software engineering programmes. Always confirm structure, formatting and citation rules against your department's official FYP guidelines.</footer>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+  <button class="rnd close" id="mClose" aria-label="Close panel">✕</button>
+  <div class="in" id="mIn"></div>
+</div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#9298A8"/></marker>
+  <marker id="aro" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10" fill="none" stroke="#9298A8" stroke-width="1.4"/></marker>
+</defs></svg>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+"use strict";
+/* =====================================================================
+   1. LEARNING CONTENT
+   ===================================================================== */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const li=a=>a.map(x=>`<li>${x}</li>`).join('');
+
+const QCARDS=[
+ {q:'What is an FYP report?',a:'The formal record of your project from problem to result.',m:'It is the document your examiners assess, often more closely than the software itself. It has to stand alone: an examiner who never attends your demo should still understand what you built, why, and how well it works.'},
+ {q:'What makes a professional software project different?',a:'It solves a defined problem for defined users, and proves it.',m:'A research thesis contributes new knowledge. A professional software project delivers a working solution, so the report centres on requirements, design decisions, implementation and validation. Literature matters only as far as it explains the context and the alternatives.'},
+ {q:'Who is the report written for?',a:'A technically literate reader who does not know your project.',m:'Your supervisor, a second examiner, sometimes an external or industry reviewer, and future students who continue the work. Assume they know what a REST API is. Do not assume they know your domain, your abbreviations or the reasons behind your choices.'},
+ {q:'What should the reader understand afterwards?',a:'The problem, the solution, the reasoning and the evidence.',m:'After reading, they should be able to explain what the system does, sketch its architecture, name the main design decisions with their justification, and say which objectives were met and how that was verified.'},
+ {q:'Describing versus documenting',a:'Description lists what exists. Documentation explains and justifies it.',m:'"The app has a login screen" is description. Documentation states the requirement the screen satisfies, how authentication is implemented, why that method was chosen, and which test case shows it works.'}
+];
+
+const CHAPTERS=[
+ {n:'Front matter',t:'Front matter',items:['Cover page','Declaration of originality, if required','Acknowledgements','Abstract or executive summary','Table of contents','List of figures','List of tables','List of abbreviations'],
+  about:'The pages before Chapter 1. They identify the document, summarise it and help the reader find things.',
+  why:'The abstract is the most-read part of any report. Many readers decide what they think of the project from that one page, and the lists show at a glance whether the document is organised.',
+  how:['Write the abstract last, once the results are known.','Give it four moves: the problem, what was built, how it was built and validated, the main outcome.','Generate the contents and lists automatically from heading and caption styles. Never type them by hand.','Keep acknowledgements short and professional.'],
+  exl:'Abstract (extract)',ex:'University clinics commonly manage appointments by telephone, which leads to long waiting times and missed bookings. This project presents ClinicFlow, a mobile application with a REST backend that allows students to book, reschedule and cancel clinic appointments. The system was developed using Flutter, Spring Boot and PostgreSQL following a three-tier architecture. Validation comprised unit tests of the booking service, integration tests of the API and a user acceptance test with student participants. All high-priority functional requirements were satisfied; one performance requirement was only partially met and is discussed in Chapter 6.',
+  bad:['An abstract that introduces the topic but never states the result.','A table of contents that no longer matches the page numbers.','Abbreviations used in the text that are missing from the list.'],
+  ck:['Abstract states problem, solution, method and outcome','Contents and lists regenerated after the last edit','Cover page matches the department template']},
+ {n:'Chapter 1',t:'Introduction',items:['Project background','Problem statement','Project motivation','Project objectives','Project scope','Target users','Report organisation'],
+  about:'The introduction sets up the whole report: the context, the problem, what you set out to achieve and where the boundaries are.',
+  why:'Every later chapter is judged against it. The conclusion is literally an answer to the objectives stated here.',
+  how:['Move from the general context to the specific problem in a few paragraphs.','State the problem in terms of who is affected and what goes wrong, before mentioning your solution.','Number the objectives so later chapters can refer to them.','End with one paragraph that says what each chapter contains.'],
+  exl:'Objectives',ex:'General objective\nTo design, implement and validate a mobile appointment system for the university clinic.\n\nSpecific objectives\nO1  Elicit and document the requirements of patients and reception staff.\nO2  Design a three-tier architecture and a normalised relational schema.\nO3  Implement booking, rescheduling and cancellation with conflict prevention.\nO4  Validate the system through unit, integration and user acceptance testing.',
+  bad:['Starting with the history of the internet.','Objectives such as "learn Flutter", which describe you and not the project.','No statement of what is out of scope.'],
+  ck:['Problem stated without naming the solution first','Objectives numbered and verifiable','Scope lists inclusions and exclusions']},
+ {n:'Chapter 2',t:'Context and requirements',items:['Existing solutions and related systems','Analysis of the problem domain','Functional requirements','Non-functional requirements','User requirements','Constraints and assumptions','Use case diagrams','User stories, where appropriate'],
+  about:'What already exists, what the users need and what the system must therefore do. This chapter turns a problem into a specification.',
+  why:'Requirements are the contract the rest of the report is measured against. Design justifies itself against them and testing verifies them.',
+  how:['Compare two to four existing systems in a table, feature by feature, and state the gap.','Give every requirement an identifier, one "shall" statement and a priority.','Write non-functional requirements with a measurable criterion.','Record constraints such as time, budget, platform and data protection rules.'],
+  exl:'Requirement entries',ex:'FR-03  The system shall prevent two active appointments\n       from being assigned to the same slot.      Priority: High\n\nNFR-02 The API shall respond to 95% of availability\n       queries within 500 ms with 50 concurrent\n       users.                                     Priority: Medium',
+  bad:['A literature review that summarises sources without relating them to the project.','Requirements written as features of the finished product ("the login page is blue").','Non-functional requirements that cannot be tested ("the system shall be fast").'],
+  ck:['Existing systems compared and the gap stated','Each requirement is atomic, identified and testable','Use case diagram matches the listed requirements']},
+ {n:'Chapter 3',t:'System analysis and design',items:['System architecture','Architecture diagram','Technology stack','Database design','Entity Relationship Diagram (ERD)','UML diagrams where relevant','Class diagrams','Sequence diagrams','Activity diagrams','User interface design','Design decisions and justifications'],
+  about:'How the system is structured to satisfy the requirements, before any code is discussed.',
+  why:'This is where examiners look for engineering judgement. A design chapter with justified decisions shows you chose your solution. One without them suggests it merely happened.',
+  how:['Start with the architecture as a whole, then go into each component.','Introduce every diagram in the text, then explain what it shows.','For each significant decision, name the alternative you considered and the reason for your choice.','Include only the UML diagrams that clarify something. Four useful diagrams beat twelve decorative ones.'],
+  exl:'Design decision',ex:'Decision D3: enforce booking conflicts in the database.\n\nAlternative considered: check slot availability in the\nservice layer before inserting.\n\nJustification: an application-level check is unsafe when\ntwo requests arrive concurrently. A unique constraint\nguarantees consistency regardless of the client or the\nnumber of server instances.',
+  bad:['Diagrams pasted in with no explanation.','A technology stack listed as logos with no reasons.','A class diagram generated from code that includes every getter and setter.'],
+  ck:['Architecture diagram present and explained','Each major decision has a justification','ERD shows keys, relationships and cardinality']},
+ {n:'Chapter 4',t:'Implementation',items:['Development environment','Technologies and frameworks','Application structure','Important modules','Core functionalities','Implementation challenges','Technical decisions','Selected code excerpts','Screenshots of the implemented system'],
+  about:'How the design became working software: the environment, the structure of the code, the important modules and the problems solved on the way.',
+  why:'It shows that you built the system and understand it. The interesting parts are the hard ones, so that is where the words should go.',
+  how:['Describe the project structure briefly, then focus on three to five modules that carry the core logic.','Use short code excerpts, ten to twenty-five lines, each followed by an explanation.','Document challenges as problem, cause, solution.','Put complete listings in an appendix or link the repository.'],
+  exl:'Explaining an excerpt',ex:'Listing 4.2 shows the booking transaction. The slot row is\nlocked with SELECT ... FOR UPDATE (line 4) so that a\nconcurrent request waits until the first one commits. If the\nslot is already taken, the service raises\nSlotUnavailableException, which the controller maps to\nHTTP 409 (Section 4.3.2).',
+  bad:['Pages of code with no commentary.','Installation steps that belong in a user manual appendix.','Screenshots of the IDE instead of the running system.'],
+  ck:['Core modules explained, not just listed','Every excerpt is numbered and discussed','Challenges include cause and solution']},
+ {n:'Chapter 5',t:'Testing and validation',items:['Testing strategy','Unit testing','Integration testing','System testing','User acceptance testing, where applicable','Test cases','Expected results','Actual results','Identified defects and corrections'],
+  about:'The evidence that the system does what the requirements say, and an honest account of where it does not.',
+  why:'Without it, every claim in the report rests on your word. With it, the reader can check.',
+  how:['Open with the strategy: which levels of testing, which tools, which environment.','Present test cases in a table with identifier, requirement covered, steps, expected result, actual result and status.','Trace each high-priority requirement to at least one test.','Record defects with their cause and correction, then the retest result.'],
+  exl:'Traceability',ex:'Requirement   Test cases          Result\nFR-01         TC-001, TC-002      Pass\nFR-03         TC-003              Pass after fix (D-004)\nNFR-02        TC-004              Pass',
+  bad:['"All functions were tested and work correctly" with no records.','Success percentages that were never measured.','Hiding failed tests instead of documenting the fix.'],
+  ck:['Strategy and environment described','Each key requirement traced to a test','Actual results are recorded observations']},
+ {n:'Chapter 6',t:'Conclusion and future work',items:['Summary of the project','Achievement of objectives','Limitations','Lessons learned','Future improvements'],
+  about:'What the project achieved, measured against its own objectives, and what remains.',
+  why:'It is the last thing the examiner reads before deciding a mark. A conclusion that evaluates the work shows maturity; one that repeats the introduction shows none.',
+  how:['Go through the objectives one by one and state whether each was met, with a pointer to the evidence.','State limitations plainly. Examiners will find them anyway.','Make future work specific enough that another student could pick it up.','Introduce no new results here.'],
+  exl:'Objective review',ex:'O3 (booking with conflict prevention) was achieved. The\nconcurrency defect found during integration testing\n(D-004) was corrected and verified by TC-003.\n\nLimitation: notifications are sent by email only. Push\nnotifications were outside the project scope and are\nproposed as future work in Section 6.4.',
+  bad:['Copying the introduction in the past tense.','Claiming every objective was fully met when the tests say otherwise.','Future work such as "add AI" with no explanation.'],
+  ck:['Each objective answered with evidence','Limitations stated honestly','Future work is concrete']},
+ {n:'Back matter',t:'References and appendices',items:['References','Appendices'],
+  about:'The sources you relied on, and supporting material that is too long or detailed for the main text.',
+  why:'References let the reader verify your claims and protect you from plagiarism. Appendices keep the chapters readable.',
+  how:['List only sources that are cited in the text, and cite every source you list.','Prefer official documentation, standards, books and papers over anonymous blog posts.','Give each appendix a letter and a title, and refer to it from the text.','Typical appendices: full test tables, user manual, questionnaires, API reference, extended listings.'],
+  exl:'Appendix reference',ex:'The complete set of 42 test cases is provided in\nAppendix B. The questionnaire used in the user\nacceptance test is reproduced in Appendix C.',
+  bad:['A bibliography of sources never cited.','Bare URLs with no author, title or access date.','Appendices the text never mentions.'],
+  ck:['Every citation has a reference and the reverse','One citation style used throughout','Each appendix is referenced in a chapter']}
+];
+
+const REQS=[
+ {id:'FR-01',f:1,c:'Authentication',t:'The system shall allow registered users to authenticate using their email address and password.',v:'Test with valid and invalid credentials (TC-001, TC-002).'},
+ {id:'FR-02',f:1,c:'Booking',t:'The system shall allow an authenticated patient to book one available slot with a selected clinician.',v:'System test of the booking flow from slot list to confirmation.'},
+ {id:'FR-03',f:1,c:'Booking',t:'The system shall prevent two active appointments from being assigned to the same slot.',v:'Concurrent booking test (TC-003).'},
+ {id:'FR-04',f:1,c:'Administration',t:'The system shall allow reception staff to export the schedule of a selected day as a CSV file.',v:'Export a known day and compare the file with the database.'},
+ {id:'NFR-01',f:0,c:'Performance',t:'The system shall return search results within an acceptable response time under the defined test conditions.',v:'Acceptable only if the report then defines the conditions and the limit, for example: within 2 s for 95% of requests against 10,000 records.'},
+ {id:'NFR-02',f:0,c:'Security',t:'User passwords shall be stored only as salted hashes produced by an adaptive hashing algorithm.',v:'Inspect the stored records and the configuration of the hashing component.'},
+ {id:'NFR-03',f:0,c:'Usability',t:'A first-time user shall be able to complete a booking without assistance.',v:'Observe participants during user acceptance testing and record completion.'},
+ {id:'NFR-04',f:0,c:'Portability',t:'The mobile client shall run on Android 10 or later and iOS 15 or later.',v:'Install and run the smoke test on the oldest supported version of each platform.'}
+];
+const QUIZ=[
+ {s:'The system shall allow a patient to cancel an appointment up to two hours before its start time.',f:1,w:'It describes a behaviour the system performs for a user. That makes it functional.'},
+ {s:'The API shall respond to 95% of availability queries within 500 ms with 50 concurrent users.',f:0,w:'It describes how well a function performs, here a performance quality. That makes it non-functional.'},
+ {s:'The system shall send a confirmation notification when a booking is created.',f:1,w:'Sending a notification is something the system does. Functional.'},
+ {s:'All communication between clients and the server shall be encrypted using TLS.',f:0,w:'It constrains how the system operates, a security quality, without adding a user-visible function. Non-functional.'},
+ {s:'The administrator shall be able to deactivate a user account.',f:1,w:'A capability offered to a user role. Functional.'}
+];
+const TECH=[
+ ['Architecture decisions','The backend uses layers.','The backend follows a layered architecture of controllers, services and repositories. Booking rules are placed in the service layer, so the mobile client and the admin web client are subject to identical rules, and the rules can be unit-tested without starting the HTTP server.'],
+ ['Technology choices','Flutter was used because it is popular.','Flutter was selected for the mobile client because a single codebase targets both Android and iOS, which suited a single-developer project with a fixed schedule. Separate native applications were considered and rejected because of the duplicated effort.'],
+ ['Database design','The database has four tables.','A relational database was chosen because patients, clinicians, slots and appointments are strongly related and booking requires transactions. The schema is in third normal form; a unique constraint on the slot of active appointments prevents double booking at the database level.'],
+ ['Algorithms','The app calculates free slots.','Available slots are computed by subtracting booked intervals from each clinician\'s working hours. The intervals are sorted by start time and scanned once, giving O(n log n) time for n bookings in a day, which is negligible at the clinic\'s scale.'],
+ ['API communication','The app talks to the server with an API.','Clients communicate with the server through a REST API over HTTPS, exchanging JSON. Resources have versioned paths such as /api/v1/appointments, and errors use a consistent body with an HTTP status code and a machine-readable error code, which simplifies error handling in both clients.'],
+ ['Security considerations','The system is secure.','Passwords are stored as bcrypt hashes and are never logged. Protected endpoints require a signed token, and the user\'s role is checked on each request. All input is validated on the server even when the client validates it too, because requests can be sent without the official client.']
+];
+const PRINC=[
+ ['Clear and precise sentences','The system handles a lot of stuff related to users.','The system manages user registration, authentication and profile updates.'],
+ ['Consistent terminology','Calling the same person user, client, customer and patient in one chapter.','Choose one term per concept, define it once and keep it. Here: patient.'],
+ ['Formal academic tone','We had a really hard time getting the API to work lol.','Integrating the notification service required three iterations (Section 4.5).'],
+ ['Logical paragraph structure','A paragraph that covers the database, the UI colours and the test plan.','One idea per paragraph: a topic sentence, the supporting detail, then a link to the next point.'],
+ ['Proper technical vocabulary','MongoDB tables; the app pings the database.','MongoDB collections; the client sends a request to the API.'],
+ ['Evidence-based claims','Users found the application very easy to use.','Nine of twelve participants completed a booking without assistance (Table 5.4).'],
+ ['No unnecessary repetition','Explaining the three-tier architecture again in Chapters 3, 4 and 5.','Explain it once in Section 3.1 and refer back to it.'],
+ ['No exaggerated claims','The system is perfectly secure and bug-free.','No defects remained open in the tested scenarios; untested areas are listed in Section 6.3.']
+];
+const EDITS=[
+ {l:'Database',b:'I used MongoDB because it is good and easy, and I created different tables for the users.',
+  a:'MongoDB <mark>was selected<sup>1</sup></mark> as the database management system <mark>due to its document-oriented data model, which accommodates the application\'s flexible data structures<sup>2</sup></mark>. The database stores user information and related application records in <mark>separate collections<sup>3</sup></mark>.',
+  n:['Formal, impersonal voice replaces "I used". Check whether your department prefers passive or first person, then be consistent.','"Good and easy" gave no reason. The rewrite names the property of the technology and ties it to a need of the application.','MongoDB has collections and documents, not tables. Using the correct term shows you understand the tool.']},
+ {l:'Evaluation',b:'The app is very fast and the users loved it a lot.',
+  a:'<mark>During user acceptance testing<sup>1</sup></mark>, participants completed a booking in a <mark>median time of 48 seconds<sup>2</sup></mark>, and ten of the twelve participants rated the booking flow as easy or very easy <mark>(Table 5.4)<sup>3</sup></mark>.',
+  n:['The claim is tied to a specific activity that the report describes elsewhere.','A measured value replaces "very fast". The numbers here are illustrative; yours must come from your own testing.','A cross-reference points to the table where the reader can check the data.']},
+ {l:'Security',b:'I made the API secure with JWT so nobody can hack it.',
+  a:'Protected endpoints <mark>require a signed JSON Web Token issued at login<sup>1</sup></mark>. The token expires after 15 minutes and the role claim is checked on each request, so <mark>a patient account cannot call administrative endpoints<sup>2</sup></mark> <mark>(test case TC-005)<sup>3</sup></mark>.',
+  n:['Explains the mechanism instead of naming an acronym.','Replaces an absolute claim, "nobody can hack it", with a specific property that can be verified.','Points to the test that demonstrates the property.']}
+];
+
+const LAB=[
+ {t:'Problem statement',h:()=>`<h4>Writing the problem statement</h4>
+  <p>A problem statement describes a situation that is unsatisfactory for someone. It does not mention your application. If you can answer these four questions in four sentences, you have one.</p>
+  <ol class="clean qs" style="padding:0;margin:0">${li(['<span><b>What is the actual problem?</b> The concrete thing that goes wrong, not the absence of your app.</span>','<span><b>Who experiences it?</b> Name the people and the setting.</span>','<span><b>Why are existing approaches insufficient?</b> What do people do today, and where does it fall short?</span>','<span><b>What should the proposed solution improve?</b> The outcome you are aiming for.</span>'])}</ol>
+  <div class="pair"><div><span class="lbl w">Weak</span><p class="dont" style="color:var(--red-t)">There is no mobile application for the university clinic, so this project will create one.</p><p class="small muted">States a missing solution, not a problem. Why would anyone need the app?</p></div>
+  <div class="good"><span class="lbl p">Strong</span><p>Students at the university clinic can book appointments only by telephone during office hours. Reception staff record bookings in a paper diary, which leads to double bookings and gives students no way to cancel outside those hours. Existing commercial booking platforms target private practices and do not integrate with the university's student accounts. A self-service system is needed that lets students manage appointments at any time and removes manual scheduling conflicts.</p></div></div>`},
+ {t:'Objectives',h:()=>`<h4>Writing objectives</h4>
+  <p>The <b>general objective</b> states the overall aim in one sentence. <b>Specific objectives</b> break it into steps that can each be checked at the end of the project. Begin each with an action verb such as analyse, design, implement, integrate, validate or evaluate.</p>
+  <div class="pair"><div><span class="lbl w">Vague</span><ul class="clean">${li(['<span class="dont">To make a good appointment app.</span>','<span class="dont">To learn mobile development.</span>','<span class="dont">To improve the clinic.</span>'])}</ul><p class="small muted">None of these can be marked as achieved or not achieved.</p></div>
+  <div class="good"><span class="lbl p">Clear, measurable, achievable</span><ul class="clean">${li(['<span class="do">To identify and document the functional and non-functional requirements of patients and reception staff.</span>','<span class="do">To design a three-tier architecture and a normalised relational database for the system.</span>','<span class="do">To implement booking, rescheduling and cancellation with prevention of scheduling conflicts.</span>','<span class="do">To validate the system through unit, integration and user acceptance testing.</span>'])}</ul></div></div>
+  <p class="small muted">Test for each objective: at the end of the project, could an examiner point to a section of the report that proves it was done?</p>`},
+ {t:'Scope',h:()=>`<h4>Writing the project scope</h4>
+  <p>Scope protects you. If the boundaries are written down, nobody can fault the project for something it never promised. Define four things.</p>
+  <div class="tw"><table><thead><tr><th>Element</th><th>Example for the clinic system</th></tr></thead><tbody>
+  <tr><td><b>What the application includes</b></td><td>Patient registration and login, viewing available slots, booking, rescheduling and cancelling, email confirmation, an admin web interface for managing slots.</td></tr>
+  <tr><td><b>What it does not include</b></td><td>Medical records, online payment, video consultation, integration with the hospital information system.</td></tr>
+  <tr><td><b>Intended users</b></td><td>Enrolled students as patients; reception staff as administrators.</td></tr>
+  <tr><td><b>Boundaries and limitations</b></td><td>One clinic site. English interface only. Evaluated with test data and volunteer participants, not in live clinic operation.</td></tr>
+  </tbody></table></div>`},
+ {t:'Requirements',h:()=>`<h4>Requirement builder</h4>
+  <p>A <b>functional requirement</b> states something the system does. A <b>non-functional requirement</b> states how well it does it, or a constraint it operates under. Both follow one pattern: an identifier, a subject, the word <span class="mono">shall</span>, one behaviour or quality, and a condition that makes it testable.</p>
+  <div class="seg" id="reqSeg" role="group" aria-label="Filter requirements"><button data-f="all" aria-pressed="true">All</button><button data-f="1" aria-pressed="false">Functional</button><button data-f="0" aria-pressed="false">Non-functional</button></div>
+  <div id="reqList"></div>
+  <div class="panel quiz" style="background:var(--surf)"><span class="lbl" style="color:var(--cyan)">Classify it</span><p class="stmt" id="qzS"></p>
+   <div class="seg"><button id="qzF">Functional</button><button id="qzN">Non-functional</button><button id="qzNext">Next statement →</button></div>
+   <p class="fb" id="qzFb" aria-live="polite"></p></div>`},
+ {t:'Technical explanations',h:()=>`<h4>Explain what you built, and why you built it that way</h4>
+  <p>Use the same four-part pattern for every significant choice: the <b>decision</b>, the <b>alternative</b> you considered, the <b>reason</b> for your choice, and its <b>consequence</b> for the system.</p>
+  <div class="seg" id="techSeg" role="group" aria-label="Topic">${TECH.map((t,i)=>`<button data-i="${i}" aria-pressed="${i===0}">${t[0]}</button>`).join('')}</div>
+  <div class="pair" id="techOut"></div>`},
+ {t:'Writing principles',h:()=>`<h4>Professional writing principles</h4>
+  <div class="tw"><table><thead><tr><th>Principle</th><th>Instead of</th><th>Write</th></tr></thead><tbody>${PRINC.map(p=>`<tr><td><b>${p[0]}</b></td><td class="dont">${esc(p[1])}</td><td class="do">${esc(p[2])}</td></tr>`).join('')}</tbody></table></div>`}
+];
+
+/* ---------- diagrams ---------- */
+const R=(x,y,w,h,c='b',r=6)=>`<rect class="${c}" x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}"/>`;
+const T=(x,y,s,c='',a='middle')=>`<text x="${x}" y="${y}" text-anchor="${a}" class="${c}">${esc(s)}</text>`;
+const L=(x1,y1,x2,y2,c='l',m='ar')=>`<line class="${c}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"${m?` marker-end="url(#${m})"`:''}/>`;
+const B=(x,y,w,h,t,s,c)=>R(x,y,w,h,c)+T(x+w/2,y+h/2+(s?-2:4),t,'h')+(s?T(x+w/2,y+h/2+13,s,'s'):'');
+const SVG=(w,h,body,label)=>`<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${label}">${body}</svg>`;
+const actor=(x,y,n)=>`<circle class="l" cx="${x}" cy="${y}" r="7"/><path class="l" d="M${x} ${y+7}v20M${x-12} ${y+15}h24M${x} ${y+27}l-10 16M${x} ${y+27}l10 16"/>`+T(x,y+58,n,'s');
+const oval=(x,y,t)=>`<ellipse class="b" cx="${x}" cy="${y}" rx="78" ry="19"/>`+T(x,y+4,t);
+const cls=(x,y,w,name,attrs,ops)=>{const h=24+attrs.length*15+8+ops.length*15+6;return R(x,y,w,h,'b',3)+T(x+w/2,y+16,name,'h')+L(x,y+24,x+w,y+24,'l','')+attrs.map((a,i)=>T(x+8,y+40+i*15,a,'s','start')).join('')+L(x,y+30+attrs.length*15,x+w,y+30+attrs.length*15,'l','')+ops.map((a,i)=>T(x+8,y+46+attrs.length*15+i*15,a,'s','start')).join('');};
+const ent=(x,y,w,name,rows)=>R(x,y,w,26+rows.length*16+6,'b2',3)+R(x,y,w,24,'b2',3)+T(x+w/2,y+16,name,'h')+rows.map((r,i)=>T(x+8,y+42+i*16,r,'s','start')).join('');
+
+const DIAGRAMS=[
+ {id:'arch',t:'Architecture diagram',p:'Components and how they communicate.',cap:'Figure 3.1: Three-tier architecture of the ClinicFlow system',
+  svg:SVG(560,300,
+   R(14,34,150,232,'bd')+T(89,26,'CLIENT TIER','s')+R(198,34,170,232,'bd')+T(283,26,'APPLICATION TIER','s')+R(402,34,144,232,'bd')+T(474,26,'DATA + EXTERNAL','s')+
+   B(28,62,122,52,'Mobile app','Flutter')+B(28,170,122,52,'Admin web','React')+
+   B(212,52,142,196,'','','b3')+T(283,74,'REST API','h')+T(283,88,'Spring Boot','s')+R(226,102,114,30,'b')+T(283,121,'Auth')+R(226,142,114,30,'b')+T(283,161,'Booking')+R(226,182,114,30,'b')+T(283,201,'Notification')+
+   B(416,62,116,52,'PostgreSQL','database','b2')+B(416,170,116,52,'Email service','SMTP provider','b2')+
+   L(150,88,210,118)+T(180,84,'HTTPS','s')+L(150,196,210,166)+T(180,214,'JSON','s')+L(354,150,414,92)+T(388,134,'JDBC','s')+L(354,196,414,196)+T(385,188,'SMTP','s'),'Three-tier architecture: mobile app and admin web call a REST API, which uses a PostgreSQL database and an email service'),
+  what:'The major components of the system, the tier each belongs to and the protocol on every connection.',
+  when:'Always. It is the first figure of the design chapter and the map for everything after it.',
+  ck:['Frontend, backend, database and external services each appear','Every arrow is labelled with a protocol or data format','Technologies are named on the components','The text walks through one request from client to database']},
+ {id:'usecase',t:'Use case diagram',p:'Who uses the system and for what.',cap:'Figure 2.1: Use case diagram of the appointment system',
+  svg:SVG(560,300,R(150,20,260,262,'bd')+T(280,40,'Appointment system','h')+actor(60,80,'Patient')+actor(500,150,'Receptionist')+
+   oval(280,76,'Book appointment')+oval(280,128,'Cancel appointment')+oval(280,180,'View schedule')+oval(280,236,'Manage slots')+
+   L(74,96,202,78,'l','')+L(74,100,202,126,'l','')+L(74,106,206,172,'l','')+L(486,166,358,180,'l','')+L(486,172,356,232,'l',''),'Use case diagram with actors Patient and Receptionist'),
+  what:'The actors outside the system and the goals each can achieve with it. It shows scope, not order or logic.',
+  when:'In the requirements chapter, to summarise functional requirements by user role.',
+  ck:['Actors are roles, not individual people','Use cases are verb phrases describing a goal','The system boundary is drawn','Each use case maps to at least one functional requirement']},
+ {id:'class',t:'Class diagram',p:'The static structure of the domain.',cap:'Figure 3.4: Domain class diagram',
+  svg:SVG(560,300,cls(20,40,150,'Patient',['- id: UUID','- email: String','- fullName: String'],['+ upcoming(): List'])+cls(205,40,160,'Appointment',['- id: UUID','- status: Status','- createdAt: Instant'],['+ cancel(): void','+ reschedule(s: Slot)'])+cls(400,40,140,'Slot',['- id: UUID','- startsAt: Instant'],['+ isAvailable(): bool'])+cls(400,190,140,'Clinician',['- id: UUID','- name: String'],[])+
+   L(170,90,205,90,'l','')+T(178,84,'1','s')+T(196,84,'*','s')+L(365,90,400,90,'l','')+T(373,84,'0..1','s','start')+T(394,104,'1','s')+L(470,190,470,146,'l','')+T(478,184,'1','s')+T(478,160,'*','s'),'Class diagram with Patient, Appointment, Slot and Clinician'),
+  what:'The main classes of the domain, their key attributes and operations, and the associations between them with multiplicities.',
+  when:'When the system has a meaningful object model. Show domain classes, not every controller and utility.',
+  ck:['Only important attributes and operations are shown','Associations have multiplicities','Visibility markers are used consistently','The diagram agrees with the ERD and the code']},
+ {id:'seq',t:'Sequence diagram',p:'How components interact over time.',cap:'Figure 3.6: Sequence diagram for booking an appointment',
+  svg:(()=>{const xs=[70,210,350,490],n=['Mobile app','API controller','BookingService','Database'];let s=xs.map((x,i)=>R(x-52,16,104,26,'b')+T(x,33,n[i])+L(x,42,x,290,'ld','')).join('');
+   const m=[[0,1,'POST /appointments'],[1,2,'book(patientId, slotId)'],[2,3,'SELECT slot FOR UPDATE'],[3,2,'slot row',1],[2,3,'INSERT appointment'],[2,1,'Appointment',1],[1,0,'201 Created',1]];
+   m.forEach((a,i)=>{const y=70+i*32;s+=L(xs[a[0]],y,xs[a[1]],y,a[3]?'ld':'l',a[3]?'aro':'ar')+T((xs[a[0]]+xs[a[1]])/2,y-6,a[2],'s');});return SVG(560,300,s,'Sequence diagram of the booking request across app, controller, service and database');})(),
+  what:'The messages exchanged between participants for one scenario, in time order.',
+  when:'For the one or two flows that involve several components or contain the important logic, such as booking or payment.',
+  ck:['One scenario per diagram','Participants are ordered left to right as the call flows','Returns are dashed, calls are solid','Message names match real endpoints or methods']},
+ {id:'act',t:'Activity diagram',p:'The flow of a process with its decisions.',cap:'Figure 3.7: Activity diagram of the booking process',
+  svg:SVG(560,300,`<circle cx="40" cy="70" r="8" fill="#F4F5FA"/>`+B(80,50,110,40,'Select slot','','b')+`<path class="b3" d="M250 40l34 30l-34 30l-34 -30z"/>`+T(250,30,'slot free?','s')+B(330,50,110,40,'Confirm','booking','b')+B(330,150,110,40,'Send','notification','b')+`<circle cx="500" cy="170" r="10" class="l"/><circle cx="500" cy="170" r="5" fill="#F4F5FA"/>`+B(195,150,110,40,'Show','alternatives','b')+
+   L(48,70,78,70)+L(190,70,214,70)+L(284,70,328,70)+T(304,62,'yes','s')+L(385,90,385,148)+L(440,170,488,170)+L(250,100,250,148)+T(264,128,'no','s')+`<path class="l" d="M195 170H135V92" marker-end="url(#ar)"/>`,'Activity diagram: select slot, decision whether slot is free, confirm and notify, or show alternatives'),
+  what:'The steps of a process, the decision points and the alternative paths.',
+  when:'For workflows with branching, especially where the user and the system take turns.',
+  ck:['One start node and a clear end node','Every decision has labelled outgoing branches','Activities are verb phrases','Loops return to a visible point']},
+ {id:'erd',t:'Entity Relationship Diagram',p:'The data model behind the system.',cap:'Figure 3.3: Entity Relationship Diagram of the database',
+  svg:SVG(560,300,ent(20,30,150,'PATIENT',['PK  patient_id','      email  (unique)','      full_name','      password_hash'])+ent(205,30,160,'APPOINTMENT',['PK  appointment_id','FK  patient_id','FK  slot_id','      status','      created_at'])+ent(400,30,140,'SLOT',['PK  slot_id','FK  clinician_id','      starts_at'])+ent(400,190,140,'CLINICIAN',['PK  clinician_id','      name','      specialty'])+
+   L(170,80,205,80,'l','')+T(176,74,'1','s')+T(196,74,'N','s')+L(365,80,400,80,'l','')+T(371,74,'0..1','s','start')+T(394,96,'1','s')+L(470,190,470,112,'l','')+T(478,184,'1','s')+T(478,126,'N','s')+T(100,190,'A patient has many appointments.','s')+T(100,206,'A slot holds at most one active','s')+T(100,222,'appointment. A clinician offers','s')+T(100,238,'many slots.','s'),'ERD with PATIENT, APPOINTMENT, SLOT and CLINICIAN'),
+  what:'Entities, their attributes, primary and foreign keys, and the relationships between entities with their cardinality.',
+  when:'Whenever the system stores structured data. For document databases, show the collections and document structure instead.',
+  ck:['Each entity has a primary key marked PK','Foreign keys are marked FK and match a relationship line','Cardinality is shown on both ends','The text explains normalisation or the reason for any deviation']},
+ {id:'shot',t:'Annotated screenshot',p:'A real feature, with the important parts pointed out.',cap:'Figure 4.5: Booking screen showing (1) the selected clinician, (2) available slots and (3) the confirmation action',
+  svg:SVG(560,300,R(200,10,160,280,'b',18)+R(212,40,136,34,'b2')+T(280,61,'Dr. A. Rahman')+T(280,96,'Tuesday 14 May','s')+[0,1,2,3,4,5].map(i=>R(212+(i%3)*46,108+Math.floor(i/3)*36,40,26,i===1?'b3':'b')+T(232+(i%3)*46,125+Math.floor(i/3)*36,['09:00','09:30','10:00','10:30','11:00','11:30'][i],'s')).join('')+R(212,236,136,34,'b3',17)+T(280,257,'Confirm booking')+
+   [[150,57,1,'Selected clinician'],[150,138,2,'Available slots'],[410,253,3,'Confirmation']].map(c=>`<circle cx="${c[0]}" cy="${c[1]}" r="11" fill="#6C8CFF"/>`+T(c[0],c[1]+4,c[2],'d')+T(c[0]<280?c[0]-18:c[0]+18,c[1]+4,c[3],'s',c[0]<280?'end':'start')+L(c[0]<280?c[0]+11:c[0]-11,c[1],c[0]<280?210:350,c[1],'l','')).join(''),'Mobile booking screen with three numbered callouts'),
+  what:'That a specific feature exists and works, with numbered callouts so the reader knows where to look.',
+  when:'In the implementation chapter for core features, and in testing as evidence of a result.',
+  ck:['Shows the running system with realistic data','No personal data of real users is visible','Cropped to the relevant area and readable when printed','Captioned and discussed in the paragraph before or after']},
+ {id:'tab',t:'Tables and figures',p:'Numbering, captions and references in the text.',cap:'Convention shown: table captions above, figure captions below. Confirm with your guidelines.',
+  svg:SVG(560,300,R(60,8,440,284,'pg',3)+T(84,34,'As shown in Table 5.2, all login test cases passed. The response times in','ds','start')+T(84,48,'Figure 5.1 remain below the 500 ms limit set by requirement NFR-02.','ds','start')+
+   T(280,78,'Table 5.2: Results of the authentication test cases','d')+`<g stroke="#8E96A8" fill="none"><rect x="110" y="86" width="340" height="62"/><path d="M110 104h340M110 126h340M190 86v62M340 86v62"/></g>`+T(150,99,'Test ID','ds')+T(265,99,'Scenario','ds')+T(395,99,'Status','ds')+T(150,119,'TC-001','ds')+T(265,119,'Valid credentials','ds')+T(395,119,'Pass','ds')+T(150,141,'TC-002','ds')+T(265,141,'Wrong password','ds')+T(395,141,'Pass','ds')+
+   `<rect x="150" y="166" width="260" height="84" fill="#E2E6EF" stroke="#8E96A8"/><path d="M165 235L210 215L255 222L300 200L345 208L395 190" stroke="#3B5BDB" fill="none" stroke-width="2"/><path d="M165 196H395" stroke="#C0392B" stroke-dasharray="4 3"/>`+T(388,192,'500 ms','ds','end')+T(280,268,'Figure 5.1: 95th percentile response time by number of concurrent users','ds'),'A report page showing a captioned table, a captioned figure and a paragraph that references both'),
+  what:'How tables and figures are numbered by chapter, captioned descriptively and referred to from the paragraph that discusses them.',
+  when:'For every table and figure in the report, without exception.',
+  ck:['Numbered per chapter in order of appearance','Captions describe the content, not just name it','Each one is cited in the text by number, never as "the figure below"','Fonts and line weights match across all figures']}
+];
+
+const TTYPES=[
+ ['Unit testing','Individual functions or classes in isolation, with dependencies replaced by test doubles. Report the framework, what was covered and a representative test.'],
+ ['Integration testing','Components working together: the API with the database, the app with the API. This is where interface and data errors appear.'],
+ ['System testing','The complete system against the requirements, end to end, in an environment close to deployment.'],
+ ['User acceptance testing','Representative users carry out real tasks. Report who took part, the tasks, what you measured and what they said.'],
+ ['Functional validation','Each functional requirement traced to the test cases that verify it, usually as a traceability matrix.'],
+ ['Performance','Response time, throughput or resource use under stated conditions: data size, number of users, hardware. A number without conditions means little.'],
+ ['Error handling','Invalid input, lost connection, expired session, missing permissions. Show that the system fails safely and says something useful.'],
+ ['Security, where relevant','Authentication, authorisation, input validation and data protection checks appropriate to the system. State clearly what was and was not tested.']
+];
+const TCS=[
+ {id:'TC-001',f:'User login',req:'FR-01',pre:'A registered user exists.',steps:['Open the login page.','Enter valid credentials.','Click the login button.'],exp:'The system authenticates the user and redirects them to the dashboard.',act:'User authenticated; dashboard displayed with the user\'s name.',ok:1},
+ {id:'TC-002',f:'Login with wrong password',req:'FR-01',pre:'A registered user exists.',steps:['Open the login page.','Enter a valid email address and an incorrect password.','Click the login button.'],exp:'Access is refused and a generic message "Invalid email or password" is shown. No session is created.',act:'Access refused; generic message shown; no token issued.',ok:1},
+ {id:'TC-003',f:'Concurrent booking of one slot',req:'FR-03',pre:'One free slot exists. Two patients are logged in.',steps:['Send two booking requests for the same slot at the same time.','Inspect both responses.','Query the appointments stored for the slot.'],exp:'Exactly one request succeeds with 201 Created. The other receives 409 Conflict. One appointment is stored.',act:'Both requests returned 201 Created. Two appointments were stored for the same slot.',ok:0,
+  fix:{act:'First request returned 201 Created, second returned 409 Conflict. One appointment stored.',note:'Retest after correction of defect D-004 (unique constraint and transactional booking).'}},
+ {id:'TC-004',f:'Availability query response time',req:'NFR-02',pre:'Database seeded with 10,000 slots. Load tool configured for 50 concurrent users for 5 minutes.',steps:['Start the load test against GET /api/v1/slots.','Record the 95th percentile response time.'],exp:'95th percentile at or below 500 ms.',act:'95th percentile 412 ms, measured on the development laptop over the local network. This figure is illustrative: record your own measurement together with the hardware and network it was taken on.',ok:1},
+ {id:'TC-005',f:'Patient calls an admin endpoint',req:'NFR (authorisation)',pre:'A patient account is logged in and holds a valid token.',steps:['Send DELETE /api/v1/slots/{id} with the patient token.','Check that the slot still exists.'],exp:'The API responds 403 Forbidden and the slot is unchanged.',act:'403 Forbidden returned; slot unchanged.',ok:1}
+];
+
+const TOPICS=[
+ ['Page layout and margins','Leave a wider inner margin if the report will be bound. Keep all content, including wide figures, inside the margins.','ver'],
+ ['Font selection and sizes','One readable typeface for body text and a monospaced font for code. Exact fonts and sizes are usually prescribed.','ver'],
+ ['Heading hierarchy','At most three numbered levels (1, 1.1, 1.1.1), each with one consistent style applied through the editor\'s styles.','rec'],
+ ['Page numbering','Commonly roman numerals for front matter and arabic from Chapter 1. Check the convention you must follow.','ver'],
+ ['Consistent spacing','Set spacing before and after headings and paragraphs in the style, never with empty lines.','rec'],
+ ['Figure and table numbering','Number by chapter (Figure 3.2, Table 5.1) using automatic captions so numbers update when you move things.','rec'],
+ ['Captions','Descriptive and complete: "Figure 3.2: Three-tier architecture of the system", not "Figure 3.2: Diagram".','rec'],
+ ['Headers and footers','Useful for chapter title and page number. Keep them light. Some templates forbid or fix them.','ver'],
+ ['Table of contents','Generate it from heading styles and update it as the very last step before export.','rec'],
+ ['Cross-references','Insert references to sections, figures and tables as fields so they stay correct: "see Section 4.3".','rec'],
+ ['References and citations','Every in-text citation has a full entry in the list and every entry is cited. Style is set by the department.','ver'],
+ ['Appendices','Lettered, titled and referred to from the text. Long test tables, manuals and questionnaires go here.','rec'],
+ ['PDF export','Export with embedded fonts and bookmarks, then read the PDF itself. Check figures, page breaks and links.','rec']
+];
+const INSPECT=[
+ ['Heading hierarchy','Left: the heading is italic, underlined and uncapitalised, and the next one uses a different font with no number. Right: numbered levels, one typeface, size and weight step down consistently.',[['8%','3%'],['8%','13%']]],
+ ['Body text','Left: line spacing changes between paragraphs and the text runs almost to the paper edge. Right: one font, one line spacing, even margins.',[['62%','15%'],['62%','24%']]],
+ ['Figure placement','Left: the figure is stretched past the margin, shows a file name and has no caption or number. Right: centred, inside the margins, with a numbered descriptive caption that the text can refer to.',[['82%','33%'],['80%','44%']]],
+ ['Spacing','Left: a large accidental gap after the figure, then cramped text. Right: equal space around the figure and before each heading.',[['30%','57%'],['14%','63%']]],
+ ['Header and page number','Left: no header and no page number, so the page cannot be cited or found from the contents. Right: running header with the chapter title and a page number in the footer.',[['84%','90%'],['56%','91%']]]
+];
+const INTEG=[
+ ['Plagiarism','Presenting someone else\'s words, code, diagrams or ideas as your own. It includes copied tutorial code, reused figures and text from a previous student\'s report.'],
+ ['Proper paraphrasing','Restating an idea in your own words and sentence structure, then citing the source. Swapping a few words for synonyms is still copying.'],
+ ['Quotation','Reproducing exact words inside quotation marks with a citation. Use sparingly in technical reports, mainly for definitions and standards.'],
+ ['Citation','The marker in the text that points to a source, such as [3] or (Sommerville, 2016). Place it where the borrowed idea is used.'],
+ ['Referencing','The full entry in the reference list that lets a reader find the source. Third-party libraries, datasets and adapted code need acknowledging too.'],
+ ['Responsible use of AI tools','Rules differ widely between institutions. Find yours, follow them, and declare any use they require you to declare. You remain responsible for the accuracy and originality of every sentence and line of code you submit.']
+];
+const REFS={
+ IEEE:[['Book','[1] I. Sommerville, <i>Software Engineering</i>, 10th ed. Boston, MA, USA: Pearson, 2016.'],['Journal article','[2] R. T. Fielding and R. N. Taylor, “Principled design of the modern Web architecture,” <i>ACM Trans. Internet Technol.</i>, vol. 2, no. 2, pp. 115–150, May 2002.'],['Online documentation','[3] PostgreSQL Global Development Group, “PostgreSQL 16 documentation.” Accessed: Mar. 4, 2026. [Online]. Available: https://www.postgresql.org/docs/16/'],['In the text','The system follows the REST architectural style [2].']],
+ APA:[['Book','Sommerville, I. (2016). <i>Software engineering</i> (10th ed.). Pearson.'],['Journal article','Fielding, R. T., &amp; Taylor, R. N. (2002). Principled design of the modern Web architecture. <i>ACM Transactions on Internet Technology, 2</i>(2), 115–150. https://doi.org/10.1145/514183.514185'],['Online documentation','PostgreSQL Global Development Group. (2023). <i>PostgreSQL 16 documentation</i>. https://www.postgresql.org/docs/16/'],['In the text','The system follows the REST architectural style (Fielding &amp; Taylor, 2002).']]
+};
+const MISTAKES=[
+ ['Writing the implementation chapter as a code dump','Pages of listings show that code exists, not that you understand it. Examiners skip them.','Select short excerpts that carry the core logic, number them, and explain what each does and why it is written that way. Put full listings in an appendix or repository.'],
+ ['Listing technologies without explaining their selection','A list of frameworks reads like a CV. It says nothing about engineering judgement.','For each main technology, state the requirement or constraint it addresses and one alternative you rejected, with the reason.'],
+ ['Presenting screenshots without explaining them','The reader does not know what to look at or what the image proves.','Caption every screenshot, refer to it in the text, and say which feature or requirement it demonstrates. Add numbered callouts for busy screens.'],
+ ['Including diagrams that are never discussed','An unexplained diagram looks like padding, and readers interpret it differently from you.','Introduce each diagram before it appears and follow it with a paragraph that walks through it. Remove any diagram you have nothing to say about.'],
+ ['Writing vague objectives','"Build a good system" cannot be evaluated, so the conclusion has nothing to answer.','Write specific objectives with action verbs and an observable outcome, then revisit each one in the conclusion.'],
+ ['Describing features without showing how they were validated','A feature list is a promise. Without a test, the reader has to trust you.','Trace every important feature to a requirement and at least one test case with its recorded result.'],
+ ['Making claims without evidence','"Fast", "secure" and "user-friendly" are opinions until measured.','Replace adjectives with a measurement, a test reference or a citation. If you have no evidence, soften or remove the claim.'],
+ ['Treating the conclusion as a repetition of the introduction','It wastes the last page and avoids the question of whether the project succeeded.','Evaluate: which objectives were met and how you know, what the limitations are, what you learned, and what should come next.']
+];
+const CHECK=[
+ ['Content',['All required chapters are included.','Objectives are clearly stated.','Project scope is defined.','Technical decisions are explained.','Implementation is documented.','Testing evidence is included.','Conclusions reflect actual results.']],
+ ['Visuals',['Architecture diagrams are readable.','UML diagrams are relevant and correct.','Screenshots demonstrate real features.','Figures and tables have captions.','All figures are referenced in the text.']],
+ ['Formatting',['Headings are consistent.','Page numbers are correct.','Table of contents is updated.','References are consistent.','Appendices are organised.','The final PDF has been checked.']],
+ ['Quality',['Grammar and spelling have been reviewed.','Claims are supported by evidence.','Plagiarism and citation requirements are respected.','The document follows university guidelines.','The final report has been proofread.']]
+];
+
+/* =====================================================================
+   2. AUDIO (starts muted; created on first toggle)
+   ===================================================================== */
+const Sound=(()=>{let ctx,master,filt,on=false,white,brown,birdT=0;
+ function noise(kind){const b=ctx.createBuffer(1,ctx.sampleRate*4,ctx.sampleRate),d=b.getChannelData(0);let l=0;for(let i=0;i<d.length;i++){const w=Math.random()*2-1;if(kind){l=(l+.02*w)/1.02;d[i]=l*3.5}else d[i]=w}return b}
+ function loop(buf,type,f,q,gain,lfoHz,depth){const n=ctx.createBufferSource();n.buffer=buf;n.loop=true;const fl=ctx.createBiquadFilter();fl.type=type;fl.frequency.value=f;fl.Q.value=q;const g=ctx.createGain();g.gain.value=gain;
+  if(lfoHz){const l=ctx.createOscillator(),lg=ctx.createGain();l.frequency.value=lfoHz;lg.gain.value=depth;l.connect(lg);lg.connect(g.gain);l.start()}n.connect(fl);fl.connect(g);g.connect(filt);n.start(0,Math.random()*3)}
+ function init(){ctx=new (window.AudioContext||window.webkitAudioContext)();master=ctx.createGain();master.gain.value=0;master.connect(ctx.destination);
+  filt=ctx.createBiquadFilter();filt.type='lowpass';filt.frequency.value=9000;filt.Q.value=.3;filt.connect(master);
+  white=noise(0);brown=noise(1);
+  loop(brown,'lowpass',420,.3,.55,.06,.22);      // wind, slow swells
+  loop(brown,'lowpass',900,.3,.16,.11,.1);       // lighter breeze
+  loop(white,'bandpass',1500,.6,.035,.37,.012);  // stream
+  loop(white,'bandpass',2600,1.2,.016,.83,.008); // water ripple
+  loop(white,'highpass',5200,.5,.008,.17,.005);  // leaves
+ }
+ function env(g,peak,a,d,t0){const t=t0||ctx.currentTime;g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(peak,t+a);g.gain.exponentialRampToValueAtTime(0.0001,t+a+d);}
+ function chirp(t,f0,f1,dur,vol,pan){const o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f1,t+dur);o.connect(g);
+  let out=g;if(ctx.createStereoPanner){const p=ctx.createStereoPanner();p.pan.value=pan;g.connect(p);out=p}out.connect(filt);env(g,vol,dur*.3,dur*.7,t);o.start(t);o.stop(t+dur+.05)}
+ function bird(){if(!on)return;const t=ctx.currentTime+.05,pan=Math.random()*1.6-.8,base=2300+Math.random()*1900,n=2+Math.floor(Math.random()*4),vol=.012+Math.random()*.02,kind=Math.random();
+  for(let i=0;i<n;i++){const f=base*(1+(Math.random()-.5)*.25);if(kind<.5)chirp(t+i*.16,f,f*1.35,.09,vol,pan);else if(kind<.8)chirp(t+i*.22,f*1.3,f*.85,.14,vol,pan);else{chirp(t+i*.3,f,f*1.2,.07,vol,pan);chirp(t+i*.3+.08,f*1.2,f,.07,vol,pan)}}
+  birdT=setTimeout(bird,3500+Math.random()*8000)}
+ return{get on(){return on},
+  async toggle(){try{if(!ctx)init();if(ctx.state==='suspended')await ctx.resume();on=!on;master.gain.setTargetAtTime(on?.6:0,ctx.currentTime,.5);clearTimeout(birdT);if(on)birdT=setTimeout(bird,1500)}catch(e){on=false}return on},
+  muffle(m){if(on)filt.frequency.setTargetAtTime(m?500:9000,ctx.currentTime,.3)},
+  tick(){if(!on)return;const o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.setValueAtTime(1250,ctx.currentTime);o.frequency.exponentialRampToValueAtTime(700,ctx.currentTime+.07);o.connect(g);g.connect(master);env(g,.05,.004,.09);o.start();o.stop(ctx.currentTime+.14)},
+  /* chapter change: a soft gust through leaves (steady tone, volume swell only) */
+  whoosh(){if(!on)return;const n=ctx.createBufferSource();n.buffer=white;const f=ctx.createBiquadFilter();f.type='highpass';f.frequency.value=2200;const g=ctx.createGain();n.connect(f);f.connect(g);g.connect(filt);env(g,.03,.9,1.6);n.start(0,Math.random()*2);n.stop(ctx.currentTime+2.8)},
+  /* panel open: a water drop */
+  thud(){if(!on)return;const t=ctx.currentTime,o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.setValueAtTime(520,t);o.frequency.exponentialRampToValueAtTime(1150,t+.07);o.connect(g);g.connect(filt);env(g,.07,.006,.16);o.start();o.stop(t+.25)}};
+})();
+
+/* =====================================================================
+   3. UI LAYER AND INTERACTIVE TOOLS
+   ===================================================================== */
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const secs=$$('section[data-st]');
+function go(id){const el=document.getElementById(id);if(!el)return;closeSheet();closeModal();
+ if(id==='home')window.scrollTo({top:0,behavior:reduce?'auto':'smooth'});else el.scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'});
+ try{history.replaceState(null,'','#'+id)}catch(e){}}
+document.addEventListener('click',e=>{const a=e.target.closest('[data-go]');if(a){e.preventDefault();go(a.dataset.go);}if(e.target.closest('button,a,label'))Sound.tick();});
+
+/* rail + sheet */
+const rail=$('#rail'),sheet=$('#sheet');
+secs.forEach((s,i)=>{const n=s.dataset.n||'';const b=document.createElement('button');b.innerHTML=`<b>${n&&n!=='!'?n+' · ':''}${s.dataset.st}</b><i></i>`;b.setAttribute('aria-label','Go to '+s.dataset.st);b.onclick=()=>go(s.id);rail.appendChild(b);
+ if(s.id!=='closing'){const a=document.createElement('a');a.href='#'+s.id;a.dataset.go=s.id;a.innerHTML=`<span>${n==='!'?'··':n||'00'}</span>${s.dataset.st}`;sheet.appendChild(a);}});
+function closeSheet(){sheet.classList.remove('open')}
+$('#menuBtn').onclick=()=>{sheet.classList.add('open');$('#sheetX').focus()};$('#sheetX').onclick=()=>{closeSheet();$('#menuBtn').focus()};
+
+/* modal */
+const modal=$('#modal'),mIn=$('#mIn');let lastFocus=null;
+function openModal(html,kind){lastFocus=document.activeElement;modal.style.setProperty('--acc',(lastFocus&&lastFocus.closest&&lastFocus.closest('section')?getComputedStyle(lastFocus).getPropertyValue('--acc'):'')||'#65D9E8');
+ mIn.innerHTML=`<div class="mbar"><span>◧ Detail panel · ${kind||'Guide'}</span><span>Esc or ✕ to return to the page</span></div><div class="mbody">${html}</div>`;modal.classList.add('open');document.body.classList.add('modal-open');modal.scrollTop=0;document.body.style.overflow='hidden';$('#mClose').focus();Sound.thud();}
+function closeModal(){if(!modal.classList.contains('open'))return;modal.classList.remove('open');document.body.classList.remove('modal-open');document.body.style.overflow='';if(lastFocus)lastFocus.focus();}
+$('#mClose').onclick=closeModal;modal.addEventListener('click',e=>{if(e.target===modal)closeModal()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeSheet();}
+ if(e.key==='Tab'&&modal.classList.contains('open')){const f=$$('button,a[href],input',modal);if(!f.length)return;const a=f[0],z=f[f.length-1];if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}});
+
+/* stage 1 */
+$('#qcards').innerHTML=QCARDS.map((c,i)=>`<button class="panel qcard" aria-expanded="false"><span class="k">CARD ${String(i+1).padStart(2,'0')}</span><h4>${c.q}</h4><p>${c.a}</p><p class="more">${c.m}</p><span class="tog">+ READ MORE</span></button>`).join('');
+$$('.qcard').forEach(b=>b.onclick=()=>{const o=b.getAttribute('aria-expanded')!=='true';b.setAttribute('aria-expanded',o);$('.tog',b).textContent=o?'− SHOW LESS':'+ READ MORE';});
+
+/* stage 2 */
+$('#chapters').innerHTML=CHAPTERS.map((c,i)=>`<button class="chap" data-i="${i}"><span class="n">${c.n.toUpperCase()}</span><h4>${c.t}</h4><ul>${li(c.items)}</ul><span class="open">OPEN THIS PART →</span></button>`).join('');
+$$('.chap').forEach(b=>b.onclick=()=>{const c=CHAPTERS[b.dataset.i];openModal(`<div class="eyebrow">${c.n}</div><h2 id="mTitle">${c.t}</h2><div class="mgrid">
+ <div class="panel"><h3>What this part is about</h3><p>${c.about}</p></div>
+ <div class="panel"><h3>Why it matters</h3><p>${c.why}</p></div>
+ <div class="panel"><h3>What to include</h3><ul class="clean tick">${li(c.items)}</ul></div>
+ <div class="panel"><h3>How to write it</h3><ul class="clean tick">${li(c.how)}</ul></div>
+ <div class="panel wide"><h3>Practical example · ${c.exl}</h3><div class="example">${esc(c.ex)}</div></div>
+ <div class="panel"><h3>Common mistakes</h3><ul class="clean">${c.bad.map(x=>`<li class="dont">${x}</li>`).join('')}</ul></div>
+ <div class="panel mini"><h3>Mini checklist</h3>${c.ck.map((x,j)=>`<label><input type="checkbox" id="mc${b.dataset.i}_${j}"><span>${x}</span></label>`).join('')}</div>
+ <div class="note wide"><b>Check your guidelines</b>Section names, order and required content for this part may be fixed by your department.</div></div>`,'Report structure');});
+
+/* stage 3: lab */
+const labTabs=$('#labTabs'),labPanel=$('#labPanel');let qi=0;
+labTabs.innerHTML=LAB.map((t,i)=>`<button role="tab" id="lt${i}" aria-selected="${i===0}" data-i="${i}">${t.t}</button>`).join('');
+function press(group,btn){$$('button',group).forEach(b=>b.setAttribute('aria-pressed',b===btn))}
+function showLab(i){$$('button',labTabs).forEach((b,k)=>b.setAttribute('aria-selected',k===i));labPanel.setAttribute('aria-labelledby','lt'+i);labPanel.innerHTML=LAB[i].h();
+ const rs=$('#reqSeg');if(rs){const draw=f=>{$('#reqList').innerHTML=REQS.filter(r=>f==='all'||String(r.f)===f).map(r=>`<div class="req"><span class="id">${r.id}</span><span>${r.t}</span><span class="meta"><b>${r.f?'Functional':'Non-functional'} · ${r.c}.</b> Verified by: ${r.v}</span></div>`).join('')};draw('all');
+   rs.onclick=e=>{const b=e.target.closest('button');if(b){press(rs,b);draw(b.dataset.f)}};
+   const q=()=>{$('#qzS').textContent=QUIZ[qi].s;$('#qzFb').textContent='Functional or non-functional?';$('#qzFb').style.color='var(--mute)'};q();
+   const ans=f=>{const c=QUIZ[qi],ok=c.f===f;$('#qzFb').innerHTML=`<b>${ok?'✓ Correct.':'✕ Not quite.'}</b> ${c.w}`;$('#qzFb').style.color=ok?'var(--ok)':'var(--bad)'};
+   $('#qzF').onclick=()=>ans(1);$('#qzN').onclick=()=>ans(0);$('#qzNext').onclick=()=>{qi=(qi+1)%QUIZ.length;q()};}
+ const ts=$('#techSeg');if(ts){const draw=k=>{$('#techOut').innerHTML=`<div><span class="lbl w">Only what</span><p style="color:var(--red-t)">${esc(TECH[k][1])}</p></div><div class="good"><span class="lbl p">What and why</span><p>${esc(TECH[k][2])}</p></div>`};draw(0);ts.onclick=e=>{const b=e.target.closest('button');if(b){press(ts,b);draw(+b.dataset.i)}};}}
+labTabs.onclick=e=>{const b=e.target.closest('button');if(b)showLab(+b.dataset.i)};
+labTabs.onkeydown=e=>{if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft')return;const bs=$$('button',labTabs),i=bs.indexOf(document.activeElement);if(i<0)return;const n=(i+(e.key==='ArrowRight'?1:-1)+bs.length)%bs.length;bs[n].focus();showLab(n)};
+showLab(0);
+
+/* before/after editor */
+let ex=0,after=true;const exSeg=$('#exSeg');
+exSeg.innerHTML=EDITS.map((e,i)=>`<button data-i="${i}" aria-pressed="${i===0}">${e.l}</button>`).join('');
+function drawEd(){const e=EDITS[ex],t=$('#edTxt');$('.editor').dataset.v=after?'after':'before';t.className='txt'+(after?'':' before');t.innerHTML=after?e.a:esc(e.b);
+ $('#edAnn').innerHTML=after?e.n.map((n,i)=>`<li><b>${i+1}</b><span>${n}</span></li>`).join(''):`<li><b>?</b><span>Read it as an examiner would. What is claimed, what is the reason, and is the vocabulary correct? Switch to After to see the rewrite.</span></li>`;
+ $('#vBefore').setAttribute('aria-pressed',!after);$('#vAfter').setAttribute('aria-pressed',after);}
+exSeg.onclick=e=>{const b=e.target.closest('button');if(b){ex=+b.dataset.i;press(exSeg,b);drawEd()}};
+$('#vBefore').onclick=()=>{after=false;drawEd()};$('#vAfter').onclick=()=>{after=true;drawEd()};drawEd();
+
+/* stage 4 */
+$('#gallery').innerHTML=DIAGRAMS.map((d,i)=>`<button class="panel gcard" data-i="${i}"><span class="thumb">${d.svg}</span><h4>${d.t}</h4><p>${d.p}</p></button>`).join('');
+$$('.gcard').forEach(b=>b.onclick=()=>{const d=DIAGRAMS[b.dataset.i];openModal(`<div class="eyebrow">Visual documentation</div><h2 id="mTitle">${d.t}</h2><div class="mgrid">
+ <div class="wide"><div class="dg">${d.svg}</div><p class="small muted" style="margin-top:10px;text-align:center">${d.cap}</p></div>
+ <div class="panel"><h3>What it should communicate</h3><p>${d.what}</p></div>
+ <div class="panel"><h3>When it is useful</h3><p>${d.when}</p></div>
+ <div class="panel wide"><h3>Before you include it</h3><ul class="clean tick">${li(d.ck)}</ul></div></div>`,'Visual example');});
+
+/* stage 5 */
+$('#ttypes').innerHTML=TTYPES.map((t,i)=>`<div class="panel ttype"><span class="k">${String(i+1).padStart(2,'0')}</span><h4>${t[0]}</h4><p>${t[1]}</p></div>`).join('');
+const tcList=$('#tcList');let tci=0,fixed=false;
+tcList.innerHTML=TCS.map((t,i)=>`<button data-i="${i}" aria-pressed="${i===0}"><span class="id">${t.id}</span><span>${t.f}</span></button>`).join('');
+function drawTC(){const t=TCS[tci],useFix=t.fix&&fixed,ok=t.ok||useFix,act=useFix?t.fix.act:t.act;
+ $('#tcBody').innerHTML=`<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:16px"><h4 style="font-size:1.25rem">${t.id} · ${t.f}</h4><span class="status ${ok?'pass':'fail'}">${ok?'PASS':'FAIL'}</span></div>
+ <dl><dt>Requirement</dt><dd class="mono small">${t.req}</dd><dt>Precondition</dt><dd>${t.pre}</dd><dt>Test steps</dt><dd><ol>${li(t.steps)}</ol></dd></dl>
+ <div class="ea"><div><h5>Expected result</h5><p>${t.exp}</p></div><div class="${ok?'':'diff'}"><h5>Actual result</h5><p>${act}</p></div></div>
+ ${t.fix?`<div style="margin-top:16px;display:grid;gap:10px"><div class="seg" role="group" aria-label="Test run"><button id="runA" aria-pressed="${!fixed}">First run</button><button id="runB" aria-pressed="${fixed}">Retest after fix</button></div><p class="small muted">${fixed?t.fix.note:'Expected and actual differ, so the status is Fail. The difference is recorded as defect D-004 in the table below. Select the retest to see the result after the correction.'}</p></div>`:`<p class="small muted" style="margin-top:14px">${ok?'The observed behaviour matches the expected result, so the status is Pass.':''}</p>`}`;
+ if(t.fix){$('#runA').onclick=()=>{fixed=false;drawTC()};$('#runB').onclick=()=>{fixed=true;drawTC()};}}
+tcList.onclick=e=>{const b=e.target.closest('button');if(b){tci=+b.dataset.i;fixed=false;press(tcList,b);drawTC()}};drawTC();
+
+/* stage 6 */
+$('#topics').innerHTML=TOPICS.map(t=>`<div class="panel topic"><h4>${t[0]}</h4><p>${t[1]}</p><span class="tag ${t[2]}" style="justify-self:start">${t[2]==='rec'?'Recommended practice':'Set by your department'}</span></div>`).join('');
+$('#integrity').innerHTML=INTEG.map(t=>`<div class="panel topic"><h4>${t[0]}</h4><p>${t[1]}</p></div>`).join('');
+const papers=$$('.paper');
+INSPECT.forEach((h,i)=>papers.forEach((p,k)=>{const b=document.createElement('button');b.className='hs';b.textContent=i+1;b.style.left=h[2][k][0];b.style.top=h[2][k][1];b.dataset.i=i;b.setAttribute('aria-pressed','false');b.setAttribute('aria-label',`Inspect difference ${i+1}: ${h[0]}`);b.onclick=()=>inspect(i);p.appendChild(b);}));
+function inspect(i){$$('.hs').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.i===i));$('#insp').innerHTML=`<b class="mono" style="color:var(--cyan)">${i+1} · ${INSPECT[i][0]}</b><br>${INSPECT[i][1]}`;}
+inspect(0);
+function drawRefs(k){$('#refs').innerHTML=REFS[k].map(r=>`<div class="ref"><b>${r[0]}</b>${r[1]}</div>`).join('');$('#rIEEE').setAttribute('aria-pressed',k==='IEEE');$('#rAPA').setAttribute('aria-pressed',k==='APA');}
+$('#rIEEE').onclick=()=>drawRefs('IEEE');$('#rAPA').onclick=()=>drawRefs('APA');drawRefs('IEEE');
+
+/* mistakes */
+$('#mistakeList').innerHTML=MISTAKES.map((m,i)=>`<div class="acc"><button aria-expanded="${i===0}" aria-controls="ab${i}"><span>${String(i+1).padStart(2,'0')}</span><span>${m[0]}</span><span aria-hidden="true">+</span></button><div class="ab" id="ab${i}"><p><span class="lbl w">Why it hurts</span><br>${m[1]}</p><p><span class="lbl p">Better alternative</span><br>${m[2]}</p></div></div>`).join('');
+$$('.acc>button').forEach(b=>b.onclick=()=>b.setAttribute('aria-expanded',b.getAttribute('aria-expanded')!=='true'));
+
+/* checklist */
+const TOTAL=CHECK.reduce((a,g)=>a+g[1].length,0);let saved={};try{saved=JSON.parse(sessionStorage.getItem('c2c-check')||'{}')}catch(e){}
+$('#ckGroups').innerHTML=CHECK.map((g,gi)=>`<div class="panel ckg"><h4>${g[0]}<span id="cg${gi}"></span></h4>${g[1].map((t,i)=>`<label class="ck"><input type="checkbox" id="ck${gi}_${i}" ${saved['ck'+gi+'_'+i]?'checked':''}><span>${t}</span></label>`).join('')}</div>`).join('');
+function updCheck(){let done=0;const st={};CHECK.forEach((g,gi)=>{let d=0;g[1].forEach((_,i)=>{const id='ck'+gi+'_'+i;if(document.getElementById(id).checked){d++;st[id]=1}});done+=d;$('#cg'+gi).textContent=d+' / '+g[1].length});
+ const p=done/TOTAL;$('#ringP').style.strokeDashoffset=276.46*(1-p);$('#ringN').textContent=Math.round(p*100)+'%';$('#ringT').textContent=`${done} of ${TOTAL} items complete`;
+ const f=$('#final');f.classList.toggle('done',done===TOTAL);$('#finalState').textContent=done===TOTAL?'✓ Checklist complete · ready to submit':`Checklist in progress · ${TOTAL-done} to go`;
+ try{sessionStorage.setItem('c2c-check',JSON.stringify(st))}catch(e){}}
+$('#ckGroups').addEventListener('change',updCheck);$('#ckReset').onclick=()=>{$$('#ckGroups input').forEach(i=>i.checked=false);updCheck()};updCheck();
+
+/* reveal on scroll (resting state is visible; animation only decorates entry) */
+if('IntersectionObserver' in window&&!reduce){const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('on');io.unobserve(e.target)}}),{rootMargin:'0px 0px -8% 0px'});$$('.rv').forEach(el=>io.observe(el));}
+
+/* sound toggle */
+const snd=$('#snd');snd.onclick=async()=>{const on=await Sound.toggle();snd.classList.toggle('on',on);snd.setAttribute('aria-pressed',on);snd.setAttribute('aria-label',on?'Turn sound off':'Turn sound on');};
+$('#toTop').onclick=()=>go('home');
+
+
+/* shooting stars: an occasional streak on a 2D overlay; works with or without WebGL */
+const Stars=(()=>{const cv=$('#stars'),g=cv.getContext('2d'),btn=$('#starBtn');let on=!reduce,live=[],timer=0,raf=0,last=0;
+ try{const v=localStorage.getItem('c2c-stars');if(v!==null)on=v==='1'}catch(e){}
+ function size(){const d=Math.min(devicePixelRatio||1,2);cv.width=innerWidth*d;cv.height=innerHeight*d;g.setTransform(d,0,0,d,0,0)}
+ function spawn(){const a=(18+Math.random()*24)*Math.PI/180,dir=Math.random()<.5?1:-1,sp=650+Math.random()*350;
+  live.push({x:dir>0?Math.random()*innerWidth*.6:innerWidth*(.4+Math.random()*.6),y:Math.random()*innerHeight*.45,vx:Math.cos(a)*sp*dir,vy:Math.sin(a)*sp,len:520+Math.random()*380,t:0,life:1.5+Math.random()*.7,
+   c:(document.documentElement.dataset.mode==='light'?['63,91,217','14,143,163','114,80,214']:['244,245,250','101,217,232','167,139,250'])[Math.floor(Math.random()*3)],w:document.documentElement.dataset.mode==='light'?0:1});
+  if(Math.random()<.18)setTimeout(()=>{if(on)spawn()},260);
+  if(!raf){last=performance.now();raf=requestAnimationFrame(draw)}}
+ function draw(now){const dt=Math.min(.05,(now-last)/1000);last=now;g.clearRect(0,0,innerWidth,innerHeight);
+  live=live.filter(s=>{s.t+=dt;s.x+=s.vx*dt;s.y+=s.vy*dt;const k=s.t/s.life;if(k>=1)return false;const al=Math.sin(Math.PI*k),v=Math.hypot(s.vx,s.vy),tx=s.x-s.vx/v*s.len,ty=s.y-s.vy/v*s.len;
+   const gr=g.createLinearGradient(s.x,s.y,tx,ty);gr.addColorStop(0,`rgba(${s.c},${al})`);gr.addColorStop(.25,`rgba(${s.c},${al*.45})`);gr.addColorStop(1,`rgba(${s.c},0)`);
+   g.lineCap='round';g.strokeStyle=gr;g.globalAlpha=.28;g.lineWidth=18;g.beginPath();g.moveTo(s.x,s.y);g.lineTo(tx,ty);g.stroke();g.globalAlpha=1;g.lineWidth=5;g.beginPath();g.moveTo(s.x,s.y);g.lineTo(tx,ty);g.stroke();
+   const h=g.createRadialGradient(s.x,s.y,0,s.x,s.y,38);h.addColorStop(0,s.w?`rgba(255,255,255,${al})`:`rgba(${s.c},${al})`);h.addColorStop(.2,`rgba(${s.c},${al*.7})`);h.addColorStop(1,`rgba(${s.c},0)`);g.fillStyle=h;g.beginPath();g.arc(s.x,s.y,38,0,6.283);g.fill();return true;});
+  raf=live.length?requestAnimationFrame(draw):0;}
+ function plan(first){clearTimeout(timer);if(!on)return;timer=setTimeout(()=>{if(!document.hidden)spawn();plan()},first?2500:5000+Math.random()*9000)}
+ function set(v,save){on=v;btn.setAttribute('aria-pressed',on);btn.setAttribute('aria-label',on?'Turn shooting stars off':'Turn shooting stars on');btn.title='Shooting stars: '+(on?'on':'off');
+  if(!on){live=[];g.clearRect(0,0,innerWidth,innerHeight)}plan(true);if(save)try{localStorage.setItem('c2c-stars',on?'1':'0')}catch(e){}}
+ addEventListener('resize',size);size();btn.onclick=()=>set(!on,true);set(on,false);
+})();
+
+/* =====================================================================
+   4. CAMERA + SCROLL CONTROLLER
+   ===================================================================== */
+const state={t:0,active:-1,slow:0,mx:0,my:0};
+function progress(){const y=scrollY+innerHeight*.42;let i=0;for(let k=0;k<secs.length;k++)if(secs[k].offsetTop<=y)i=k;
+ const a=secs[i].offsetTop,b=i+1<secs.length?secs[i+1].offsetTop:a+secs[i].offsetHeight;return{i,t:Math.min(secs.length-1,i+Math.max(0,Math.min(1,(y-a)/Math.max(1,b-a))))};}
+const navMap={foundation:['foundation'],structure:['structure'],writing:['writing'],visuals:['visuals','testing'],mistakes:['polish','mistakes','checklist']};
+function onScroll(){const p=progress();state.t=p.t;
+ const max=document.documentElement.scrollHeight-innerHeight;$('#bar').style.width=(max>0?scrollY/max*100:0)+'%';
+ $('#hdr').classList.toggle('solid',scrollY>40);$('#toTop').classList.toggle('show',scrollY>innerHeight*.6);$('#hint').style.opacity=scrollY>80?0:1;
+ if(p.i!==state.active){const first=state.active<0;state.active=p.i;$$('button',rail).forEach((b,k)=>{b.classList.toggle('on',k===p.i);if(k===p.i)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current')});
+  const id=secs[p.i].id;document.documentElement.style.setProperty('--cur',getComputedStyle(secs[p.i]).getPropertyValue('--acc'));$$('nav.main a[data-go]').forEach(a=>a.classList.toggle('on',!a.classList.contains('pill')&&(navMap[a.dataset.go]||[]).includes(id)));if(!first)Sound.whoosh();}}
+addEventListener('scroll',onScroll,{passive:true});addEventListener('resize',onScroll);
+addEventListener('pointermove',e=>{state.mx=e.clientX/innerWidth*2-1;state.my=-(e.clientY/innerHeight*2-1)},{passive:true});
+const orb=$('#orb');['pointerenter','focus'].forEach(ev=>orb.addEventListener(ev,()=>{state.slow=1;Sound.muffle(true)}));['pointerleave','blur'].forEach(ev=>orb.addEventListener(ev,()=>{state.slow=0;Sound.muffle(false)}));
+onScroll();
+addEventListener('load',()=>{const h=location.hash.slice(1);if(h&&document.getElementById(h)&&h!=='home')document.getElementById(h).scrollIntoView();onScroll()});
+
+/* theme switch */
+const Theme=(()=>{const btn=$('#themeBtn'),root=document.documentElement;let light=false;try{light=localStorage.getItem('c2c-theme')==='light'}catch(e){}
+ function apply(save){if(light)root.dataset.mode='light';else delete root.dataset.mode;btn.textContent=light?'☾':'☀';btn.setAttribute('aria-pressed',light);btn.setAttribute('aria-label',light?'Switch to dark theme':'Switch to light theme');btn.title='Theme: '+(light?'light':'dark');
+  state.active=-1;onScroll();if(window.__c2cTheme)try{window.__c2cTheme(light)}catch(e){}if(save)try{localStorage.setItem('c2c-theme',light?'light':'dark')}catch(e){}}
+ btn.onclick=()=>{light=!light;apply(true)};apply(false);return{get light(){return light}};})();
+
+/* spotlight that follows the cursor while it is over something clickable */
+if(matchMedia('(hover:hover) and (pointer:fine)').matches){const spot=$('#spot');const SEL='a,button,label,input,[role="tab"]';
+ addEventListener('pointermove',e=>{const el=e.target.closest?e.target.closest(SEL):null;spot.classList.toggle('on',!!el);spot.style.transform=`translate(${e.clientX}px,${e.clientY}px) scale(${el?1:.5})`;},{passive:true});
+ document.addEventListener('pointerleave',()=>spot.classList.remove('on'));}
+
+/* =====================================================================
+   5. 3D RENDERING ENGINE (Three.js, original scene). Failure here never blocks the content above.
+   ===================================================================== */
+(function world(){
+ try{
+  if(!window.THREE)throw new Error('three.js unavailable');
+  const canvas=$('#world'),N=secs.length,W=innerWidth;
+  const tier=W<700?0:W<1100?1:2;                       // phone, tablet, desktop
+  const COUNT=[2400,5200,10000][tier],FRAGS=[60,140,260][tier];
+  const R3=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:'high-performance'});
+  const DPR=Math.min(devicePixelRatio||1,tier===2?1.75:1.5);R3.setPixelRatio(DPR);R3.setClearColor(0x080B12,1);
+  const scene=new THREE.Scene();scene.fog=new THREE.FogExp2(0x080B12,.0115);
+  const cam=new THREE.PerspectiveCamera(tier===0?70:58,1,.1,420);
+  const GAP=54,V=(x,y,z)=>new THREE.Vector3(x,y,z);
+  const P=i=>V(Math.sin(i*1.3)*6,Math.cos(i*.9)*2.2,-i*GAP);
+  const curve=new THREE.CatmullRomCurve3(Array.from({length:N},(_,i)=>P(i)));
+  const C={blue:0x6C8CFF,cyan:0x65D9E8,violet:0xA78BFA,white:0xF4F5FA};
+
+  /* --- textures drawn on canvas (no external assets) --- */
+  const tex=(w,h,draw)=>{const c=document.createElement('canvas');c.width=w;c.height=h;draw(c.getContext('2d'),w,h);const t=new THREE.CanvasTexture(c);t.minFilter=THREE.LinearFilter;return t;};
+  const rr=(g,x,y,w,h,r)=>{g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();};
+  const cols=['#6C8CFF','#65D9E8','#A78BFA','#F4F5FA','#9298A8'];
+  const codeTex=tex(256,160,(g,w,h)=>{rr(g,2,2,w-4,h-4,10);g.fillStyle='rgba(30,44,96,.55)';g.fill();g.strokeStyle='rgba(140,165,255,.9)';g.lineWidth=2;g.stroke();
+   for(let r=0;r<9;r++){let x=18+[0,14,28,14,0,14,28,28,14][r];const n=2+(r*7)%3;for(let k=0;k<n;k++){const l=18+((r*13+k*29)%46);g.fillStyle=cols[(r+k*2)%5];g.globalAlpha=.85;g.fillRect(x,20+r*14,l,5);x+=l+8;}}});
+  const pageTex=tex(256,360,(g,w,h)=>{g.fillStyle='rgba(34,48,100,.72)';g.fillRect(0,0,w,h);g.strokeStyle='rgba(150,172,255,.95)';g.lineWidth=3;g.strokeRect(2,2,w-4,h-4);
+   g.fillStyle='#F4F5FA';g.fillRect(26,30,120,10);g.fillStyle='rgba(200,210,240,.6)';for(let i=0;i<5;i++)g.fillRect(26,58+i*13,i===4?110:204,5);
+   g.strokeStyle='#65D9E8';g.lineWidth=2;g.strokeRect(52,140,152,90);g.strokeRect(66,156,40,24);g.strokeRect(150,156,40,24);g.strokeRect(108,196,40,24);g.beginPath();g.moveTo(106,168);g.lineTo(150,168);g.moveTo(128,180);g.lineTo(128,196);g.stroke();
+   g.fillStyle='rgba(200,210,240,.5)';g.fillRect(80,240,96,4);for(let i=0;i<6;i++)g.fillRect(26,262+i*13,i===5?70:204,5);});
+  const dashTex=tex(256,160,(g,w,h)=>{rr(g,2,2,w-4,h-4,10);g.fillStyle='rgba(22,40,70,.6)';g.fill();g.strokeStyle='rgba(101,217,232,.9)';g.lineWidth=2;g.stroke();
+   for(let r=0;r<6;r++){const y=24+r*21;g.strokeStyle=r===2?'#FF9A9A':'#7EE0AC';g.lineWidth=3;g.beginPath();if(r===2){g.moveTo(20,y-5);g.lineTo(30,y+5);g.moveTo(30,y-5);g.lineTo(20,y+5);}else{g.moveTo(19,y);g.lineTo(24,y+5);g.lineTo(32,y-5);}g.stroke();g.fillStyle='rgba(220,228,250,.7)';g.fillRect(46,y-3,60+((r*37)%70),5);g.fillStyle='rgba(108,140,255,.8)';g.fillRect(196,y-3,40,5);}});
+  const dotTex=tex(64,64,(g)=>{const gr=g.createRadialGradient(32,32,0,32,32,32);gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(.25,'rgba(255,255,255,.55)');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(0,0,64,64);});
+  const rayTex=tex(64,256,(g,w,h)=>{const a=g.createLinearGradient(0,0,w,0);a.addColorStop(0,'rgba(255,255,255,0)');a.addColorStop(.5,'rgba(255,255,255,1)');a.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=a;g.fillRect(0,0,w,h);
+   g.globalCompositeOperation='destination-in';const b=g.createLinearGradient(0,0,0,h);b.addColorStop(0,'rgba(0,0,0,0)');b.addColorStop(.3,'rgba(0,0,0,1)');b.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=b;g.fillRect(0,0,w,h);});
+
+  /* --- helpers --- */
+  const ADD=THREE.AdditiveBlending;
+  const lm=(c,o=.6)=>new THREE.LineBasicMaterial({color:c,transparent:true,opacity:o,blending:ADD,depthWrite:false});
+  const wire=(geo,c,o)=>new THREE.LineSegments(new THREE.EdgesGeometry(geo),lm(c,o));
+  const plane=(t,w,h,o=.85,c=0xffffff)=>new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:t,color:c,transparent:true,opacity:o,side:THREE.DoubleSide,depthWrite:false,blending:ADD}));
+  const ring=(r,c,o=.7,tube=.035)=>new THREE.Mesh(new THREE.TorusGeometry(r,tube,6,96),new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:o,blending:ADD,depthWrite:false}));
+  const segs=(pts,c,o)=>new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(pts),lm(c,o));
+  const rnd=(a,b)=>a+Math.random()*(b-a);
+  const ease=x=>x*x*(3-2*x);
+
+  /* --- particles: one draw call, motion and cursor response in the vertex shader --- */
+  const zMin=-(N-1)*GAP-90,zMax=40;
+  const pos=new Float32Array(COUNT*3),col=new Float32Array(COUNT*3),seed=new Float32Array(COUNT),size=new Float32Array(COUNT);
+  const pal=[[.42,.55,1],[.4,.85,.91],[.65,.55,.98],[.96,.96,.98]];
+  for(let i=0;i<COUNT;i++){const a=Math.random()*6.283,r=3+Math.pow(Math.random(),.75)*46,z=rnd(zMin,zMax);
+   pos[i*3]=Math.cos(a)*r*1.25+Math.sin(-z/GAP*1.3)*6;pos[i*3+1]=Math.sin(a)*r*.8;pos[i*3+2]=z;
+   const c=pal[Math.random()<.5?0:Math.random()<.5?1:Math.random()<.6?2:3];col.set(c,i*3);seed[i]=Math.random();size[i]=rnd(.5,2.4)*(Math.random()<.04?2.2:1);}
+  const pg=new THREE.BufferGeometry();pg.setAttribute('position',new THREE.BufferAttribute(pos,3));pg.setAttribute('aCol',new THREE.BufferAttribute(col,3));pg.setAttribute('aSeed',new THREE.BufferAttribute(seed,1));pg.setAttribute('aSize',new THREE.BufferAttribute(size,1));
+  const pu={uTime:{value:0},uPx:{value:1},uRayO:{value:V(0,0,0)},uRayD:{value:V(0,0,-1)},uDisp:{value:1},uTint:{value:new THREE.Color(C.blue)},uLight:{value:0}};
+  const pm=new THREE.ShaderMaterial({uniforms:pu,transparent:true,depthWrite:false,blending:ADD,
+   vertexShader:`uniform float uTime,uPx,uDisp;uniform vec3 uRayO,uRayD,uTint;attribute vec3 aCol;attribute float aSeed,aSize;varying vec3 vC;varying float vA;
+    void main(){vec3 p=position;float s=aSeed*6.2831;
+     p+=vec3(sin(uTime*.21+s),cos(uTime*.17+s*2.),sin(uTime*.13+s*3.))*.9;
+     vec3 w=p-uRayO;float tt=dot(w,uRayD);vec3 d=p-(uRayO+uRayD*tt);float dist=length(d);
+     float inf=smoothstep(5.5,0.,dist)*step(0.,tt)*smoothstep(80.,6.,tt);
+     p+=normalize(d+vec3(.0001))*inf*2.6*uDisp;
+     vec4 mv=modelViewMatrix*vec4(p,1.);gl_Position=projectionMatrix*mv;
+     float tw=.75+.25*sin(uTime*1.3+s*5.);
+     gl_PointSize=min(aSize*uPx*(1.+inf*2.2)*90./-mv.z,48.);
+     vA=smoothstep(170.,25.,-mv.z)*smoothstep(.5,5.,-mv.z)*tw*(.55+inf*1.2);
+     vC=mix(mix(aCol,uTint,.6),vec3(1.),inf*.75);}`,
+   fragmentShader:`uniform float uLight;varying vec3 vC;varying float vA;void main(){vec2 u=gl_PointCoord-.5;float d=length(u);float a=smoothstep(.5,0.,d);a=a*a+smoothstep(.12,0.,d)*.6;gl_FragColor=mix(vec4(vC*a*vA,1.),vec4(vC*.5,min(1.,a*vA*1.7)),uLight);}`});
+  const points=new THREE.Points(pg,pm);points.frustumCulled=false;scene.add(points);
+
+  /* --- instanced glass fragments carrying code --- */
+  const frag=new THREE.InstancedMesh(new THREE.PlaneGeometry(1,.625),new THREE.MeshBasicMaterial({map:codeTex,transparent:true,opacity:.34,side:THREE.DoubleSide,depthWrite:false,blending:ADD}),FRAGS);
+  const fd=[],dummy=new THREE.Object3D();
+  for(let i=0;i<FRAGS;i++){const a=Math.random()*6.283,r=rnd(11,38),z=rnd(zMin+40,zMax-30);fd.push({x:Math.cos(a)*r*1.2,y:Math.sin(a)*r*.7,z,rx:rnd(-.5,.5),ry:rnd(-1.2,1.2),rz:rnd(-.3,.3),s:rnd(1.4,4.2),p:Math.random()*6.283});}
+  frag.frustumCulled=false;scene.add(frag);
+  function updFrags(t){for(let i=0;i<FRAGS;i++){const f=fd[i];dummy.position.set(f.x,f.y+Math.sin(t*.35+f.p)*.8,f.z);dummy.rotation.set(f.rx+Math.sin(t*.2+f.p)*.08,f.ry+t*.03*(i%2?1:-1),f.rz);dummy.scale.setScalar(f.s);dummy.updateMatrix();frag.setMatrixAt(i,dummy.matrix);}frag.instanceMatrix.needsUpdate=true;}
+  updFrags(0);
+
+  /* --- ground grid and light rays --- */
+  const len=-zMin+60,grid=new THREE.GridHelper(len,Math.round(len/6),0x3A4C99,0x1B2547);grid.position.set(0,-16,zMin/2+20);grid.material.transparent=true;grid.material.opacity=.5;scene.add(grid);
+  for(let i=0;i<N*2;i++){const r=plane(rayTex,rnd(8,16),150,rnd(.035,.07),[C.blue,C.cyan,C.violet][i%3]);r.position.set(rnd(-40,40),18,-i*GAP/2-20);r.rotation.z=rnd(.25,.6)*(i%2?1:-1);scene.add(r);}
+
+  /* --- chapter structures --- */
+  const groups=[],tints=[0x6C8CFF,0x6C8CFF,0x65D9E8,0xA78BFA,0xFFB07A,0x7EE0AC,0xF29BD0,0xFF8F8F,0xC8F27A,0x65D9E8];
+  const side=tier===0?2.5:9;
+  function station(i,build){const g=new THREE.Group();const centre=i===0||i===N-1;const p=P(i);g.position.set(p.x+(centre?0:(i%2?1:-1)*side),p.y+(centre?0:.5),p.z-(centre?34:26));g.userData={by:g.position.y,i};build(g);scene.add(g);groups[i]=g;}
+  // 0 home: an architecture graph
+  station(0,g=>{const n=tier===0?26:44,pts=[];for(let i=0;i<n;i++){const v=V(rnd(-1,1),rnd(-1,1),rnd(-1,1)).normalize().multiplyScalar(rnd(4,11));v.y*=.7;pts.push(v);}
+   const lp=[];pts.forEach((a,i)=>{pts.map((b,j)=>[a.distanceTo(b),j]).sort((x,y)=>x[0]-y[0]).slice(1,3).forEach(([,j])=>lp.push(a,pts[j]))});
+   g.add(segs(lp,C.blue,.34));const pgm=new THREE.Points(new THREE.BufferGeometry().setFromPoints(pts),new THREE.PointsMaterial({map:dotTex,color:C.cyan,size:1.3,transparent:true,depthWrite:false,blending:ADD}));g.add(pgm);
+   g.add(wire(new THREE.IcosahedronGeometry(13,1),C.violet,.1));g.userData.spin=.05;});
+  // 1 foundation: three layers of a system
+  station(1,g=>{[[C.blue,2.6],[C.cyan,0],[C.violet,-2.6]].forEach(([c,y],k)=>{const s=wire(new THREE.BoxGeometry(11,.5,6.5),c,.75);s.position.y=y;g.add(s);const gr=new THREE.GridHelper(6.4,8,c,c);gr.material.transparent=true;gr.material.opacity=.18;gr.scale.set(1.7,1,1);gr.position.y=y;g.add(gr);});
+   const lp=[];for(let k=0;k<6;k++){const x=rnd(-4.5,4.5),z=rnd(-2.6,2.6);lp.push(V(x,2.35,z),V(x,.25,z));const x2=rnd(-4.5,4.5),z2=rnd(-2.6,2.6);lp.push(V(x2,-.25,z2),V(x2,-2.35,z2));}g.add(segs(lp,C.white,.45));g.rotation.x=.28;});
+  // 2 and 6: documents that open, or assemble, as the camera approaches
+  function pagesStation(i,count,assemble){station(i,g=>{const pages=[];for(let k=0;k<count;k++){const m=plane(pageTex,4.4,6.2,.8);const u=k-(count-1)/2;
+    m.userData={a:V(0,0,-k*.12),ar:V(0,0,0),b:assemble?V(rnd(-9,9),rnd(-5,5),rnd(-6,4)):V(u*2.5,Math.abs(u)*-.35,-Math.abs(u)*1.4),br:assemble?V(rnd(-.9,.9),rnd(-1.4,1.4),rnd(-.6,.6)):V(0,-u*.2,-u*.03)};g.add(m);pages.push(m);}
+   g.add(ring(6.5,C.blue,.25));g.userData.tick=(t,k)=>{const e=ease(k),q=assemble?1-e:e;pages.forEach(m=>{const d=m.userData;m.position.lerpVectors(d.a,d.b,q);m.rotation.set(d.ar.x+(d.br.x-d.ar.x)*q,d.ar.y+(d.br.y-d.ar.y)*q,d.ar.z+(d.br.z-d.ar.z)*q);});};});}
+  pagesStation(2,tier===0?6:8,false);
+  // 3 writing: panels of text and a cursor
+  station(3,g=>{[[0,0,0,7],[-5,2.2,-3,4.6],[5.2,-1.6,-2.5,5],[3.4,3.4,-5,3.6],[-4,-3,-4.5,4]].forEach(([x,y,z,s],k)=>{const m=plane(codeTex,s,s*.625,.9);m.position.set(x,y,z);m.rotation.y=-x*.06;g.add(m);});
+   const cur=new THREE.Mesh(new THREE.BoxGeometry(.12,1.1,.05),new THREE.MeshBasicMaterial({color:C.cyan,transparent:true,blending:ADD}));cur.position.set(2.6,-1.3,.3);g.add(cur);g.userData.tick=t=>{cur.material.opacity=Math.sin(t*4)>0?1:.08;};});
+  // 4 visuals: a diagram in space
+  station(4,g=>{const b=[[-5,2.5,C.blue],[-5,-2.5,C.blue],[0,0,C.violet],[5.4,2.5,C.cyan],[5.4,-2.5,C.cyan]],lp=[];b.forEach(([x,y,c],k)=>{const m=k===3?wire(new THREE.CylinderGeometry(1.2,1.2,1.9,20),c,.8):wire(new THREE.BoxGeometry(k===2?3.4:3,k===2?4.6:1.7,.5),c,.8);m.position.set(x,y,0);g.add(m);});
+   [[0,2],[1,2],[2,3],[2,4]].forEach(([a,c])=>lp.push(V(b[a][0]+(a<2?1.5:1.7),b[a][1],0),V(b[c][0]+(c===2?-1.7:-1.4),b[c][1],0)));g.add(segs(lp,C.white,.6));const p=plane(pageTex,3,4.2,.4);p.position.set(0,0,-4);g.add(p);});
+  // 5 testing: validation rings around a results board
+  station(5,g=>{const rs=[ring(5.2,C.cyan,.8),ring(6.4,C.blue,.5),ring(7.6,C.violet,.35)];rs.forEach(r=>g.add(r));const d=plane(dashTex,7,4.4,.95);g.add(d);const d2=plane(dashTex,3.6,2.25,.5);d2.position.set(-6.5,3.4,-3);g.add(d2);
+   g.userData.tick=t=>{rs[0].rotation.set(t*.3,t*.2,0);rs[1].rotation.set(-t*.22,0,t*.17);rs[2].rotation.set(0,t*.15,-t*.12);};});
+  pagesStation(6,tier===0?5:7,true);
+  // 7 mistakes: loose fragments
+  station(7,g=>{const ts=[];for(let k=0;k<(tier===0?9:16);k++){const m=wire(new THREE.TetrahedronGeometry(rnd(.5,1.4)),k%3?C.violet:C.blue,.7);m.position.set(rnd(-8,8),rnd(-5,5),rnd(-6,3));m.userData.r=V(rnd(-.4,.4),rnd(-.4,.4),rnd(-.4,.4));g.add(m);ts.push(m);}
+   g.userData.tick=t=>ts.forEach(m=>m.rotation.set(t*m.userData.r.x,t*m.userData.r.y,t*m.userData.r.z));});
+  // 8 checklist: the illuminated platform with the finished report
+  station(8,g=>{const pg2=new THREE.PolarGridHelper(8,16,6,64,C.cyan,C.blue);pg2.material.transparent=true;pg2.material.opacity=.45;pg2.position.y=-4;g.add(pg2);const rep=plane(pageTex,4.6,6.5,1);g.add(rep);const back=plane(pageTex,4.6,6.5,.4);back.position.z=-.3;g.add(back);
+   const r1=ring(5.5,C.cyan,.7);r1.rotation.x=Math.PI/2;r1.position.y=-4;g.add(r1);const beam=plane(rayTex,9,26,.16,C.cyan);beam.position.y=6;g.add(beam);g.userData.tick=t=>{rep.rotation.y=Math.sin(t*.4)*.35;back.rotation.y=rep.rotation.y;pg2.rotation.y=t*.05;};});
+  // 9 closing: a portal
+  station(9,g=>{const rs=[ring(7,C.blue,.8,.05),ring(9.5,C.cyan,.45),ring(12.5,C.violet,.28)];rs.forEach(r=>g.add(r));g.add(wire(new THREE.IcosahedronGeometry(3.4,0),C.white,.5));g.userData.tick=t=>{rs[1].rotation.z=t*.1;rs[2].rotation.z=-t*.07;g.children[3].rotation.set(t*.2,t*.3,0);};});
+
+  /* --- theme: additive glow on dark, normal blending on a light sky --- */
+  const mats=[];scene.traverse(o=>{if(o.material&&mats.indexOf(o.material)<0){o.material.userData.b0=o.material.blending;mats.push(o.material)}});
+  function setTheme(light){const bg=light?0xEEF1F8:0x080B12;R3.setClearColor(bg,1);scene.fog.color.setHex(bg);pu.uLight.value=light?1:0;mats.forEach(m=>{m.blending=light?THREE.NormalBlending:m.userData.b0;m.needsUpdate=true});}
+  window.__c2cTheme=setTheme;setTheme(document.documentElement.dataset.mode==='light');
+
+  /* --- frame loop --- */
+  let tS=state.t,time=0,speed=1,disp=1,px=0,py=0,last=performance.now(),running=true;
+  const tint=new THREE.Color(C.blue),tgt=new THREE.Color(),ray=V(0,0,0),look=V(0,0,0);
+  function resize(){const w=innerWidth,h=innerHeight;R3.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();pu.uPx.value=DPR*h/900;}
+  addEventListener('resize',resize);resize();
+  function frame(now){if(!running)return;requestAnimationFrame(frame);try{draw(now)}catch(err){running=false;document.documentElement.classList.add('no3d')}}
+  function draw(now){const dt=Math.min(.05,(now-last)/1000);last=now;
+   const k=reduce?1:1-Math.exp(-dt*3);
+   speed+=((state.slow?.18:1)-speed)*(1-Math.exp(-dt*2.5));disp+=((state.slow?2.4:1)-disp)*(1-Math.exp(-dt*2.5));
+   time+=dt*speed*(reduce?.15:1);tS+=(state.t-tS)*k;
+   const par=tier===0||reduce?.35:1;px+=(state.mx*par-px)*(1-Math.exp(-dt*2.2));py+=(state.my*par-py)*(1-Math.exp(-dt*2.2));
+   const u=tS/(N-1),p=curve.getPoint(u),q=curve.getPoint(Math.min(1,u+.035));
+   cam.position.set(p.x+px*1.5,p.y+py*1+Math.sin(time*.3)*.25,p.z+8);
+   look.set(q.x+px*3,q.y+py*1.8,Math.min(q.z,p.z)-14);cam.lookAt(look);cam.rotation.z+=-px*.012;
+   ray.set(state.mx,state.my,.5).unproject(cam).sub(cam.position).normalize();pu.uRayO.value.copy(cam.position);pu.uRayD.value.copy(ray);
+   pu.uTime.value=time;pu.uDisp.value=disp;const ai=Math.max(0,Math.min(N-1,Math.round(tS)));tgt.setHex(tints[ai]);tint.lerp(tgt,1-Math.exp(-dt*1.5));pu.uTint.value.copy(tint);grid.material.color.copy(tint);
+   updFrags(time);
+   groups.forEach((g,i)=>{const near=Math.max(0,1-Math.abs(tS-i)*1.15);g.position.y=g.userData.by+Math.sin(time*.55+i*2)*.5;
+    g.rotation.y=(g.userData.spin?time*g.userData.spin:Math.sin(time*.22+i)*.2)+(i===ai?px*.3:0);if(i===ai)g.rotation.x+=((-py*.15+(i===1?.28:0))-g.rotation.x)*.05;
+    g.scale.setScalar(.9+ease(near)*.15);if(g.userData.tick)g.userData.tick(time,near);});
+   R3.render(scene,cam);}
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)running=false;else if(!running){running=true;last=performance.now();requestAnimationFrame(frame);}});
+  canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();running=false;document.documentElement.classList.add('no3d');});
+  requestAnimationFrame(frame);
+ }catch(err){document.documentElement.classList.add('no3d');}
+})();
+</script>
+</body>
+</html>
