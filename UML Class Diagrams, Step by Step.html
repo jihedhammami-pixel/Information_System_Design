@@ -1,0 +1,2161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UML Class Diagrams, Step by Step</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=JetBrains+Mono:wght@400;600&family=Nunito+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Layout: a side drawer + one column of glass "windows" floating over a living gradient sky. Single dark world by design. */
+  --bg:#0a0720;
+  --ink:#f5f2ff;
+  --muted:#c6bfe8;
+  --pink:#ff4f9a;
+  --amber:#ffb547;
+  --teal:#2ee6d0;
+  --violet:#8b6cff;
+  --lime:#8ef06b;
+  --red:#ff5d6c;
+  --edge:rgba(255,255,255,.18);
+  --font-d:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --font-b:"Nunito Sans","Segoe UI",system-ui,sans-serif;
+  --font-m:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-b);font-size:17px;line-height:1.6;overflow-x:hidden}
+h1,h2,h3,h4{font-family:var(--font-d);line-height:1.1;text-wrap:balance;margin:0}
+p{margin:0 0 1em}
+code,kbd{font-family:var(--font-m);font-size:.9em;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.12);padding:1px 6px;border-radius:6px}
+a{color:var(--teal)}
+:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+#sky,#confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
+#sky{z-index:0}
+#confetti{z-index:90}
+#glow{position:fixed;left:-600px;top:-600px;width:460px;height:460px;border-radius:50%;pointer-events:none;z-index:1;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(255,79,154,.20),rgba(139,108,255,.10) 40%,transparent 70%);mix-blend-mode:screen;transition:left .12s linear,top .12s linear}
+#progress{position:fixed;top:0;left:0;height:4px;width:100%;transform-origin:0 50%;transform:scaleX(0);background:linear-gradient(90deg,var(--pink),var(--amber),var(--teal),var(--violet));z-index:80;box-shadow:0 0 14px rgba(255,79,154,.7)}
+main{position:relative;z-index:2;padding:0 16px 140px}
+
+/* ---------- burger + drawer ---------- */
+#burger{position:fixed;top:16px;left:16px;z-index:75;width:54px;height:54px;border-radius:18px;border:1px solid var(--edge);background:rgba(24,16,60,.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);cursor:pointer;display:grid;place-items:center;box-shadow:0 10px 30px -10px rgba(0,0,0,.6)}
+#burger span{position:absolute;width:24px;height:2.5px;border-radius:2px;background:linear-gradient(90deg,var(--pink),var(--amber));transition:transform .35s,opacity .25s}
+#burger span:nth-child(1){transform:translateY(-8px)}
+#burger span:nth-child(3){transform:translateY(8px)}
+body.nav-open #burger span:nth-child(1){transform:rotate(45deg)}
+body.nav-open #burger span:nth-child(2){opacity:0}
+body.nav-open #burger span:nth-child(3){transform:rotate(-45deg)}
+#nav{position:fixed;top:0;left:0;bottom:0;width:min(350px,88vw);z-index:70;padding:88px 16px 24px;background:linear-gradient(165deg,rgba(60,30,120,.72),rgba(12,8,36,.85));backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%);border-right:1px solid var(--edge);transform:translateX(-105%);transition:transform .55s cubic-bezier(.2,.8,.2,1);overflow-y:auto;display:flex;flex-direction:column;gap:16px}
+body.nav-open #nav{transform:none}
+#nav h2{font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-family:var(--font-b);padding:0 10px}
+#navList{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+#navList li{opacity:0;transform:translateX(-20px);transition:opacity .4s,transform .4s;transition-delay:calc(var(--i)*40ms)}
+body.nav-open #navList li{opacity:1;transform:none}
+#navList a{display:flex;align-items:center;gap:12px;padding:9px 10px;border-radius:14px;color:var(--ink);text-decoration:none;font-weight:600;font-size:15.5px;transition:background .25s}
+#navList a:hover,#navList a.active{background:rgba(255,255,255,.11)}
+#navList a.active .nav-num{box-shadow:0 0 0 2px var(--ink)}
+.nav-num{flex:none;font-family:var(--font-m);font-size:12px;width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:linear-gradient(135deg,var(--c1,var(--pink)),var(--c2,var(--violet)));color:#140c2c;font-weight:600}
+.nav-state{margin-left:auto;flex:none;width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,.25);display:grid;place-items:center;font-size:12px;font-weight:800}
+.nav-state.done{background:var(--lime);border-color:var(--lime);color:#0b2a10}
+.nav-foot{margin-top:auto;padding:14px;border-radius:18px;background:rgba(255,255,255,.06);border:1px solid var(--edge);font-size:14px;color:var(--muted)}
+.nav-foot b{color:var(--ink)}
+.bar{height:8px;border-radius:8px;background:rgba(255,255,255,.1);overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--teal),var(--lime));transition:width .6s}
+#scrim{position:fixed;inset:0;z-index:69;background:rgba(5,3,20,.5);opacity:0;pointer-events:none;transition:opacity .4s}
+body.nav-open #scrim{opacity:1;pointer-events:auto}
+
+/* ---------- hero ---------- */
+.hero{position:relative;z-index:2;max-width:1160px;margin:0 auto;padding:110px 24px 50px;display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;font-weight:800;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+.eyebrow .dot{width:9px;height:9px;border-radius:50%;background:var(--lime);box-shadow:0 0 12px var(--lime)}
+.hero h1{font-size:clamp(42px,6.6vw,86px);font-weight:800;letter-spacing:-.025em;margin-bottom:22px}
+.grad{background:linear-gradient(100deg,var(--pink),var(--amber) 30%,var(--teal) 60%,var(--violet) 85%,var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent;background-size:200% auto;animation:shine 9s linear infinite}
+@keyframes shine{to{background-position:200% center}}
+.lead{font-size:19px;color:var(--muted);max-width:56ch}
+.hero-cta{display:flex;flex-wrap:wrap;gap:12px;margin:26px 0}
+.hero-stats{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:12px}
+.hero-stats li{padding:10px 16px;border-radius:16px;background:rgba(255,255,255,.07);border:1px solid var(--edge);backdrop-filter:blur(10px);font-size:14px;color:var(--muted)}
+.hero-stats b{font-family:var(--font-d);font-size:22px;color:var(--ink);margin-right:4px}
+.hero-3d{position:relative;height:440px;display:grid;place-items:center;perspective:1100px}
+.cube-wrap{width:240px;height:240px;perspective:1000px;cursor:grab;touch-action:none}
+.cube-wrap:active{cursor:grabbing}
+.cube{position:relative;width:100%;height:100%;transform-style:preserve-3d}
+.face{position:absolute;inset:0;display:grid;place-items:center;border-radius:22px;border:1px solid rgba(255,255,255,.35);background:linear-gradient(135deg,var(--f1),var(--f2));box-shadow:inset 0 0 40px rgba(255,255,255,.12)}
+.face:nth-child(1){transform:translateZ(120px);--f1:rgba(255,79,154,.55);--f2:rgba(139,108,255,.45)}
+.face:nth-child(2){transform:rotateY(90deg) translateZ(120px);--f1:rgba(46,230,208,.5);--f2:rgba(139,108,255,.45)}
+.face:nth-child(3){transform:rotateY(180deg) translateZ(120px);--f1:rgba(255,181,71,.55);--f2:rgba(255,79,154,.45)}
+.face:nth-child(4){transform:rotateY(-90deg) translateZ(120px);--f1:rgba(142,240,107,.45);--f2:rgba(46,230,208,.45)}
+.face:nth-child(5){transform:rotateX(90deg) translateZ(120px);--f1:rgba(139,108,255,.55);--f2:rgba(46,230,208,.4)}
+.face:nth-child(6){transform:rotateX(-90deg) translateZ(120px);--f1:rgba(255,181,71,.5);--f2:rgba(142,240,107,.4)}
+.float{position:absolute;padding:8px 14px;border-radius:14px;font-family:var(--font-m);font-size:14px;font-weight:600;background:rgba(255,255,255,.09);border:1px solid var(--edge);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 14px 30px -14px rgba(0,0,0,.7);white-space:nowrap;will-change:transform}
+.drag-hint{position:absolute;bottom:0;font-size:13px;color:var(--muted);margin:0}
+.roadmap{position:relative;z-index:2;max-width:1160px;margin:0 auto 60px;padding:0 24px}
+.road{display:flex;gap:10px;overflow-x:auto;padding:6px 2px 14px;scrollbar-width:thin}
+.road a{flex:none;display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:16px;background:rgba(255,255,255,.06);border:1px solid var(--edge);color:var(--ink);text-decoration:none;font-weight:600;font-size:14px;transition:transform .25s,background .25s}
+.road a:hover{transform:translateY(-3px);background:rgba(255,255,255,.12)}
+.road a.done{border-color:var(--lime)}
+
+/* ---------- windows ---------- */
+.win{position:relative;max-width:1100px;margin:0 auto 70px;border-radius:30px;background:linear-gradient(150deg,rgba(255,255,255,.11),rgba(255,255,255,.035));border:1px solid var(--edge);backdrop-filter:blur(20px) saturate(140%);-webkit-backdrop-filter:blur(20px) saturate(140%);box-shadow:0 40px 90px -40px rgba(0,0,0,.75),inset 0 1px 0 rgba(255,255,255,.18);overflow:hidden;scroll-margin-top:24px}
+.win::before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:linear-gradient(90deg,var(--a1),var(--a2))}
+.reveal{transform:perspective(1400px) translateY(46px) rotateX(7deg) scale(.985);opacity:.55;transition:transform 1s cubic-bezier(.2,.8,.2,1),opacity 1s}
+.reveal.in{transform:none;opacity:1}
+.win-bar{display:flex;align-items:center;gap:14px;padding:12px 18px;background:rgba(255,255,255,.05);border-bottom:1px solid var(--edge)}
+.dots{display:flex;gap:7px}
+.dots i{width:12px;height:12px;border-radius:50%;background:var(--red)}
+.dots i:nth-child(2){background:var(--amber)}
+.dots i:nth-child(3){background:var(--lime)}
+.win-path{font-family:var(--font-m);font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.step{margin-left:auto;flex:none;font-size:12.5px;font-weight:800;padding:4px 12px;border-radius:999px;background:linear-gradient(135deg,var(--a1),var(--a2));color:#160c2e}
+.win-body{position:relative;padding:clamp(22px,4.5vw,52px)}
+.big-num{position:absolute;right:20px;top:-10px;font-family:var(--font-d);font-weight:800;font-size:clamp(120px,18vw,230px);line-height:1;color:transparent;-webkit-text-stroke:2px rgba(255,255,255,.09);pointer-events:none;user-select:none;will-change:transform}
+.win h2{font-size:clamp(30px,4.4vw,50px);font-weight:800;margin-bottom:16px;max-width:20ch}
+.win h2 .hl,.hl{background:linear-gradient(100deg,var(--a1),var(--a2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.win h3{font-size:clamp(21px,2.6vw,27px);margin:0 0 12px}
+.intro-text{font-size:18.5px;color:var(--muted);max-width:64ch}
+.idea{margin-top:40px;padding-top:30px;border-top:1px dashed rgba(255,255,255,.16)}
+.idea-tag{display:inline-block;font-family:var(--font-m);font-size:12px;font-weight:600;padding:3px 10px;border-radius:8px;background:rgba(255,255,255,.08);border:1px solid var(--edge);margin-bottom:12px;color:var(--a2)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:26px;align-items:start}
+.text p{max-width:62ch}
+ul.points{padding-left:0;list-style:none;margin:0 0 1em;display:grid;gap:8px}
+ul.points li{position:relative;padding-left:26px}
+ul.points li::before{content:"";position:absolute;left:4px;top:.62em;width:10px;height:10px;border-radius:3px;transform:rotate(45deg);background:linear-gradient(135deg,var(--a1),var(--a2))}
+
+.analogy{position:relative;padding:22px 22px 18px;border-radius:22px;background:linear-gradient(140deg,color-mix(in srgb,var(--a1) 22%,transparent),color-mix(in srgb,var(--a2) 14%,transparent));border:1px solid rgba(255,255,255,.22);overflow:hidden}
+.analogy .lbl{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
+.analogy .lbl svg{width:20px;height:20px}
+.analogy p:last-child{margin:0}
+.tilt{transition:transform .25s ease-out;transform-style:preserve-3d}
+.tilt::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:radial-gradient(circle at var(--gx,50%) var(--gy,0%),rgba(255,255,255,.16),transparent 55%)}
+
+.sim{margin-top:26px;border-radius:24px;background:rgba(8,5,26,.45);border:1px solid var(--edge);padding:clamp(16px,3vw,28px);box-shadow:inset 0 0 60px rgba(139,108,255,.08)}
+.sim-head{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:16px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:5px 12px;border-radius:999px;background:linear-gradient(135deg,var(--a1),var(--a2));color:#160c2e}
+.chip.alt{background:rgba(255,255,255,.1);color:var(--ink);border:1px solid var(--edge)}
+.sim-head h3{margin:0;font-size:21px}
+.hint{font-size:14.5px;color:var(--muted)}
+.btn{display:inline-flex;align-items:center;gap:8px;font:800 15px var(--font-b);color:#160c2e;text-decoration:none;border:0;border-radius:999px;padding:11px 20px;cursor:pointer;background:linear-gradient(135deg,var(--a1,var(--pink)),var(--a2,var(--amber)));box-shadow:0 12px 26px -12px var(--a1,var(--pink));transition:transform .2s,box-shadow .2s,filter .2s}
+.btn:hover{transform:translateY(-2px);filter:brightness(1.08)}
+.btn:active{transform:translateY(1px)}
+.btn.ghost{background:rgba(255,255,255,.08);color:var(--ink);border:1px solid var(--edge);box-shadow:none}
+.btn.small{padding:7px 14px;font-size:14px}
+.btn[disabled]{opacity:.5;cursor:default;transform:none}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.seg button{font:700 14px var(--font-b);color:var(--ink);background:rgba(255,255,255,.07);border:1px solid var(--edge);border-radius:999px;padding:8px 14px;cursor:pointer;transition:.2s}
+.seg button[aria-pressed="true"]{background:linear-gradient(135deg,var(--a1),var(--a2));color:#160c2e;border-color:transparent}
+input,select{font:600 14px var(--font-m);color:var(--ink);background:rgba(10,6,30,.65);border:1px solid var(--edge);border-radius:10px;padding:8px 10px;min-width:0}
+select option{background:#1a1238;color:var(--ink)}
+input[type=range]{padding:0;accent-color:var(--a1)}
+label{font-size:14px;font-weight:700;color:var(--muted)}
+
+/* ---------- UML boxes ---------- */
+.uml{display:inline-block;font-family:var(--font-m);font-size:13.5px;background:rgba(18,12,48,.78);border:1.5px solid rgba(255,255,255,.6);border-radius:10px;min-width:190px;overflow:hidden;box-shadow:0 14px 34px -14px rgba(0,0,0,.7);color:var(--ink);text-align:left}
+.uml-name{text-align:center;padding:9px 14px;background:linear-gradient(135deg,color-mix(in srgb,var(--a1,var(--violet)) 45%,transparent),color-mix(in srgb,var(--a2,var(--teal)) 30%,transparent));font-weight:600}
+.uml-name small{display:block;font-size:11px;font-weight:400;opacity:.9}
+.uml-sec{border-top:1.5px solid rgba(255,255,255,.6);padding:6px 14px;min-height:16px}
+.uml .m{white-space:nowrap;padding:1px 0}
+.static{text-decoration:underline;text-underline-offset:3px}
+.abstract{font-style:italic}
+.uml.mini{font-size:11.5px;min-width:150px}
+.uml.mini .uml-sec{padding:4px 10px}
+.uml.mini .uml-name{padding:6px 10px}
+.scroll-x{overflow-x:auto;padding-bottom:6px}
+.rel{fill:none;stroke:var(--ink);stroke-width:1.7}
+.rel.dash{stroke-dasharray:7 5}
+.mult{font-family:var(--font-m);font-size:13px;fill:var(--amber);font-weight:600}
+.sb-rect{fill:rgba(18,12,48,.9);stroke:rgba(255,255,255,.7);stroke-width:1.5}
+.sb-div{stroke:rgba(255,255,255,.7);stroke-width:1.5}
+.sb-t{fill:var(--ink);font-family:var(--font-m);font-size:12.5px}
+.sb-n{font-weight:600;font-size:13.5px}
+
+/* ---------- quiz ---------- */
+.quiz{margin-top:34px;border-radius:24px;padding:clamp(18px,3vw,28px);background:linear-gradient(150deg,rgba(255,255,255,.1),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.25);position:relative;overflow:hidden}
+.quiz::before{content:"";position:absolute;width:240px;height:240px;right:-80px;top:-80px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--a1) 45%,transparent),transparent 70%);pointer-events:none}
+.quiz-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.qprog{display:flex;gap:6px;margin-left:auto}
+.qprog i{width:26px;height:6px;border-radius:6px;background:rgba(255,255,255,.15)}
+.qprog i.done{background:var(--a2)}
+.qprog i.now{background:var(--ink)}
+.qq{font-size:19px;font-weight:700;margin-bottom:14px;max-width:62ch}
+.opts{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))}
+.opt{text-align:left;font:600 15.5px var(--font-b);color:var(--ink);background:rgba(10,6,30,.5);border:1.5px solid var(--edge);border-radius:16px;padding:12px 16px;cursor:pointer;transition:transform .2s,border-color .2s,background .2s}
+.opt:hover:not([disabled]){transform:translateY(-2px);border-color:var(--a2)}
+.opt.right{border-color:var(--lime);background:rgba(142,240,107,.16)}
+.opt.wrong{border-color:var(--red);background:rgba(255,93,108,.16);animation:shake .4s}
+.opt[disabled]{cursor:default}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.qfb{margin-top:14px;min-height:1px}
+.qfb p{margin:0 0 10px}
+.qres{display:flex;flex-wrap:wrap;align-items:center;gap:18px}
+.ring{--p:0;width:86px;height:86px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--a2) calc(var(--p)*1%),rgba(255,255,255,.12) 0);flex:none}
+.ring b{width:70px;height:70px;border-radius:50%;display:grid;place-items:center;background:#120c33;font-family:var(--font-d);font-size:22px}
+
+/* ---------- window 1: cookie factory ---------- */
+.factory{display:grid;grid-template-columns:minmax(0,260px) 1fr;gap:24px;align-items:start}
+.cutter-col{display:grid;gap:14px;justify-items:start}
+.cutter{width:90px;height:90px;border-radius:50%;border:5px dashed rgba(255,255,255,.75);display:grid;place-items:center;font-family:var(--font-m);font-size:11px;color:var(--muted);transition:transform .2s}
+.cutter.press{animation:press .45s}
+@keyframes press{40%{transform:translateY(16px) scale(.92)}}
+.tray{min-height:230px;border-radius:20px;border:1.5px dashed rgba(255,255,255,.25);padding:16px;display:flex;flex-wrap:wrap;gap:14px;align-content:flex-start;background:repeating-linear-gradient(45deg,rgba(255,255,255,.02) 0 12px,transparent 12px 24px)}
+.tray:empty::before{content:"Your objects appear here. Press new Cookie()";color:var(--muted);font-size:14px}
+.cookie-obj{display:flex;flex-direction:column;align-items:center;gap:8px;animation:drop .8s cubic-bezier(.3,1.5,.5,1)}
+@keyframes drop{from{transform:translateY(-90px) rotate(-40deg) scale(.4);opacity:0}}
+.cookie{border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(0,0,0,.35) 0 4px,transparent 5px),radial-gradient(circle at 65% 40%,rgba(0,0,0,.35) 0 4px,transparent 5px),radial-gradient(circle at 45% 70%,rgba(0,0,0,.35) 0 4px,transparent 5px),radial-gradient(circle at 40% 35%,var(--k2),var(--k1));box-shadow:0 10px 18px -8px rgba(0,0,0,.8),inset -4px -6px 10px rgba(0,0,0,.25)}
+.obj{font-family:var(--font-m);font-size:11.5px;background:rgba(18,12,48,.85);border:1.5px solid rgba(255,255,255,.55);border-radius:8px;padding:6px 10px;display:grid;line-height:1.5}
+.obj u{text-align:center;font-weight:600;text-underline-offset:3px;border-bottom:1.5px solid rgba(255,255,255,.4);padding-bottom:3px;margin-bottom:3px}
+.counter{font-family:var(--font-d);font-size:20px}
+
+/* ---------- window 2: anatomy ---------- */
+.anat{display:grid;grid-template-columns:auto 1fr;gap:26px;align-items:center}
+.anat .uml{font-size:15px}
+.anat [data-part]{cursor:pointer;transition:background .25s,box-shadow .25s}
+.anat [data-part]:hover{background:rgba(255,255,255,.08)}
+.anat [data-part].on{background:color-mix(in srgb,var(--a2) 30%,transparent);box-shadow:inset 4px 0 0 var(--a2)}
+.explain{padding:18px 20px;border-radius:18px;background:rgba(255,255,255,.06);border:1px solid var(--edge);min-height:150px}
+.builder{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:22px}
+.brow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.brow input{flex:1 1 90px}
+.brow select{flex:none}
+.mlist{list-style:none;padding:0;margin:8px 0 0;display:flex;flex-wrap:wrap;gap:6px}
+.mlist li{display:flex;align-items:center;gap:6px;font-family:var(--font-m);font-size:12.5px;padding:4px 6px 4px 10px;border-radius:10px;background:rgba(255,255,255,.07);border:1px solid var(--edge)}
+.mlist button{border:0;background:rgba(255,93,108,.25);color:var(--ink);width:22px;height:22px;border-radius:7px;cursor:pointer;font-weight:800}
+.msg{font-size:14px;min-height:22px;color:var(--amber)}
+pre.code{margin:12px 0 0;font-family:var(--font-m);font-size:13px;line-height:1.55;background:rgba(5,3,20,.7);border:1px solid var(--edge);border-radius:14px;padding:14px 16px;overflow-x:auto;color:#dcd6ff}
+pre.code .k{color:var(--pink)} pre.code .t{color:var(--teal)} pre.code .c{color:#8f88b8}
+
+/* ---------- window 3: visibility ---------- */
+.vis-table{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:12px;margin:10px 0 0}
+.vis-card{padding:16px;border-radius:18px;background:rgba(255,255,255,.06);border:1px solid var(--edge);position:relative;overflow:hidden}
+.vis-card .sym{font-family:var(--font-m);font-size:34px;font-weight:600;line-height:1;background:linear-gradient(135deg,var(--a1),var(--a2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.vis-card b{display:block;margin:6px 0 2px}
+.vis-card span{font-size:14px;color:var(--muted)}
+.access{display:grid;grid-template-columns:minmax(0,300px) 1fr;gap:24px;align-items:start}
+.acc-box .m{display:flex;align-items:center;gap:10px;padding:5px 0;transition:color .3s,opacity .3s}
+.acc-box .m .lk{margin-left:auto;font-size:11px;font-family:var(--font-b);font-weight:800;padding:1px 8px;border-radius:999px}
+.acc-box .m.ok .lk{background:rgba(142,240,107,.2);color:var(--lime)}
+.acc-box .m.no{opacity:.45}
+.acc-box .m.no .lk{background:rgba(255,93,108,.2);color:var(--red)}
+.rooms{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.room{position:relative;border-radius:18px;padding:14px 14px 14px 92px;min-height:118px;background:rgba(255,255,255,.05);border:1px solid var(--edge);perspective:600px;transition:border-color .4s,box-shadow .4s}
+.room.ok{border-color:var(--lime);box-shadow:0 0 30px -12px var(--lime)}
+.room b{display:block;font-family:var(--font-d);font-size:18px}
+.room span{font-size:13.5px;color:var(--muted)}
+.room .sym{font-family:var(--font-m);font-weight:600;color:var(--a2)}
+.frame{position:absolute;left:16px;top:14px;width:60px;height:88px;border-radius:8px 8px 2px 2px;background:linear-gradient(180deg,rgba(255,240,180,.7),rgba(255,181,71,.35));box-shadow:inset 0 0 18px rgba(255,255,255,.35)}
+.door{position:absolute;inset:0;border-radius:8px 8px 2px 2px;background:linear-gradient(135deg,#7a4fd6,#45288f);border:2px solid rgba(255,255,255,.45);transform-origin:left center;transition:transform .9s cubic-bezier(.3,1.3,.5,1);display:grid;place-items:center;font-size:20px}
+.door::after{content:"";position:absolute;right:7px;top:46%;width:7px;height:7px;border-radius:50%;background:var(--amber)}
+.room.ok .door{transform:rotateY(-72deg)}
+.who-text{margin-top:14px;padding:12px 16px;border-radius:14px;background:rgba(255,255,255,.06);border-left:4px solid var(--a2);font-size:15px}
+
+/* ---------- window 4: syntax ---------- */
+.decoder{display:grid;gap:12px}
+.dline{font-family:var(--font-m);font-size:clamp(15px,2.2vw,21px);padding:12px 16px;border-radius:14px;background:rgba(5,3,20,.6);border:1px solid var(--edge);display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center}
+.dline .lbl{font-family:var(--font-b);font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-right:8px}
+.tok{border:0;font:inherit;color:inherit;background:rgba(255,255,255,.06);padding:2px 8px;border-radius:8px;cursor:pointer;border-bottom:3px solid var(--tc);transition:transform .2s,background .2s}
+.tok:hover,.tok.on{background:color-mix(in srgb,var(--tc) 30%,transparent);transform:translateY(-3px)}
+.tok.static{text-decoration:underline}
+.tok.abstract{font-style:italic}
+.tip{padding:16px 18px;border-radius:16px;background:linear-gradient(135deg,color-mix(in srgb,var(--tc,var(--a1)) 22%,transparent),rgba(255,255,255,.04));border:1px solid var(--edge);min-height:84px;transition:background .3s}
+.tip b{font-family:var(--font-d);font-size:18px}
+.legend{display:flex;flex-wrap:wrap;gap:10px;font-size:13px;color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:12px;height:4px;border-radius:3px;background:var(--tc);margin-right:6px;vertical-align:middle}
+
+/* ---------- window 5: multiplicity ---------- */
+.mult-table{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:10px}
+.mult-table div{padding:12px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid var(--edge);text-align:center}
+.mult-table code{font-size:20px;display:block;background:none;border:0;color:var(--amber);margin-bottom:4px}
+.mult-table span{font-size:13.5px;color:var(--muted)}
+.assoc-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;margin:8px 0 14px;font-family:var(--font-m)}
+.assoc-line{display:flex;align-items:center;gap:8px;color:var(--amber);font-weight:600}
+.assoc-line i{display:block;width:90px;height:2px;background:var(--ink);position:relative}
+.assoc-line i::after{content:attr(data-verb);position:absolute;left:50%;top:-22px;transform:translateX(-50%);font-style:italic;color:var(--muted);font-size:12px;white-space:nowrap}
+#mSvg{width:100%;max-width:640px;display:block;margin:0 auto;touch-action:manipulation}
+#mSvg .node{cursor:pointer}
+#mSvg .node rect{fill:rgba(18,12,48,.9);stroke-width:2;transition:stroke .3s,fill .3s}
+#mSvg .node.ok rect{stroke:var(--lime)}
+#mSvg .node.bad rect{stroke:var(--red)}
+#mSvg .node.sel rect{fill:color-mix(in srgb,var(--a1) 40%,#120c33)}
+#mSvg .node text{fill:var(--ink);font-family:var(--font-m);font-size:14px;pointer-events:none}
+#mSvg .node .cnt{font-size:11px;fill:var(--muted)}
+#mSvg .lnk{stroke:var(--teal);stroke-width:2.2;animation:dash .5s ease-out}
+@keyframes dash{from{stroke-dasharray:400;stroke-dashoffset:400}to{stroke-dasharray:400;stroke-dashoffset:0}}
+.status{margin-top:12px;padding:12px 16px;border-radius:14px;font-size:15px;background:rgba(255,255,255,.06);border:1px solid var(--edge)}
+.status.good{border-color:var(--lime);background:rgba(142,240,107,.12)}
+.status ul{margin:6px 0 0;padding-left:20px}
+
+/* ---------- window 6: whole-part ---------- */
+.wp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:20px}
+.wp{border-radius:20px;padding:16px;background:rgba(255,255,255,.05);border:1px solid var(--edge)}
+.wp h4{font-size:19px;margin-bottom:4px}
+.wp svg{width:100%;display:block;overflow:visible}
+.wp svg g.o{transform-box:fill-box;transform-origin:center}
+.wp .obox{fill:rgba(18,12,48,.92);stroke:rgba(255,255,255,.7);stroke-width:1.5;transition:fill .5s,stroke .5s}
+.wp .otxt{fill:var(--ink);font-family:var(--font-m);font-size:11.5px;text-decoration:underline}
+.wp .olbl{fill:var(--muted);font-family:var(--font-b);font-size:10.5px;font-weight:800}
+.boom{animation:boom .6s forwards}
+@keyframes boom{20%{transform:scale(1.12) rotate(-5deg)}45%{transform:scale(1.06) rotate(5deg)}100%{transform:scale(.1) rotate(25deg);opacity:0}}
+.fall{animation:fall 1.1s cubic-bezier(.5,0,.9,.4) forwards}
+@keyframes fall{to{transform:translateY(130px) rotate(38deg);opacity:0}}
+.free{animation:bob 1.4s ease-in-out infinite alternate}
+.free .obox{fill:rgba(142,240,107,.22);stroke:var(--lime)}
+@keyframes bob{from{transform:translateY(-5px)}to{transform:translateY(6px)}}
+.cut{opacity:0;transition:opacity .5s}
+.spark{transform-box:fill-box;animation:spark .9s ease-out forwards}
+@keyframes spark{to{transform:translate(var(--dx),var(--dy)) scale(.3);opacity:0}}
+.wp-status{font-size:14.5px;min-height:46px;margin:8px 0 10px;color:var(--muted)}
+
+/* ---------- window 7: inheritance ---------- */
+.inh{position:relative;padding:10px 0 20px}
+.inh svg.lines{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.inh-top{display:flex;justify-content:center;margin-bottom:70px}
+.inh-row{display:flex;flex-wrap:wrap;justify-content:center;gap:18px}
+.inh-node{position:relative;z-index:1}
+.inh-row .inh-node{cursor:pointer;border-radius:12px;transition:transform .3s}
+.inh-row .inh-node:hover,.inh-row .inh-node.on{transform:translateY(-6px)}
+.inh-row .inh-node.on .uml{border-color:var(--a2);box-shadow:0 0 0 3px color-mix(in srgb,var(--a2) 45%,transparent),0 20px 40px -14px rgba(0,0,0,.7)}
+.bubble{position:absolute;top:-38px;left:50%;transform:translateX(-50%) scale(0);background:var(--ink);color:#160c2e;font-weight:800;padding:5px 12px;border-radius:14px;white-space:nowrap;transition:transform .35s cubic-bezier(.3,1.6,.5,1);z-index:3}
+.bubble.show{transform:translateX(-50%) scale(1)}
+.inh-panel{padding:18px;border-radius:18px;background:rgba(255,255,255,.06);border:1px solid var(--edge)}
+.rowm{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:7px 0;border-bottom:1px dashed rgba(255,255,255,.12);font-family:var(--font-m);font-size:13.5px}
+.tag{font-family:var(--font-b);font-size:11.5px;font-weight:800;padding:2px 9px;border-radius:999px;margin-left:auto}
+.tag.inh{background:rgba(46,230,208,.18);color:var(--teal)}
+.tag.own{background:rgba(255,79,154,.2);color:#ff8fbf}
+.tag.ovr{background:rgba(255,181,71,.2);color:var(--amber)}
+
+/* ---------- window 8: interfaces ---------- */
+.plug-zone{display:grid;justify-items:center;gap:16px}
+.socket{width:120px;height:120px;border-radius:28px;background:linear-gradient(145deg,rgba(255,255,255,.22),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.4);display:grid;place-items:center;position:relative;transition:box-shadow .4s}
+.socket::before,.socket::after{content:"";position:absolute;width:12px;height:30px;border-radius:6px;background:#0a0720;top:38px}
+.socket::before{left:38px}.socket::after{right:38px}
+.socket.on{box-shadow:0 0 0 4px var(--lime),0 0 50px var(--lime)}
+.socket.reject{animation:shake .4s;box-shadow:0 0 0 4px var(--red)}
+.devices{display:flex;flex-wrap:wrap;justify-content:center;gap:16px}
+.device{display:grid;gap:8px;justify-items:center;transition:transform .7s cubic-bezier(.3,1.2,.5,1)}
+.device .real{font-family:var(--font-m);font-size:12px;color:var(--teal);min-height:18px}
+.batt{width:100%;height:8px;border-radius:8px;background:rgba(255,255,255,.12);overflow:hidden}
+.batt i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--lime),var(--teal));transition:width 1.4s}
+.plug-msg{text-align:center;min-height:50px;font-size:15px;max-width:60ch}
+.dep-demo{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px}
+.dep-arrow{width:150px;height:30px;opacity:.15;transition:opacity .4s}
+.dep-arrow.on{opacity:1}
+.knife.use{animation:wiggle .4s 3}
+@keyframes wiggle{25%{transform:rotate(-6deg)}75%{transform:rotate(6deg)}}
+
+/* ---------- window 9: lab ---------- */
+.rel-picker{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.stage{position:relative;height:340px;border-radius:20px;background:radial-gradient(circle at 50% 50%,rgba(139,108,255,.12),transparent 70%),repeating-linear-gradient(0deg,rgba(255,255,255,.04) 0 1px,transparent 1px 28px),repeating-linear-gradient(90deg,rgba(255,255,255,.04) 0 1px,transparent 1px 28px);border:1px solid var(--edge);overflow:hidden;touch-action:none}
+.stage svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.drag{position:absolute;cursor:grab;user-select:none;touch-action:none}
+.drag:active{cursor:grabbing}
+.drag .uml{min-width:150px}
+#labPath{transition:opacity .3s}
+.lab-info{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;margin-top:14px}
+.meter{display:flex;gap:5px;align-items:flex-end;height:44px}
+.meter i{width:16px;border-radius:5px;background:rgba(255,255,255,.12);transition:background .4s}
+.meter i:nth-child(1){height:25%}.meter i:nth-child(2){height:50%}.meter i:nth-child(3){height:75%}.meter i:nth-child(4){height:100%}
+.meter i.on{background:linear-gradient(180deg,var(--a1),var(--a2))}
+.sentence{font-family:var(--font-d);font-size:clamp(19px,2.5vw,24px)}
+
+/* ---------- exercises ---------- */
+.ex-rail{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 12px;margin-bottom:12px}
+.ex-rail button{flex:none;display:grid;gap:2px;justify-items:center;min-width:84px;padding:10px 12px;border-radius:16px;border:1px solid var(--edge);background:rgba(255,255,255,.06);color:var(--ink);font:800 14px var(--font-b);cursor:pointer;transition:transform .2s,background .2s}
+.ex-rail button small{font-size:11px;color:var(--amber);letter-spacing:1px}
+.ex-rail button[aria-selected="true"]{background:linear-gradient(135deg,var(--a1),var(--a2));color:#160c2e;border-color:transparent}
+.ex-rail button[aria-selected="true"] small{color:#160c2e}
+.ex-rail button.solved{box-shadow:inset 0 0 0 2px var(--lime)}
+.ex-rail button.solved::after{content:"✓";font-size:12px;color:var(--lime)}
+.ex-rail button[aria-selected="true"].solved::after{color:#160c2e}
+.ex-wrap{perspective:1600px}
+.ex{display:none;border-radius:24px;padding:clamp(18px,3vw,30px);background:rgba(8,5,26,.5);border:1px solid var(--edge)}
+.ex.show{display:block;animation:flipin .6s cubic-bezier(.2,.8,.2,1)}
+@keyframes flipin{from{transform:rotateY(-22deg) translateX(40px);opacity:0}}
+.ex-head{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:6px}
+.ex-head h3{margin:0}
+.stars{color:var(--amber);letter-spacing:2px}
+.ex-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px;align-items:center}
+.ex-fb{margin-top:14px;padding:0;border-radius:14px;font-size:15px}
+.ex-fb:not(:empty){padding:12px 16px;background:rgba(255,255,255,.06);border:1px solid var(--edge)}
+.ex-fb.good{border-color:var(--lime);background:rgba(142,240,107,.12)}
+.ex-fb.bad{border-color:var(--red);background:rgba(255,93,108,.1)}
+.pool,.bin{min-height:70px;border-radius:16px;padding:12px;display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start}
+.pool{border:1.5px dashed rgba(255,255,255,.25)}
+.bins{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px;margin-top:12px}
+.bin{border:1.5px solid var(--edge);background:rgba(255,255,255,.05);flex-direction:column;cursor:pointer;transition:border-color .2s,background .2s}
+.bin.over,.bin:hover{border-color:var(--a2);background:rgba(255,255,255,.09)}
+.bin h4{font-size:15px;width:100%}
+.mchip{font:600 13px var(--font-m);color:var(--ink);padding:7px 12px;border-radius:10px;background:rgba(18,12,48,.9);border:1.5px solid var(--edge);cursor:grab;transition:transform .2s,border-color .2s}
+.mchip.sel{border-color:var(--amber);transform:translateY(-3px);box-shadow:0 8px 18px -8px var(--amber)}
+.mchip.ok{border-color:var(--lime)} .mchip.no{border-color:var(--red)}
+.qrow{display:grid;grid-template-columns:1fr auto;gap:10px 16px;align-items:center;padding:10px 0;border-bottom:1px dashed rgba(255,255,255,.12)}
+.qrow.ok select{border-color:var(--lime)} .qrow.no select{border-color:var(--red)}
+.asm{display:grid;gap:10px;margin-bottom:18px}
+.asm-ans{min-height:52px;border-radius:14px;padding:8px;display:flex;flex-wrap:wrap;gap:6px;background:rgba(5,3,20,.6);border:1.5px solid var(--edge);font-family:var(--font-m)}
+.asm-ans:empty::before{content:"Tap the pieces below in order";color:var(--muted);font-family:var(--font-b);font-size:14px;padding:6px}
+.asm-ans.ok{border-color:var(--lime)} .asm-ans.no{border-color:var(--red)}
+.asm-pool{display:flex;flex-wrap:wrap;gap:6px}
+.mrow{padding:12px 0;border-bottom:1px dashed rgba(255,255,255,.12)}
+.mrow p{margin:0 0 8px}
+.mline{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-family:var(--font-m);font-size:14px}
+.mline .cls{padding:6px 12px;border-radius:8px;border:1.5px solid rgba(255,255,255,.6);background:rgba(18,12,48,.85)}
+.mline .ln{flex:1 1 40px;min-width:40px;height:2px;background:var(--ink)}
+.mrow.ok select{border-color:var(--lime)} .mrow.no select{border-color:var(--red)}
+#errSvg .hot{fill:transparent;stroke:transparent;stroke-width:2;stroke-dasharray:5 4;cursor:pointer;transition:fill .2s,stroke .2s}
+#errSvg .hot:hover{stroke:var(--amber)}
+#errSvg .hot.flag{fill:rgba(255,181,71,.25);stroke:var(--amber)}
+#errSvg .hot.good{fill:rgba(142,240,107,.22);stroke:var(--lime)}
+#errSvg .hot.bad{fill:rgba(255,93,108,.25);stroke:var(--red)}
+.scenario{padding:16px 18px;border-radius:16px;background:linear-gradient(135deg,rgba(255,79,154,.12),rgba(46,230,208,.08));border:1px solid var(--edge);font-size:16px}
+.model{display:none;margin-top:16px}
+.model.show{display:block;animation:flipin .6s}
+
+/* ---------- cheat sheet ---------- */
+.cheat{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:14px}
+.cheat .card{position:relative;padding:16px;border-radius:18px;background:rgba(255,255,255,.06);border:1px solid var(--edge);overflow:hidden}
+.cheat svg{width:100%;height:44px;display:block;margin:4px 0 6px}
+.cheat b{font-family:var(--font-d);font-size:18px}
+.cheat p{margin:0;font-size:14px;color:var(--muted)}
+.badge-zone{display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:center;margin-top:34px}
+.coin{width:150px;height:150px;perspective:700px}
+.coin-in{width:100%;height:100%;position:relative;transform-style:preserve-3d;animation:spin 7s linear infinite}
+@keyframes spin{to{transform:rotateY(360deg)}}
+.coin-in div{position:absolute;inset:0;border-radius:50%;display:grid;place-items:center;text-align:center;font-family:var(--font-d);font-weight:800;backface-visibility:hidden;border:4px solid rgba(255,255,255,.6);box-shadow:inset 0 0 30px rgba(255,255,255,.35)}
+.coin-in div:first-child{background:conic-gradient(from 0deg,var(--pink),var(--amber),var(--teal),var(--violet),var(--pink));color:#160c2e;font-size:20px;line-height:1.1}
+.coin-in div:last-child{background:linear-gradient(135deg,var(--violet),var(--teal));transform:rotateY(180deg);font-size:15px}
+footer{position:relative;z-index:2;text-align:center;color:var(--muted);font-size:14px;padding:0 16px 40px}
+
+
+/* ---------- sky effects + analogy art ---------- */
+#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+#flash{position:fixed;inset:0;z-index:3;pointer-events:none;opacity:0;background:radial-gradient(ellipse at var(--fx,50%) 0%,rgba(225,215,255,.5),rgba(139,108,255,.12) 45%,transparent 75%)}
+#flash.on{animation:flash .9s ease-out}
+@keyframes flash{0%{opacity:0}6%{opacity:.55}14%{opacity:.1}24%{opacity:.4}100%{opacity:0}}
+#fxToggle{position:fixed;left:16px;top:80px;z-index:75;width:54px;height:42px;border-radius:14px;border:1px solid var(--edge);background:rgba(24,16,60,.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);cursor:pointer;display:grid;place-items:center;color:var(--amber);box-shadow:0 10px 30px -10px rgba(0,0,0,.6);transition:transform .2s,opacity .3s,color .3s}
+#fxToggle:hover{transform:translateY(-2px)}
+#fxToggle svg{width:24px;height:24px;overflow:visible}
+#fxToggle .slash{stroke:var(--red);stroke-width:2.4;stroke-linecap:round;opacity:0;transition:opacity .25s}
+#fxToggle[aria-pressed="false"]{color:var(--muted)}
+#fxToggle[aria-pressed="false"] .slash{opacity:1}
+#fxToggle::after{content:attr(data-tip);position:absolute;left:64px;top:50%;transform:translate(-6px,-50%);white-space:nowrap;font:700 13px var(--font-b);color:var(--ink);background:rgba(24,16,60,.9);border:1px solid var(--edge);padding:6px 10px;border-radius:10px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
+#fxToggle:hover::after,#fxToggle:focus-visible::after,#fxToggle.tell::after{opacity:1;transform:translate(0,-50%)}
+body.nav-open #fxToggle{opacity:0;pointer-events:none}
+.art{margin:2px 0 12px;border-radius:16px;background:linear-gradient(160deg,rgba(8,5,26,.6),rgba(8,5,26,.25));border:1px solid rgba(255,255,255,.14);overflow:hidden}
+.art svg{display:block;width:100%;height:auto;max-height:200px}
+.art text{font-family:var(--font-m)}
+.art .bob,.art .walk,.art .pulse,.art .wig,.art .press,.art .wave,.art .charge{transform-box:fill-box;transform-origin:center}
+.art .bob{animation:abob 2.6s ease-in-out infinite alternate}
+@keyframes abob{from{transform:translateY(-3px)}to{transform:translateY(4px)}}
+.art .walk{animation:walk 1.8s ease-in-out infinite alternate}
+@keyframes walk{to{transform:translateX(12px)}}
+.art .pulse{animation:apulse 2.4s ease-in-out infinite}
+@keyframes apulse{50%{opacity:.55}}
+.art .march,.art .flow{stroke-dasharray:6 6;animation:march 1s linear infinite}
+@keyframes march{to{stroke-dashoffset:-24}}
+.art .wig{transform-origin:left center;animation:wiggle 2.6s ease-in-out infinite}
+.art .press{animation:apress 3.2s ease-in-out infinite}
+@keyframes apress{0%,70%,100%{transform:none}80%{transform:translateY(6px) scale(.96)}}
+.art .wave{transform-origin:left center;animation:wave 2s ease-in-out infinite alternate}
+@keyframes wave{to{transform:skewY(5deg) scaleX(.93)}}
+.art .charge{transform-origin:bottom center;animation:charge 2.2s ease-in-out infinite}
+@keyframes charge{from{transform:scaleY(.15)}to{transform:scaleY(1)}}
+
+@media (max-width:860px){
+  .hero{grid-template-columns:1fr;padding-top:90px}
+  .hero-3d{height:360px}
+  .factory,.anat,.builder,.access,.badge-zone{grid-template-columns:1fr}
+  .rooms{grid-template-columns:1fr}
+  .lab-info{grid-template-columns:1fr}
+}
+@media (max-width:480px){
+  .float{display:none}
+  .qrow{grid-template-columns:1fr}
+  .win-path{display:none}
+}
+.db,.dw{display:inline-block;font-style:normal}.db{color:#000;-webkit-text-stroke:1.2px #fff;paint-order:stroke fill}.dw{color:#fff}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <marker id="m-tri" viewBox="0 0 20 20" refX="19" refY="10" markerWidth="20" markerHeight="20" markerUnits="userSpaceOnUse" orient="auto"><path d="M1,1 L19,10 L1,19 Z" fill="#ffffff" stroke="#f5f2ff" stroke-width="1.6" stroke-linejoin="round"/></marker>
+    <marker id="m-rtri" viewBox="0 0 20 20" refX="19" refY="10" markerWidth="20" markerHeight="20" markerUnits="userSpaceOnUse" orient="auto"><path d="M1,1 L19,10 L1,19 Z" fill="#140f33" stroke="#f5f2ff" stroke-width="1.6" stroke-linejoin="round"/></marker>
+    <marker id="m-open" viewBox="0 0 20 20" refX="18" refY="10" markerWidth="16" markerHeight="16" markerUnits="userSpaceOnUse" orient="auto"><path d="M2,2 L18,10 L2,18" fill="none" stroke="#f5f2ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker>
+    <marker id="m-dh" viewBox="0 0 26 14" refX="1" refY="7" markerWidth="26" markerHeight="14" markerUnits="userSpaceOnUse" orient="auto"><path d="M1,7 L13,1 L25,7 L13,13 Z" fill="#ffffff" stroke="#f5f2ff" stroke-width="1.6" stroke-linejoin="round"/></marker>
+    <marker id="m-df" viewBox="0 0 26 14" refX="1" refY="7" markerWidth="26" markerHeight="14" markerUnits="userSpaceOnUse" orient="auto"><path d="M1,7 L13,1 L25,7 L13,13 Z" fill="#000000" stroke="#f5f2ff" stroke-width="1.6" stroke-linejoin="round"/></marker>
+  </defs>
+</svg>
+
+<canvas id="sky" aria-hidden="true"></canvas>
+<canvas id="fx" aria-hidden="true"></canvas>
+<div id="flash" aria-hidden="true"></div>
+<div id="glow" aria-hidden="true"></div>
+<div id="progress" aria-hidden="true"></div>
+<canvas id="confetti" aria-hidden="true"></canvas>
+
+<button id="burger" aria-label="Open the chapter menu" aria-expanded="false" aria-controls="nav"><span></span><span></span><span></span></button>
+<button id="fxToggle" aria-pressed="true" aria-label="Turn off lightning and shooting stars" data-tip="Sky effects: on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 1 L4 13 h6 l-2 9 9-13 h-6 l3-8z" fill="currentColor"/><path d="M20 2 l.9 2 2 .9 -2 .9 -.9 2 -.9-2 -2-.9 2-.9z" fill="currentColor"/><line class="slash" x1="2" y1="22" x2="22" y2="2"/></svg></button>
+<div id="scrim"></div>
+<nav id="nav" aria-label="Chapter windows">
+  <h2>Chapter windows</h2>
+  <ol id="navList"></ol>
+  <div class="nav-foot">
+    <div>Quizzes passed: <b id="qCount">0 / 9</b></div>
+    <div class="bar"><i id="qBar"></i></div>
+    <div style="margin-top:10px">Exercises solved: <b id="eCount">0 / 8</b></div>
+    <div class="bar"><i id="eBar"></i></div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="hero-copy">
+    <p class="eyebrow"><span class="dot"></span>Chapter · Structural modeling</p>
+    <h1>Learn <span class="grad">UML class diagrams</span> one window at a time</h1>
+    <p class="lead">Start from zero. Each window teaches one idea, lets you play with a simulation and an everyday analogy, then checks your understanding with a short quiz. The exercises at the end grow from warm-up to a real design task.</p>
+    <div class="hero-cta">
+      <a class="btn" href="#intro" style="--a1:var(--pink);--a2:var(--amber)">Start window 1</a>
+      <button class="btn ghost" id="openNav2">Browse all windows</button>
+    </div>
+    <ul class="hero-stats">
+      <li><b>9</b>concept windows</li>
+      <li><b>9</b>quick quizzes</li>
+      <li><b>8</b>exercise levels</li>
+    </ul>
+  </div>
+  <div class="hero-3d" id="hero3d" aria-label="A 3D cube of example classes. Drag to spin it.">
+    <div class="cube-wrap" id="cubeWrap"><div class="cube" id="cube"></div></div>
+    <span class="float" data-d="40" style="left:2%;top:12%;color:var(--pink)">+ public</span>
+    <span class="float" data-d="-30" style="right:0;top:6%;color:var(--teal)"><span class='db'>◆</span> composition</span>
+    <span class="float" data-d="55" style="right:4%;bottom:18%;color:var(--amber)">1..*</span>
+    <span class="float" data-d="-45" style="left:0;bottom:22%;color:var(--lime)">▷ is-a</span>
+    <span class="float" data-d="25" style="left:38%;top:0;color:var(--violet)">«interface»</span>
+    <p class="drag-hint">Drag the cube to spin it</p>
+  </div>
+</header>
+
+<section class="roadmap" aria-label="Learning path">
+  <p class="eyebrow">Your path through the chapter</p>
+  <div class="road" id="road"></div>
+</section>
+
+<main>
+
+<!-- ===================== 1 INTRO ===================== -->
+<section class="win reveal" id="intro" style="--a1:var(--pink);--a2:var(--amber)">
+  <div class="win-bar"><div class="dots"><i></i><i></i><i></i></div><span class="win-path">uml / 01-what-is-a-class-diagram</span><span class="step">Window 1 of 11</span></div>
+  <div class="win-body">
+    <span class="big-num" aria-hidden="true">01</span>
+    <p class="eyebrow">Big idea</p>
+    <h2>What is a <span class="hl">class diagram</span>?</h2>
+    <p class="intro-text">A class diagram is a picture of the <strong>structure</strong> of a software system. It shows which kinds of things exist, what each one knows, what each one can do, and how they are connected. It does not show time or order of events. Those belong to other UML diagrams, such as sequence diagrams.</p>
+
+    <div class="idea">
+      <span class="idea-tag">Idea 1.1 · Class vs object</span>
+      <div class="cols">
+        <div class="text">
+          <h3>A class is a template. Objects are made from it.</h3>
+          <ul class="points">
+            <li>A <strong>class</strong> describes a kind of thing: <code>Student</code>, <code>Car</code>, <code>Cookie</code>.</li>
+            <li>An <strong>object</strong> (or instance) is one concrete thing made from that class, with its own values.</li>
+            <li>One class can produce as many objects as you need. They share the same shape but hold different data.</li>
+            <li>UML writes an object as <code><u>name : Class</u></code>, underlined.</li>
+          </ul>
+        </div>
+        <div class="analogy tilt" data-art="cookie">
+          <div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9" stroke-dasharray="3 3"/><circle cx="9" cy="10" r="1.2" fill="currentColor"/><circle cx="14" cy="14" r="1.2" fill="currentColor"/></svg>Analogy · The cookie cutter</div>
+          <p>The <strong>cookie cutter</strong> is the class: it decides the shape. Every <strong>cookie</strong> you press out is an object. Each cookie can have its own flavor and size, but they all come from the same cutter.</p>
+          <p>An architect's <strong>blueprint</strong> works the same way: one plan, many real houses.</p>
+        </div>
+      </div>
+
+      <div class="sim">
+        <div class="sim-head"><span class="chip">Simulation</span><h3>The object factory</h3></div>
+        <div class="factory">
+          <div class="cutter-col">
+            <div id="cookieClass"></div>
+            <div class="cutter" id="cutter">cutter</div>
+            <label for="flavorSeg">Flavor value</label>
+            <div class="seg" id="flavorSeg">
+              <button aria-pressed="true" data-f="chocolate">chocolate</button>
+              <button aria-pressed="false" data-f="vanilla">vanilla</button>
+              <button aria-pressed="false" data-f="strawberry">strawberry</button>
+              <button aria-pressed="false" data-f="matcha">matcha</button>
+            </div>
+            <label for="csize">Size value: <span id="csizeOut">2</span></label>
+            <input type="range" id="csize" min="1" max="3" value="2">
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn" id="bake">new Cookie()</button>
+              <button class="btn ghost small" id="clearTray">Clear</button>
+            </div>
+          </div>
+          <div>
+            <p class="counter" id="ccount">1 class → 0 objects</p>
+            <div class="tray" id="tray"></div>
+            <p class="hint" style="margin-top:10px">Notice: every object has the same two attributes because the class defines them. Only the values change.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="quiz" data-quiz="intro"></div>
+  </div>
+</section>
+
+<!-- ===================== 2 ANATOMY ===================== -->
+<section class="win reveal" id="anatomy" style="--a1:var(--violet);--a2:var(--teal)">
+  <div class="win-bar"><div class="dots"><i></i><i></i><i></i></div><span class="win-path">uml / 02-anatomy-of-a-class</span><span class="step">Window 2 of 11</span></div>
+  <div class="win-body">
+    <span class="big-num" aria-hidden="true">02</span>
+    <p class="eyebrow">Big idea</p>
+    <h2>The <span class="hl">three compartments</span> of a class</h2>
+    <p class="intro-text">Every class is drawn as a rectangle split into three parts, from top to bottom: its <strong>name</strong>, its <strong>attributes</strong> (what it knows), and its <strong>operations</strong> (what it can do). Click each part of the box to explore it.</p>
+
+    <div class="idea">
+      <span class="idea-tag">Idea 2.1 · Name, attributes, operations</span>
+      <div class="anat">
+        <div class="uml" id="anatBox">
+          <div class="uml-name" data-part="name">BankAccount</div>
+          <div class="uml-sec" data-part="attrs"><div class="m">- owner : String</div><div class="m">- balance : double</div><div class="m">- iban : String</div></div>
+          <div class="uml-sec" data-part="ops"><div class="m">+ deposit(amount : double) : void</div><div class="m">+ withdraw(amount : double) : boolean</div><div class="m">+ getBalance() : double</div></div>
+        </div>
+        <div class="explain" id="anatExplain" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <div class="idea">
+      <span class="idea-tag">Idea 2.2 · From words to a class</span>
+      <div class="cols">
+        <div class="text">
+          <h3>How to find classes, attributes and operations</h3>
+          <ul class="points">
+            <li><strong>Nouns</strong> in a description often become classes: "A <em>student</em> enrolls in a <em>course</em>."</li>
+            <li><strong>Properties</strong> of a noun become attributes: a student's <em>name</em>, <em>id</em>.</li>
+            <li><strong>Verbs</strong> become operations: <em>enroll</em>, <em>pay</em>, <em>print</em>.</li>
+            <li>Class names are singular and Capitalized: <code>Student</code>, not <code>students</code>.</li>
+          </ul>
+        </div>
+        <div class="analogy tilt" data-art="idcard">
+          <div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 9h16M4 15h16"/></svg>Analogy · An ID card</div>
+          <p>Think of a class as an ID card template. The <strong>title</strong> says what kind of card it is. The <strong>middle</strong> lists the facts printed on it (name, birth date). The <strong>back</strong> lists what the holder is allowed to do (enter the library, borrow books).</p>
+        </div>
+      </div>
+
+      <div class="sim">
+        <div class="sim-head"><span class="chip">Simulation</span><h3>Class builder</h3><span class="hint">Build a class and watch the UML box and its Java code update live.</span></div>
+        <div class="builder">
+          <div>
+            <div class="brow"><label for="bName">Class name</label><input id="bName" value="Student" aria-label="Class name"></div>
+            <div class="brow">
+              <select id="baV" aria-label="Attribute visibility"><option>-</option><option>+</option><option>#</option><option>~</option></select>
+              <input id="baN" placeholder="attribute name" aria-label="Attribute name">
+              <input id="baT" placeholder="type, e.g. int" aria-label="Attribute type">
+              <button class="btn small" id="baAdd">Add attribute</button>
+            </div>
+            <div class="brow">
+              <select id="boV" aria-label="Operation visibility"><option>+</option><option>-</option><option>#</option><option>~</option></select>
+              <input id="boN" placeholder="operation name" aria-label="Operation name">
+              <input id="boP" placeholder="params, e.g. x : int" aria-label="Parameters">
+              <input id="boR" placeholder="return type" aria-label="Return type">
+              <button class="btn small" id="boAdd">Add operation</button>
+            </div>
+            <p class="msg" id="bMsg" aria-live="polite"></p>
+            <div class="seg" style="margin-bottom:8px"><span class="hint" style="align-self:center">Try a preset:</span><button data-preset="Student">Student</button><button data-preset="Car">Car</button><button data-preset="Song">Song</button></div>
+            <ul class="mlist" id="bList"></ul>
+          </div>
+          <div>
+            <div id="bPreview"></div>
+            <pre class="code" id="bCode"></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="quiz" data-quiz="anatomy"></div>
+  </div>
+</section>
+
+<!-- ===================== 3 VISIBILITY ===================== -->
+<section class="win reveal" id="visibility" style="--a1:var(--teal);--a2:var(--lime)">
+  <div class="win-bar"><div class="dots"><i></i><i></i><i></i></div><span class="win-path">uml / 03-visibility</span><span class="step">Window 3 of 11</span></div>
+  <div class="win-body">
+    <span class="big-num" aria-hidden="true">03</span>
+    <p class="eyebrow">Big idea</p>
+    <h2>Visibility: <span class="hl">who may see what</span></h2>
+    <p class="intro-text">The small symbol in front of each attribute or operation says which other classes are allowed to use it. Hiding the inside of a class and offering a few public operations is called <strong>encapsulation</strong>.</p>
+
+    <div class="idea">
+      <span class="idea-tag">Idea 3.1 · Four symbols</span>
+      <div class="vis-table">
+        <div class="vis-card"><div class="sym">+</div><b>public</b><span>Any class can use it.</span></div>
+        <div class="vis-card"><div class="sym">-</div><b>private</b><span>Only the class itself.</span></div>
+        <div class="vis-card"><div class="sym">#</div><b>protected</b><span>The class and its subclasses.</span></div>
+        <div class="vis-card"><div class="sym">~</div><b>package</b><span>Classes in the same package.</span></div>
+      </div>
+    </div>
+
+    <div class="idea">
+      <span class="idea-tag">Idea 3.2 · The house analogy</span>
+      <div class="cols">
+        <div class="analogy tilt" data-art="house">
+          <div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7v9H3z"/><path d="M10 20v-6h4v6"/></svg>Analogy · Rooms of a house</div>
+          <p>The <strong>living room</strong> is public: guests walk in. Your <strong>bedroom</strong> is private: only you. The <strong>family kitchen</strong> is protected: you and your children. The <strong>street mailbox</strong> is package-level: the neighbors on your street can reach it.</p>
+        </div>
+        <div class="text">
+          <h3>Rule of thumb for beginners</h3>
+          <ul class="points">
+            <li>Make attributes <code>-</code> private.</li>
+            <li>Make the operations other classes need <code>+</code> public.</li>
+            <li>Use <code>#</code> only when a subclass truly needs the member.</li>
+            <li>Programming languages differ in details. In Java, for example, protected members are also visible inside the package.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="sim">
+        <div class="sim-head"><span class="chip">Simulation</span><h3>Access checker</h3><span class="hint">Pick who is asking, and watch which doors open.</span></div>
+        <div class="seg" id="whoSeg" style="margin-bottom:16px">
+          <button aria-pressed="true" data-who="self">Person itself</button>
+          <button aria-pressed="false" data-who="child">Student (subclass)</button>
+          <button aria-pressed="false" data-who="pkg">Neighbor (same package)</button>
+          <button aria-pressed="false" data-who="out">Stranger (other package)</button>
+        </div>
+        <div class="access">
+          <div class="uml acc-box" id="accBox"></div>
+          <div class="rooms" id="rooms"></div>
+        </div>
+        <p class="who-text" id="whoText" aria-live="polite"></p>
+      </div>
+    </div>
+
+    <div class="quiz" data-quiz="visibility"></div>
+  </div>
+</section>
+
+<!-- ===================== 4 SYNTAX ===================== -->
+<section class="win reveal" id="syntax" style="--a1:var(--amber);--a2:var(--pink)">
+  <div class="win-bar"><div class="dots"><i></i><i></i><i></i></div><span class="win-path">uml / 04-writing-members</span><span class="step">Window 4 of 11</span></div>
+  <div class="win-body">
+    <span class="big-num" aria-hidden="true">04</span>
+    <p class="eyebrow">Big idea</p>
+    <h2>Writing <span class="hl">attributes and operations</span></h2>
+    <p class="intro-text">UML has a small grammar for each line in a class. The type always comes <strong>after</strong> a colon, which is the opposite of Java or C. Learn these two patterns and you can read almost any class.</p>
+
+    <div class="idea">
+      <span class="idea-tag">Idea 4.1 · Two patterns</span>
+      <div class="cols">
+        <div class="text">
+          <h3>Attribute</h3>
+          <p><code>visibility name : Type [multiplicity] = default</code></p>
+          <h3 style="margin-top:18px">Operation</h3>
+          <p><code>visibility name(param : Type, …) : ReturnType</code></p>
+          <ul class="points">
+            <li><span class="static">Underlined</span> means <strong>static</strong>: it belongs to the class, shared by all objects.</li>
+            <li><span class="abstract">Italic</span> means <strong>abstract</strong>: declared here, implemented by subclasses.</li>
+            <li>Parts in brackets are optional. Beginners can often leave them out.</li>
+          </ul>
+        </div>
+        <div class="analogy tilt" data-art="parcel">
+          <div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 10h6M7 14h10"/></svg>Analogy · A delivery label</div>
+          <p>An operation line is like a delivery label. The <strong>symbol</strong> says who may send it, the <strong>name</strong> says what it is, the <strong>brackets</strong> list what you must hand over, and the part <strong>after the last colon</strong> says what you get back.</p>
+        </div>
+      </div>
+
+      <div class="sim">
+        <div class="sim-head"><span class="chip">Simulation</span><h3>Syntax decoder</h3><span class="hint">Hover or tap each colored piece.</span></div>
+        <div class="legend" style="margin-bottom:12px">
+          <span style="--tc:var(--pink)">visibility</span><span style="--tc:var(--amber)">name</span><span style="--tc:var(--teal)">type / return type</span><span style="--tc:var(--violet)">parameters</span><span style="--tc:var(--lime)">default / multiplicity</span>
+        </div>
+        <div class="decoder" id="decoder"></div>
+        <div class="tip" id="tip" style="margin-top:14px" aria-live="polite"><b>Pick a piece</b><br><span class="hint">Its meaning shows up here.</span></div>
+      </div>
+    </div>
+
+    <div class="quiz" data-quiz="syntax"></div>
+  </div>
+</section>
+
+<!-- ===================== 5 ASSOCIATION ===================== -->
+<section class="win reveal" id="association" style="--a1:var(--teal);--a2:var(--violet)">
+  <div class="win-bar"><div class="dots"><i></i><i></i><i></i></div><span class="win-path">uml / 05-associations-and-multiplicity</span><span class="step">Window 5 of 11</span></div>
+  <div class="win-body">
+    <span class="big-num" aria-hidden="true">05</span>
+    <p class="eyebrow">Big idea</p>
+    <h2>Associations and <span class="hl">multiplicity</span></h2>
+    <p class="intro-text">An <strong>association</strong> is a solid line between two classes. It means their objects are linked and know about each other: a Teacher <em>teaches</em> a Course. Numbers on the line, called <strong>multiplicity</strong>, say <em>how many</em> objects can be linked.</p>
+
+    <div class="idea">
+      <span class="idea-tag">Idea 5.1 · Reading the numbers</span>
+      <div class="mult-table">
+        <div><code>1</code><span>exactly one</span></div>
+        <div><code>0..1</code><span>zero or one</span></div>
+        <div><code>*</code><span>any number (0..*)</span></div>
+        <div><code>1..*</code><span>one or more</span></div>
+        <div><code>2..4</code><span>between two and four</span></div>
+      </div>
+      <div class="cols" style="margin-top:22px">
+        <div class="text">
+          <h3>Read the number at the far end</h3>
+          <p>In <code>Person 1 ── 0..1 Passport</code>, start at Person and walk along the line. The number you find next to Passport (<code>0..1</code>) tells you how many passports <em>one</em> person can have. Walk back the other way: each passport belongs to exactly <code>1</code> person.</p>
+          <p>You can also add a <strong>name</strong> to the line (<em>owns</em>), <strong>role names</strong> at each end, and an open arrowhead to show which side can navigate to the other.</p>
+        </div>
+        <div class="analogy tilt" data-art="ticket">
+          <div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="12" r="3"/><circle cx="18" cy="12" r="3"/><path d="M9 12h6"/></svg>Analogy · Seats and tickets</div>
+          <p>A concert ticket gives you exactly <strong>1</strong> seat, and a seat can be sold to <strong>0..1</strong> ticket. Multiplicity is the rule printed on the box office wall: break it and the system is in an invalid state.</p>
+        </div>
+      </div>
+
+      <div class="sim">
+        <div class="sim-head"><span class="chip">Simulation</span><h3>Multiplicity tester</h3><span class="hint">Tap a left object, then a right object to link or unlink them. Make every box turn green.</span></div>
+        <div class="seg" id="mScen" style="margin-bottom:6px">
+          <button aria-pressed="true" data-s="passport">Person–Passport</button>
+          <button aria-pressed="false" data-s="course">Teacher–Course</button>
+          <button aria-pressed="false" data-s="enroll">Student–Course</button>
+        </div>
+        <div class="assoc-head" id="mHead"></div>
+        <div class="scroll-x"><svg id="mSvg" role="img" aria-label="Objects and their links"></svg></div>
+        <div class="status" id="mStatus" aria-live="polite"></div>
+        <div style="margin-top:10px"><button class="btn ghost small" id="mReset">Remove all links</button></div>
+      </div>
+    </div>
+
+    <div class="quiz" data-quiz="association"></div>
+  </div>
+</section>
+
+<!-- ===================== 6 WHOLE-PART ===================== -->
+<section class="win reveal" id="wholepart" style="--a1:var(--pink);--a2:var(--violet)">
+  <div class="win-bar"><div class="dots"><i></i><i></i><i></i></div><span class="win-path">uml / 06-aggregation-vs-composition</span><span class="step">Window 6 of 11</span></div>
+  <div class="win-body">
+    <span class="big-num" aria-hidden="true">06</span>
+    <p class="eyebrow">Big idea</p>
+    <h2>Whole and parts: <span class="hl">aggregation vs composition</span></h2>
+    <p class="intro-text">Some associations mean "is made of" or "has". UML adds a diamond on the side of the <strong>whole</strong>. The diamond's color answers one question: <em>when the whole is destroyed, do the parts die too?</em></p>
+
+    <div class="idea">
+      <span class="idea-tag">Idea 6.1 · White or black diamond</span>
+      <div class="cols">
+        <div class="analogy tilt" data-art="team">
+          <div class="lbl"><svg viewBox="0 0 26 14" fill="#ffffff" stroke="currentColor" stroke-width="1.8"><path d="M1,7 L13,1 L25,7 L13,13 Z"/></svg>Aggregation · A team and its players</div>
+          <p>A white (hollow) diamond <span class='dw'>◆</span> means a <strong>weak "has-a"</strong>. Parts can exist on their own and can be shared. If a team is disbanded, the players are still people and can join another team.</p>
+        </div>
+        <div class="analogy tilt" data-art="rooms">
+          <div class="lbl"><svg viewBox="0 0 26 14" fill="#000000" stroke="currentColor" stroke-width="1.8"><path d="M1,7 L13,1 L25,7 L13,13 Z"/></svg>Composition · A house and its rooms</div>
+          <p>A black (filled) diamond <span class='db'>◆</span> means a <strong>strong "made of"</strong>. Each part belongs to exactly one whole, and lives and dies with it. Demolish the house and its rooms are gone.</p>
+        </div>
+      </div>
+
+      <div class="sim">
+        <div class="sim-head"><span class="chip">Simulation</span><h3>The demolition test</h3><span class="hint">Delete the whole and see what happens to its parts.</span></div>
+        <div class="wp-grid">
+          <div class="wp" data-kind="agg">
+            <h4>Aggregation <span class='dw'>◆</span> <span class="hint">Team has Players</span></h4>
+            <div class="wp-svg"></div>
+            <p class="wp-status">Three player objects are linked to one team object.</p>
+            <button class="btn small wp-btn">Delete the team</button>
+          </div>
+          <div class="wp" data-kind="comp">
+            <h4>Composition <span class='db'>◆</span> <span class="hint">House is made of Rooms</span></h4>
+            <div class="wp-svg"></div>
+            <p class="wp-status">Three room objects belong to one house object.</p>
+            <button class="btn small wp-btn">Delete the house</button>
+          </div>
+        </div>
+        <p class="hint" style="margin-top:14px">Tip: the diamond is always drawn touching the <strong>whole</strong>, never the part.</p>
+      </div>
+    </div>
+
+    <div class="quiz" data-quiz="wholepart"></div>
+  </div>
+</section>
+
+<!-- ===================== 7 INHERITANCE ===================== -->
+<section class="win reveal" id="inheritance" style="--a1:var(--lime);--a2:var(--teal)">
+  <div class="win-bar"><div class="dots"><i></i><i></i><i></i></div><span class="win-path">uml / 07-inheritance</span><span class="step">Window 7 of 11</span></div>
+  <div class="win-body">
+    <span class="big-num" aria-hidden="true">07</span>
+    <p class="eyebrow">Big idea</p>
+    <h2>Inheritance: the <span class="hl">"is-a"</span> relationship</h2>
+    <p class="intro-text">When one class is a special kind of another, UML draws a <strong>generalization</strong>: a solid line with a hollow triangle pointing to the general class (the parent, or superclass). The child (subclass) automatically gets the parent's attributes and operations, and can add its own or change how an operation works (override).</p>
+
+    <div class="idea">
+      <span class="idea-tag">Idea 7.1 · The is-a test and abstract classes</span>
+      <div class="cols">
+        <div class="text">
+          <ul class="points">
+            <li>Test with a sentence: "A Dog <strong>is an</strong> Animal" sounds right, so inheritance fits. "A Car is an Engine" sounds wrong: that is a "has-a".</li>
+            <li>The triangle always points <strong>up to the parent</strong>.</li>
+            <li>An <strong>abstract class</strong> is written with its name in <span class="abstract">italics</span> (or with <code>{abstract}</code>). You cannot create objects of it directly.</li>
+            <li>An <span class="abstract">italic operation</span> is abstract: each subclass must provide it.</li>
+          </ul>
+        </div>
+        <div class="analogy tilt" data-art="recipe">
+          <div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="3"/><circle cx="5" cy="19" r="3"/><circle cx="19" cy="19" r="3"/><path d="M12 8v4M5 16v-4h14v4"/></svg>Analogy · A family recipe book</div>
+          <p>Every child in a family gets grandma's recipe book (inherited members). Each child can add new recipes (own members) and can rewrite one recipe in their own style (override). The book still says "family recipe", so anyone asking for one gets a valid answer.</p>
+        </div>
+      </div>
+
+      <div class="sim">
+        <div class="sim-head"><span class="chip">Simulation</span><h3>Inheritance explorer</h3><span class="hint">Tap Dog, Cat or Bird to see everything that object really has.</span></div>
+        <div class="scroll-x">
+          <div class="inh tilt" id="inh" style="min-width:700px">
+            <svg class="lines" id="inhLines" aria-hidden="true"></svg>
+            <div class="inh-top"><div class="inh-node" id="n-Animal"></div></div>
+            <div class="inh-row" id="inhRow"></div>
+          </div>
+        </div>
+        <div class="inh-panel" id="inhPanel" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <div class="quiz" data-quiz="inheritance"></div>
+  </div>
+</section>
+
+<!-- ===================== 8 INTERFACES ===================== -->
+<section class="win reveal" id="interfaces" style="--a1:var(--violet);--a2:var(--amber)">
+  <div class="win-bar"><div class="dots"><i></i><i></i><i></i></div><span class="win-path">uml / 08-interfaces-and-dependency</span><span class="step">Window 8 of 11</span></div>
+  <div class="win-body">
+    <span class="big-num" aria-hidden="true">08</span>
+    <p class="eyebrow">Big idea</p>
+    <h2>Interfaces, realization and <span class="hl">dependency</span></h2>
+    <p class="intro-text">An <strong>interface</strong> is a contract: a list of operations with no code behind them. A class that promises to provide those operations <strong>realizes</strong> (implements) the interface, drawn as a <strong>dashed</strong> line with a hollow triangle. A <strong>dependency</strong> is the weakest link: a dashed line with an open arrow, meaning "uses for a moment".</p>
+
+    <div class="idea">
+      <span class="idea-tag">Idea 8.1 · The interface as a contract</span>
+      <div class="cols">
+        <div class="analogy tilt" data-art="socket">
+          <div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="4" width="14" height="16" rx="3"/><path d="M10 9v3M14 9v3"/></svg>Analogy · A wall socket</div>
+          <p>The socket does not care whether you plug in a phone, a laptop or an electric car. It only cares that the device has the right plug. The socket is the <strong>interface</strong>; every device with that plug <strong>realizes</strong> it.</p>
+        </div>
+        <div class="text">
+          <ul class="points">
+            <li>Draw an interface as a class box with <code>«interface»</code> above the name.</li>
+            <li>It usually has only operations.</li>
+            <li>Many unrelated classes can realize the same interface.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="sim">
+        <div class="sim-head"><span class="chip">Simulation</span><h3>Plug it in</h3><span class="hint">Tap a device. Only classes that realize Chargeable will charge.</span></div>
+        <div class="plug-zone">
+          <div id="ifaceBox"></div>
+          <div class="socket" id="socket" aria-label="Socket"></div>
+          <p class="plug-msg" id="plugMsg" aria-live="polite"></p>
+          <div class="devices" id="devices"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="idea">
+      <span class="idea-tag">Idea 8.2 · Dependency: using without keeping</span>
+      <div class="cols">
+        <div class="text">
+          <p>If a class only <strong>uses</strong> another class briefly (as a parameter, a local variable, or by calling a static method) and does not keep a reference in an attribute, that is a <strong>dependency</strong>. A change in the used class might break the user, which is why we still draw it.</p>
+        </div>
+        <div class="analogy tilt" data-art="knife">
+          <div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20L18 6M14 4l6 6"/></svg>Analogy · A borrowed knife</div>
+          <p>A chef borrows a knife only while cooking, then gives it back. No long-term relationship, but if the knife were blunt, cooking would fail.</p>
+        </div>
+      </div>
+      <div class="sim">
+        <div class="sim-head"><span class="chip">Simulation</span><h3>The dependency appears only during the call</h3></div>
+        <div class="dep-demo">
+          <div id="chefBox"></div>
+          <svg class="dep-arrow" id="depArrow" viewBox="0 0 150 30" aria-hidden="true"><path d="M6 15 H144" class="rel dash" marker-end="url(#m-open)"/></svg>
+          <div id="knifeBox" class="knife"></div>
+        </div>
+        <p style="text-align:center;margin-top:14px"><button class="btn" id="cookBtn">chef.cook(knife)</button></p>
+        <p class="plug-msg" id="depMsg" style="margin:0 auto" aria-live="polite"></p>
+      </div>
+    </div>
+
+    <div class="quiz" data-quiz="interfaces"></div>
+  </div>
+</section>
+
+<!-- ===================== 9 LAB ===================== -->
+<section class="win reveal" id="lab" style="--a1:var(--amber);--a2:var(--teal)">
+  <div class="win-bar"><div class="dots"><i></i><i></i><i></i></div><span class="win-path">uml / 09-relationship-lab</span><span class="step">Window 9 of 11</span></div>
+  <div class="win-body">
+    <span class="big-num" aria-hidden="true">09</span>
+    <p class="eyebrow">Putting it together</p>
+    <h2>The <span class="hl">relationship lab</span></h2>
+    <p class="intro-text">You now know six kinds of lines. Four of them describe how strongly objects are tied together, from <em>uses</em> to <em>is made of</em>. The other two describe types: <em>is a</em> and <em>promises to behave like</em>. Pick a relationship, then drag the boxes around to see how the line follows.</p>
+
+    <div class="sim">
+      <div class="sim-head"><span class="chip">Simulation</span><h3>Draw the line</h3></div>
+      <div class="seg rel-picker" id="relPick"></div>
+      <div class="stage" id="stage">
+        <svg aria-hidden="true"><path id="labPath" class="rel"/><text id="labM1" class="mult"></text><text id="labM2" class="mult"></text></svg>
+        <div class="drag" id="dragA" style="left:6%;top:90px"></div>
+        <div class="drag" id="dragB" style="left:58%;top:150px"></div>
+      </div>
+      <div class="lab-info">
+        <div>
+          <p class="sentence" id="labSentence" aria-live="polite"></p>
+          <p class="hint" id="labHow" style="margin:0"></p>
+        </div>
+        <div>
+          <span class="hint">Tie strength</span>
+          <div class="meter" id="meter"><i></i><i></i><i></i><i></i></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="quiz" data-quiz="lab"></div>
+  </div>
+</section>
+
+<!-- ===================== 10 EXERCISES ===================== -->
+<section class="win reveal" id="exercises" style="--a1:var(--pink);--a2:var(--teal)">
+  <div class="win-bar"><div class="dots"><i></i><i></i><i></i></div><span class="win-path">uml / 10-exercises</span><span class="step">Window 10 of 11</span></div>
+  <div class="win-body">
+    <span class="big-num" aria-hidden="true">10</span>
+    <p class="eyebrow">Practice</p>
+    <h2>Exercises: <span class="hl">from warm-up to design</span></h2>
+    <p class="intro-text">Eight levels, each a different kind of task. Stars show difficulty. Solve a level to earn its check mark, then move on. You can retry as often as you like.</p>
+    <div class="ex-rail" id="exRail" role="tablist" aria-label="Exercise levels"></div>
+    <div class="ex-wrap">
+
+      <article class="ex" id="ex1" data-n="1" data-title="Sort the members" data-stars="1">
+        <div class="ex-head"><span class="chip">Level 1</span><h3>Sort the members</h3><span class="stars">★</span></div>
+        <p class="hint">Drag each line into the right compartment, or tap a line and then tap a compartment.</p>
+        <div class="pool" id="pool1" data-bin="pool"></div>
+        <div class="bins">
+          <div class="bin" data-bin="attr"><h4>Attributes compartment</h4></div>
+          <div class="bin" data-bin="op"><h4>Operations compartment</h4></div>
+        </div>
+        <div class="ex-actions"><button class="btn ex-check">Check</button><button class="btn ghost small ex-reset">Start again</button></div>
+        <div class="ex-fb" aria-live="polite"></div>
+      </article>
+
+      <article class="ex" id="ex2" data-n="2" data-title="Choose the visibility" data-stars="1">
+        <div class="ex-head"><span class="chip">Level 2</span><h3>Choose the visibility</h3><span class="stars">★</span></div>
+        <p class="hint">Class <code>BankAccount</code> is being designed. Pick the right symbol for each requirement.</p>
+        <div id="visRows"></div>
+        <div class="ex-actions"><button class="btn ex-check">Check</button></div>
+        <div class="ex-fb" aria-live="polite"></div>
+      </article>
+
+      <article class="ex" id="ex3" data-n="3" data-title="Assemble the line" data-stars="2">
+        <div class="ex-head"><span class="chip">Level 3</span><h3>Assemble the line</h3><span class="stars">★★</span></div>
+        <p class="hint">Tap the pieces in the right UML order. Watch out: some pieces are written in Java style and do not belong. Tap a placed piece to remove it.</p>
+        <div id="asmZone"></div>
+        <div class="ex-actions"><button class="btn ex-check">Check</button><button class="btn ghost small ex-reset">Clear both</button></div>
+        <div class="ex-fb" aria-live="polite"></div>
+      </article>
+
+      <article class="ex" id="ex4" data-n="4" data-title="Multiplicity from sentences" data-stars="2">
+        <div class="ex-head"><span class="chip">Level 4</span><h3>Multiplicity from sentences</h3><span class="stars">★★</span></div>
+        <p class="hint">Read each sentence and put the right multiplicity at each end of the line.</p>
+        <div id="multRows"></div>
+        <div class="ex-actions"><button class="btn ex-check">Check</button></div>
+        <div class="ex-fb" aria-live="polite"></div>
+      </article>
+
+      <article class="ex" id="ex5" data-n="5" data-title="Name the relationship" data-stars="3">
+        <div class="ex-head"><span class="chip">Level 5</span><h3>Name the relationship</h3><span class="stars">★★★</span></div>
+        <p class="hint">Each sentence describes one of the six relationships. Choose it.</p>
+        <div id="relRows"></div>
+        <div class="ex-actions"><button class="btn ex-check">Check</button></div>
+        <div class="ex-fb" aria-live="polite"></div>
+      </article>
+
+      <article class="ex" id="ex6" data-n="6" data-title="Spot the errors" data-stars="3">
+        <div class="ex-head"><span class="chip">Level 6</span><h3>Spot the errors</h3><span class="stars">★★★</span></div>
+        <p class="hint">This diagram has exactly <strong>three</strong> mistakes. Tap the parts you think are wrong (they turn amber), then check. Tap again to unmark.</p>
+        <div class="scroll-x"><svg id="errSvg" viewBox="0 0 820 320" style="width:100%;min-width:620px" role="img" aria-label="Class diagram with mistakes"></svg></div>
+        <div class="ex-actions"><button class="btn ex-check">Check</button><button class="btn ghost small ex-reset">Clear marks</button></div>
+        <div class="ex-fb" aria-live="polite"></div>
+      </article>
+
+      <article class="ex" id="ex7" data-n="7" data-title="From code to UML" data-stars="4">
+        <div class="ex-head"><span class="chip">Level 7</span><h3>From code to UML</h3><span class="stars">★★★★</span></div>
+        <p class="hint">Read this Java class and decide which UML relationship links <code>Car</code> to each other type.</p>
+<pre class="code"><span class="k">public class</span> <span class="t">Car</span> <span class="k">extends</span> <span class="t">Vehicle</span> <span class="k">implements</span> <span class="t">Drivable</span> {
+    <span class="k">private final</span> <span class="t">Engine</span> engine = <span class="k">new</span> <span class="t">Engine</span>(); <span class="c">// created inside, never shared</span>
+    <span class="k">private</span> <span class="t">Driver</span> driver;                  <span class="c">// given from outside, lives on</span>
+
+    <span class="k">public void</span> setDriver(<span class="t">Driver</span> d) { <span class="k">this</span>.driver = d; }
+
+    <span class="k">public void</span> refuel(<span class="t">GasStation</span> station) {    <span class="c">// only a parameter</span>
+        station.pump(<span class="k">this</span>);
+    }
+}</pre>
+        <div id="codeRows" style="margin-top:10px"></div>
+        <div class="ex-actions"><button class="btn ex-check">Check</button></div>
+        <div class="ex-fb" aria-live="polite"></div>
+      </article>
+
+      <article class="ex" id="ex8" data-n="8" data-title="Design challenge" data-stars="5">
+        <div class="ex-head"><span class="chip">Level 8</span><h3>Design challenge: a music app</h3><span class="stars">★★★★★</span></div>
+        <div class="scenario">
+          <p>A <strong>User</strong> has exactly one <strong>Profile</strong>, created with the account and deleted with it. A user can create any number of <strong>Playlists</strong>. A playlist contains <strong>Songs</strong>; deleting a playlist does not delete its songs, and one song can appear in many playlists.</p>
+          <p style="margin:0">A <strong>PremiumUser</strong> is a special kind of user. Every song can be played because it implements the <strong>Playable</strong> interface. The <strong>Player</strong> class receives a Playable as a parameter to play it, but never stores it.</p>
+        </div>
+        <div id="designRows" style="margin-top:10px"></div>
+        <div class="ex-actions"><button class="btn ex-check">Check my model</button><button class="btn ghost small" id="showModel">Show the model answer</button></div>
+        <div class="ex-fb" aria-live="polite"></div>
+        <div class="model scroll-x" id="model"><svg id="modelSvg" viewBox="0 0 820 460" style="width:100%;min-width:620px" role="img" aria-label="Model answer class diagram"></svg></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 11 CHEAT SHEET ===================== -->
+<section class="win reveal" id="cheatsheet" style="--a1:var(--teal);--a2:var(--pink)">
+  <div class="win-bar"><div class="dots"><i></i><i></i><i></i></div><span class="win-path">uml / 11-cheat-sheet</span><span class="step">Window 11 of 11</span></div>
+  <div class="win-body">
+    <span class="big-num" aria-hidden="true">11</span>
+    <p class="eyebrow">Keep this</p>
+    <h2>Your <span class="hl">cheat sheet</span></h2>
+    <p class="intro-text">Every notation from this chapter on one screen. In the diagrams below, read each line from left to right.</p>
+    <div class="cheat" id="cheat"></div>
+    <div class="cheat" style="margin-top:14px">
+      <div class="card"><b>Visibility</b><p><code>+</code> public · <code>-</code> private · <code>#</code> protected · <code>~</code> package</p></div>
+      <div class="card"><b>Member lines</b><p><code>- name : Type = value</code><br><code>+ op(p : Type) : Return</code></p></div>
+      <div class="card"><b>Special styles</b><p><span class="static">underlined</span> = static · <span class="abstract">italic</span> = abstract · <code>«interface»</code> = contract</p></div>
+      <div class="card"><b>Multiplicity</b><p><code>1</code> · <code>0..1</code> · <code>*</code> · <code>1..*</code> · <code>m..n</code>, read at the far end</p></div>
+    </div>
+    <div class="badge-zone">
+      <div class="coin" aria-hidden="true"><div class="coin-in"><div>UML<br>class<br>pro</div><div id="coinBack">0 / 17</div></div></div>
+      <div>
+        <h3>Your progress</h3>
+        <p id="finalText" class="intro-text">Pass the quizzes and solve the exercises to fill your badge.</p>
+        <button class="btn ghost small" id="resetAll">Reset all my progress</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+<footer>UML class diagrams · an interactive chapter for beginners</footer>
+
+<script>
+(() => {
+"use strict";
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+/* ---------- UML helpers ---------- */
+function member(m) {
+  let cls = "", t = m;
+  if (t.startsWith("_")) { cls = "static"; t = t.slice(1); }
+  else if (t.startsWith("/")) { cls = "abstract"; t = t.slice(1); }
+  return `<div class="m ${cls}">${esc(t)}</div>`;
+}
+function umlBox(c) {
+  return `<div class="uml ${c.cls || ""}">
+    <div class="uml-name">${c.stereo ? `<small>«${esc(c.stereo)}»</small>` : ""}<span class="${c.abstract ? "abstract" : ""}">${esc(c.name)}</span></div>
+    <div class="uml-sec">${(c.attrs || []).map(member).join("")}</div>
+    <div class="uml-sec">${(c.ops || []).map(member).join("")}</div></div>`;
+}
+function svgBox(x, y, w, c) {
+  const nameH = c.stereo ? 44 : 32, lh = 18;
+  const aH = Math.max((c.attrs || []).length * lh + 8, 12);
+  const oH = Math.max((c.ops || []).length * lh + 8, 12);
+  const h = nameH + aH + oH;
+  let s = `<rect class="sb-rect" x="${x}" y="${y}" width="${w}" height="${h}" rx="6"/>`;
+  s += `<line class="sb-div" x1="${x}" y1="${y + nameH}" x2="${x + w}" y2="${y + nameH}"/>`;
+  s += `<line class="sb-div" x1="${x}" y1="${y + nameH + aH}" x2="${x + w}" y2="${y + nameH + aH}"/>`;
+  if (c.stereo) s += `<text class="sb-t" x="${x + w / 2}" y="${y + 17}" text-anchor="middle" font-size="11">«${esc(c.stereo)}»</text>`;
+  s += `<text class="sb-t sb-n" x="${x + w / 2}" y="${y + nameH - 11}" text-anchor="middle" ${c.abstract ? 'font-style="italic"' : ""}>${esc(c.name)}</text>`;
+  (c.attrs || []).forEach((a, i) => s += `<text class="sb-t" x="${x + 10}" y="${y + nameH + 16 + i * lh}">${esc(a)}</text>`);
+  (c.ops || []).forEach((o, i) => s += `<text class="sb-t" x="${x + 10}" y="${y + nameH + aH + 16 + i * lh}">${esc(o)}</text>`);
+  return { svg: s, h };
+}
+
+/* ---------- windows list, nav, roadmap ---------- */
+const WINS = [
+  ["intro", "What is a class diagram?", "--pink", "--amber"],
+  ["anatomy", "Anatomy of a class", "--violet", "--teal"],
+  ["visibility", "Visibility", "--teal", "--lime"],
+  ["syntax", "Writing members", "--amber", "--pink"],
+  ["association", "Associations & multiplicity", "--teal", "--violet"],
+  ["wholepart", "Aggregation vs composition", "--pink", "--violet"],
+  ["inheritance", "Inheritance", "--lime", "--teal"],
+  ["interfaces", "Interfaces & dependency", "--violet", "--amber"],
+  ["lab", "Relationship lab", "--amber", "--teal"],
+  ["exercises", "Exercises", "--pink", "--teal"],
+  ["cheatsheet", "Cheat sheet", "--teal", "--pink"]
+];
+const QUIZ_KEYS = WINS.slice(0, 9).map(w => w[0]);
+$("#navList").innerHTML = WINS.map(([id, t, c1, c2], i) =>
+  `<li style="--i:${i}"><a href="#${id}" data-id="${id}"><span class="nav-num" style="--c1:var(${c1});--c2:var(${c2})">${String(i + 1).padStart(2, "0")}</span><span>${t}</span><span class="nav-state" id="ns-${id}"></span></a></li>`).join("");
+$("#road").innerHTML = WINS.map(([id, t, c1, c2], i) =>
+  `<a href="#${id}" id="rd-${id}"><span class="nav-num" style="--c1:var(${c1});--c2:var(${c2})">${String(i + 1).padStart(2, "0")}</span>${t}</a>`).join("");
+
+const burger = $("#burger");
+function toggleNav(open) {
+  document.body.classList.toggle("nav-open", open);
+  burger.setAttribute("aria-expanded", String(open));
+  burger.setAttribute("aria-label", open ? "Close the chapter menu" : "Open the chapter menu");
+}
+burger.addEventListener("click", () => toggleNav(!document.body.classList.contains("nav-open")));
+$("#openNav2").addEventListener("click", () => toggleNav(true));
+$("#scrim").addEventListener("click", () => toggleNav(false));
+addEventListener("keydown", e => { if (e.key === "Escape") toggleNav(false); });
+$$("#navList a").forEach(a => a.addEventListener("click", () => toggleNav(false)));
+
+const activeIO = new IntersectionObserver(es => es.forEach(e => {
+  if (e.isIntersecting) $$("#navList a").forEach(a => a.classList.toggle("active", a.dataset.id === e.target.id));
+}), { rootMargin: "-45% 0px -50% 0px" });
+WINS.forEach(([id]) => activeIO.observe(document.getElementById(id)));
+
+const revealIO = new IntersectionObserver(es => es.forEach(e => {
+  if (e.isIntersecting) { e.target.classList.add("in"); revealIO.unobserve(e.target); }
+}), { threshold: 0.06 });
+$$(".reveal").forEach(el => reduce ? el.classList.add("in") : revealIO.observe(el));
+
+/* ---------- progress state ---------- */
+let done = store.get("uml-done", {});
+let exSolved = store.get("uml-ex", {});
+const passed = k => done[k] && done[k].s >= Math.ceil(done[k].t * 0.6);
+function paintProgress() {
+  const q = QUIZ_KEYS.filter(passed).length;
+  const e = Object.keys(exSolved).filter(k => exSolved[k]).length;
+  QUIZ_KEYS.forEach(k => {
+    const el = $("#ns-" + k), ok = passed(k);
+    el.classList.toggle("done", !!ok); el.textContent = ok ? "✓" : "";
+    $("#rd-" + k).classList.toggle("done", !!ok);
+  });
+  const exOk = e >= 6;
+  $("#ns-exercises").classList.toggle("done", exOk); $("#ns-exercises").textContent = exOk ? "✓" : "";
+  $("#rd-exercises").classList.toggle("done", exOk);
+  $("#qCount").textContent = `${q} / 9`; $("#qBar").style.width = (q / 9 * 100) + "%";
+  $("#eCount").textContent = `${e} / 8`; $("#eBar").style.width = (e / 8 * 100) + "%";
+  $("#coinBack").textContent = `${q + e} / 17`;
+  $("#finalText").textContent = q + e === 17
+    ? "Every quiz passed and every exercise solved. You can read and draw UML class diagrams with confidence."
+    : `You have passed ${q} of 9 quizzes and solved ${e} of 8 exercises. Open the menu to jump back to any window.`;
+  $$("#exRail button").forEach(b => b.classList.toggle("solved", !!exSolved[b.dataset.n]));
+}
+
+/* ---------- scroll + pointer effects ---------- */
+const prog = $("#progress"), bigNums = $$(".big-num");
+function onScroll() {
+  const h = document.documentElement, p = h.scrollTop / ((h.scrollHeight - h.clientHeight) || 1);
+  prog.style.transform = `scaleX(${p})`;
+  if (!reduce) bigNums.forEach(n => { const r = n.parentElement.getBoundingClientRect(); n.style.transform = `translateY(${r.top * -0.12}px)`; });
+}
+addEventListener("scroll", onScroll, { passive: true }); onScroll();
+
+let mx = innerWidth / 2, my = innerHeight / 3;
+const glow = $("#glow");
+addEventListener("pointermove", e => {
+  mx = e.clientX; my = e.clientY;
+  if (e.pointerType === "mouse" && !reduce) { glow.style.left = mx + "px"; glow.style.top = my + "px"; }
+}, { passive: true });
+function bindTilt(el) {
+  el.addEventListener("pointermove", e => {
+    if (reduce || e.pointerType !== "mouse") return;
+    const r = el.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5;
+    const k = el.id === "inh" ? 5 : 10;
+    el.style.transform = `perspective(900px) rotateY(${x * k}deg) rotateX(${-y * k}deg)`;
+    el.style.setProperty("--gx", (x + 0.5) * 100 + "%"); el.style.setProperty("--gy", (y + 0.5) * 100 + "%");
+  });
+  el.addEventListener("pointerleave", () => { el.style.transform = ""; });
+}
+$$(".tilt").forEach(bindTilt);
+
+/* ---------- sky canvas ---------- */
+const sky = $("#sky"), sctx = sky.getContext("2d");
+let W = 0, H = 0;
+function sizeSky() {
+  const dpr = Math.min(devicePixelRatio || 1, 2); W = innerWidth; H = innerHeight;
+  sky.width = W * dpr; sky.height = H * dpr; sctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  conf.width = W * dpr; conf.height = H * dpr; cctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+const COLS = ["255,79,154", "255,181,71", "46,230,208", "139,108,255", "142,240,107"];
+const orbs = COLS.map(c => ({ c, x: Math.random(), y: Math.random(), r: 0.3 + Math.random() * 0.2, vx: (Math.random() - 0.5) * 0.0006, vy: (Math.random() - 0.5) * 0.0006 }));
+const pts = Array.from({ length: 64 }, () => ({ x: Math.random() * innerWidth, y: Math.random() * innerHeight, vx: (Math.random() - 0.5) * 0.35, vy: (Math.random() - 0.5) * 0.35 }));
+function drawSky() {
+  sctx.clearRect(0, 0, W, H);
+  sctx.globalCompositeOperation = "lighter";
+  for (const o of orbs) {
+    if (!reduce) { o.x += o.vx; o.y += o.vy; if (o.x < -0.1 || o.x > 1.1) o.vx *= -1; if (o.y < -0.1 || o.y > 1.1) o.vy *= -1; }
+    const R = o.r * Math.max(W, H), g = sctx.createRadialGradient(o.x * W, o.y * H, 0, o.x * W, o.y * H, R);
+    g.addColorStop(0, `rgba(${o.c},.24)`); g.addColorStop(1, `rgba(${o.c},0)`);
+    sctx.fillStyle = g; sctx.fillRect(0, 0, W, H);
+  }
+  sctx.globalCompositeOperation = "source-over";
+  for (const p of pts) {
+    if (!reduce) {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = W; if (p.x > W) p.x = 0; if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+      const dx = p.x - mx, dy = p.y - my, d = Math.hypot(dx, dy);
+      if (d < 150 && d > 0) { p.x += dx / d * 1.4; p.y += dy / d * 1.4; }
+    }
+  }
+  for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) {
+    const a = pts[i], b = pts[j], d = Math.hypot(a.x - b.x, a.y - b.y);
+    if (d < 125) { sctx.strokeStyle = `rgba(220,210,255,${(1 - d / 125) * 0.2})`; sctx.lineWidth = 1; sctx.beginPath(); sctx.moveTo(a.x, a.y); sctx.lineTo(b.x, b.y); sctx.stroke(); }
+  }
+  sctx.fillStyle = "rgba(255,255,255,.55)";
+  for (const p of pts) sctx.fillRect(p.x - 2, p.y - 1.5, 4, 3);
+}
+
+/* ---------- confetti ---------- */
+const conf = $("#confetti"), cctx = conf.getContext("2d");
+let bits = [];
+function confetti(x = innerWidth / 2, y = innerHeight / 2, n = 130) {
+  if (reduce) return;
+  const cs = ["#ff4f9a", "#ffb547", "#2ee6d0", "#8b6cff", "#8ef06b", "#ffffff"];
+  for (let i = 0; i < n; i++) bits.push({ x, y, vx: (Math.random() - 0.5) * 15, vy: -Math.random() * 14 - 3, r: Math.random() * 6, vr: (Math.random() - 0.5) * 0.4, s: 5 + Math.random() * 6, c: cs[i % cs.length], life: 140 });
+}
+function drawConfetti() {
+  if (!bits.length) return;
+  cctx.clearRect(0, 0, W, H);
+  bits.forEach(b => { b.vy += 0.35; b.vx *= 0.99; b.x += b.vx; b.y += b.vy; b.r += b.vr; b.life--;
+    cctx.save(); cctx.translate(b.x, b.y); cctx.rotate(b.r); cctx.globalAlpha = Math.max(0, b.life / 140); cctx.fillStyle = b.c; cctx.fillRect(-b.s / 2, -b.s / 4, b.s, b.s / 2); cctx.restore(); });
+  bits = bits.filter(b => b.life > 0 && b.y < H + 40);
+  if (!bits.length) cctx.clearRect(0, 0, W, H);
+}
+sizeSky(); addEventListener("resize", sizeSky);
+
+/* ---------- hero cube ---------- */
+const FACES = [
+  { name: "Student", attrs: ["- name : String", "- id : int"], ops: ["+ enroll(c : Course)"] },
+  { name: "Course", attrs: ["- title : String"], ops: ["+ addStudent(s)"] },
+  { name: "Animal", abstract: true, attrs: ["# name : String"], ops: ["/+ makeSound()"] },
+  { name: "Chargeable", stereo: "interface", attrs: [], ops: ["+ charge() : void"] },
+  { name: "Order", attrs: ["- total : double"], ops: ["+ pay() : boolean"] },
+  { name: "Counter", attrs: ["_- count : int"], ops: ["_+ next() : int"] }
+];
+$("#cube").innerHTML = FACES.map(f => `<div class="face">${umlBox({ ...f, cls: "mini" })}</div>`).join("");
+const cube = $("#cube"), cubeWrap = $("#cubeWrap");
+let rx = -18, ry = 28, dragging = false, lx = 0, ly = 0, spin = 0.2;
+cubeWrap.addEventListener("pointerdown", e => { dragging = true; lx = e.clientX; ly = e.clientY; cubeWrap.setPointerCapture(e.pointerId); });
+cubeWrap.addEventListener("pointermove", e => { if (!dragging) return; ry += (e.clientX - lx) * 0.45; rx -= (e.clientY - ly) * 0.45; lx = e.clientX; ly = e.clientY; });
+cubeWrap.addEventListener("pointerup", () => { dragging = false; });
+cubeWrap.addEventListener("pointercancel", () => { dragging = false; });
+const floats = $$(".float");
+
+function tick() {
+  if (!document.hidden) {
+    drawSky();
+    if (!reduce && !dragging) ry += spin;
+    const px = (mx / innerWidth - 0.5), py = (my / innerHeight - 0.5);
+    cube.style.transform = `rotateX(${rx - py * 12}deg) rotateY(${ry + px * 18}deg)`;
+    if (!reduce) floats.forEach(f => { const d = +f.dataset.d; f.style.transform = `translate3d(${px * d}px,${py * d}px,0)`; });
+    drawConfetti();
+  }
+  if (!reduce || bits.length) requestAnimationFrame(tick);
+}
+if (reduce) { drawSky(); cube.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`; } else requestAnimationFrame(tick);
+
+
+/* ---------- sky effects: lightning + shooting stars at random times ---------- */
+const fx = $("#fx"), fctx = fx.getContext("2d"), flash = $("#flash"), fxBtn = $("#fxToggle");
+let fxOn = store.get("uml-fx", !reduce), fxItems = [], fxRunning = false;
+const fxTimers = {};
+function sizeFx() { const dpr = Math.min(devicePixelRatio || 1, 2); fx.width = innerWidth * dpr; fx.height = innerHeight * dpr; fctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
+sizeFx(); addEventListener("resize", sizeFx);
+function walk(x, y, endY, spread) { const p = [[x, y]]; while (y < endY) { x += (Math.random() - 0.5) * spread; y += 12 + Math.random() * 22; p.push([x, y]); } return p; }
+function branch(x, y, n, dir) { const p = [[x, y]]; for (let i = 0; i < n; i++) { x += dir * (8 + Math.random() * 18) + (Math.random() - 0.5) * 10; y += 8 + Math.random() * 16; p.push([x, y]); } return p; }
+function spawnLightning() {
+  const x = innerWidth * (0.12 + Math.random() * 0.76), main = walk(x, -10, innerHeight * (0.45 + Math.random() * 0.3), 60);
+  const branches = [];
+  for (let i = 0, n = 2 + Math.floor(Math.random() * 3); i < n; i++) { const s = main[2 + Math.floor(Math.random() * Math.max(1, main.length - 5))]; if (s) branches.push(branch(s[0], s[1], 4 + Math.floor(Math.random() * 6), Math.random() < 0.5 ? -1 : 1)); }
+  addFx({ type: "bolt", t0: performance.now(), dur: 950, main, branches });
+  flash.style.setProperty("--fx", (x / innerWidth * 100) + "%");
+  flash.classList.remove("on"); void flash.offsetWidth; flash.classList.add("on");
+}
+function spawnStar() {
+  const fromLeft = Math.random() < 0.6, dir = fromLeft ? 1 : -1, ang = (16 + Math.random() * 24) * Math.PI / 180;
+  const dist = Math.max(innerWidth, innerHeight) * (0.45 + Math.random() * 0.3);
+  addFx({ type: "star", t0: performance.now(), dur: 1300 + Math.random() * 800,
+    x: fromLeft ? innerWidth * Math.random() * 0.5 : innerWidth * (0.5 + Math.random() * 0.5), y: innerHeight * Math.random() * 0.35,
+    dx: Math.cos(ang) * dir * dist, dy: Math.sin(ang) * dist, tail: 150 + Math.random() * 130 });
+}
+function boltAlpha(t) { if (t < 70) return 1; if (t < 140) return 0.15; if (t < 230) return 0.9; return Math.max(0, 1 - (t - 230) / 700) * 0.9; }
+function line(pts, w, col, blur) { fctx.beginPath(); pts.forEach(([x, y], i) => i ? fctx.lineTo(x, y) : fctx.moveTo(x, y)); fctx.lineWidth = w; fctx.strokeStyle = col; fctx.shadowBlur = blur; fctx.shadowColor = "#b9a6ff"; fctx.stroke(); }
+function drawBolt(it, t) {
+  const a = boltAlpha(t);
+  fctx.save(); fctx.globalAlpha = a; fctx.lineJoin = "round"; fctx.lineCap = "round";
+  fctx.fillStyle = "rgba(190,180,255,.10)"; fctx.fillRect(0, 0, innerWidth, innerHeight);
+  line(it.main, 8, "rgba(139,108,255,.5)", 34); line(it.main, 2.6, "#ffffff", 14);
+  it.branches.forEach(b => { line(b, 4, "rgba(139,108,255,.4)", 20); line(b, 1.3, "#f5f2ff", 8); });
+  fctx.restore();
+}
+function drawStar(it, t) {
+  const p = t / it.dur, e = 1 - Math.pow(1 - p, 2), a = p < 0.15 ? p / 0.15 : p > 0.75 ? (1 - p) / 0.25 : 1;
+  const hx = it.x + it.dx * e, hy = it.y + it.dy * e, len = Math.hypot(it.dx, it.dy), ux = it.dx / len, uy = it.dy / len;
+  const tl = it.tail * (0.4 + 0.6 * Math.min(1, p * 3)), tx = hx - ux * tl, ty = hy - uy * tl;
+  const g = fctx.createLinearGradient(hx, hy, tx, ty);
+  g.addColorStop(0, `rgba(255,255,255,${a})`); g.addColorStop(0.3, `rgba(46,230,208,${a * 0.55})`); g.addColorStop(1, "rgba(139,108,255,0)");
+  fctx.save(); fctx.lineCap = "round"; fctx.strokeStyle = g; fctx.lineWidth = 2.6;
+  fctx.beginPath(); fctx.moveTo(hx, hy); fctx.lineTo(tx, ty); fctx.stroke();
+  const r = fctx.createRadialGradient(hx, hy, 0, hx, hy, 12);
+  r.addColorStop(0, `rgba(255,255,255,${a})`); r.addColorStop(0.4, `rgba(255,214,140,${a * 0.5})`); r.addColorStop(1, "rgba(255,214,140,0)");
+  fctx.fillStyle = r; fctx.beginPath(); fctx.arc(hx, hy, 12, 0, Math.PI * 2); fctx.fill();
+  fctx.restore();
+}
+function fxLoop(now) {
+  fctx.clearRect(0, 0, innerWidth, innerHeight);
+  fxItems = fxItems.filter(it => now - it.t0 < it.dur);
+  fxItems.forEach(it => it.type === "bolt" ? drawBolt(it, now - it.t0) : drawStar(it, now - it.t0));
+  if (fxItems.length) requestAnimationFrame(fxLoop); else { fctx.clearRect(0, 0, innerWidth, innerHeight); fxRunning = false; }
+}
+function addFx(it) { fxItems.push(it); if (!fxRunning) { fxRunning = true; requestAnimationFrame(fxLoop); } }
+// Random gap between 20 seconds and 5 minutes, leaning toward the shorter end.
+const nextDelay = () => { const r = Math.random(); return 20000 + r * r * 280000; };
+function schedule(kind, delay = nextDelay()) {
+  clearTimeout(fxTimers[kind]);
+  fxTimers[kind] = setTimeout(() => {
+    if (fxOn && !document.hidden) kind === "bolt" ? spawnLightning() : spawnStar();
+    if (fxOn) schedule(kind);
+  }, delay);
+}
+function setFx(on, fromClick) {
+  fxOn = on; store.set("uml-fx", on);
+  fxBtn.setAttribute("aria-pressed", String(on));
+  fxBtn.setAttribute("aria-label", on ? "Turn off lightning and shooting stars" : "Turn on lightning and shooting stars");
+  fxBtn.dataset.tip = on ? "Sky effects: on" : "Sky effects: off";
+  Object.values(fxTimers).forEach(clearTimeout);
+  if (on) {
+    schedule("star", fromClick ? nextDelay() : 6000 + Math.random() * 10000);
+    schedule("bolt", fromClick ? nextDelay() : 15000 + Math.random() * 20000);
+    if (fromClick) spawnStar();
+  } else { fxItems = []; fctx.clearRect(0, 0, innerWidth, innerHeight); flash.classList.remove("on"); }
+  if (fromClick) { fxBtn.classList.add("tell"); setTimeout(() => fxBtn.classList.remove("tell"), 1400); }
+}
+fxBtn.addEventListener("click", () => setFx(!fxOn, true));
+setFx(fxOn, false);
+
+/* ---------- analogy illustrations ---------- */
+const INK = "#f5f2ff", MUT = "#c6bfe8", PK = "#ff4f9a", AM = "#ffb547", TL = "#2ee6d0", VI = "#8b6cff", LI = "#8ef06b", DK = "#1b1442", NB = "#160c2e";
+const T = (x, y, txt, f = INK, z = 11, a = "start", more = "") => `<text x="${x}" y="${y}" fill="${f}" font-size="${z}" text-anchor="${a}" ${more}>${txt}</text>`;
+const art = (label, body) => `<svg viewBox="0 0 320 150" role="img" aria-label="${label}">${body}</svg>`;
+const chips = (cx, cy, r) => [[-0.35, -0.3], [0.3, -0.1], [-0.05, 0.35], [0.4, 0.35]].map(([a, b]) => `<circle cx="${cx + a * r}" cy="${cy + b * r}" r="${r * 0.11}" fill="rgba(40,20,10,.55)"/>`).join("");
+const person = (x, y, c) => `<circle cx="${x}" cy="${y}" r="9" fill="#ffd9b0"/><path d="M${x - 13} ${y + 34} q0 -22 13 -22 q13 0 13 22z" fill="${c}"/>`;
+const book = (x, y, c, label) => `<rect x="${x}" y="${y}" width="72" height="46" rx="5" fill="${c}"/><rect x="${x}" y="${y}" width="9" height="46" rx="3" fill="rgba(0,0,0,.25)"/>${T(x + 40, y + 28, label, NB, 10.5, "middle", 'font-weight="800"')}`;
+const radial = (id, a, b) => `<radialGradient id="${id}" cx=".4" cy=".35"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></radialGradient>`;
+const ART = {
+  cookie: art("A cookie cutter, the class, pressing out three different cookies, the objects", `
+    <defs>${radial("art-c1", "#d9935f", "#6b3d22")}${radial("art-c2", "#ffd0dc", "#ff5f8a")}${radial("art-c3", "#d6f2c2", "#5e9e4b")}</defs>
+    <g class="press"><rect x="56" y="14" width="28" height="18" rx="6" fill="${VI}"/>
+    <circle cx="70" cy="72" r="40" fill="rgba(139,108,255,.18)" stroke="${INK}" stroke-width="4" stroke-dasharray="8 6"/>
+    ${T(70, 77, "Cookie", INK, 14, "middle", 'font-weight="600"')}</g>
+    ${T(70, 138, "class = the cutter", MUT, 10.5, "middle")}
+    <g fill="none" stroke="${AM}" stroke-width="2" class="march"><path d="M114 72 C140 72 140 34 170 34"/><path d="M114 72 H168"/><path d="M114 72 C140 72 140 112 172 112"/></g>
+    <g class="bob"><circle cx="192" cy="34" r="19" fill="url(#art-c1)"/>${chips(192, 34, 19)}${T(219, 38, "c1 : Cookie", INK, 11, "start", 'text-decoration="underline"')}</g>
+    <g class="bob" style="animation-delay:-1s"><circle cx="194" cy="74" r="23" fill="url(#art-c2)"/>${chips(194, 74, 23)}${T(225, 78, "c2 : Cookie", INK, 11, "start", 'text-decoration="underline"')}</g>
+    <g class="bob" style="animation-delay:-2s"><circle cx="190" cy="114" r="16" fill="url(#art-c3)"/>${chips(190, 114, 16)}${T(214, 118, "c3 : Cookie", INK, 11, "start", 'text-decoration="underline"')}</g>`),
+  idcard: art("A student ID card whose title, facts and permissions match the name, attributes and operations of a class", `
+    <defs><linearGradient id="art-id" x1="0" x2="1"><stop offset="0" stop-color="${VI}"/><stop offset="1" stop-color="${TL}"/></linearGradient></defs>
+    <rect x="22" y="14" width="200" height="122" rx="14" fill="${DK}" stroke="${INK}" stroke-opacity=".6" stroke-width="2"/>
+    <path d="M22 44 V28 a14 14 0 0 1 14 -14 h172 a14 14 0 0 1 14 14 V44Z" fill="url(#art-id)"/>
+    ${T(122, 35, "STUDENT CARD", NB, 12, "middle", 'font-weight="800"')}
+    <g class="pulse"><circle cx="54" cy="66" r="11" fill="${AM}"/><path d="M36 96 a18 15 0 0 1 36 0z" fill="${AM}"/></g>
+    ${T(86, 64, "name : Lea")}${T(86, 84, "id : 4021")}
+    <line x1="22" y1="102" x2="222" y2="102" stroke="${INK}" stroke-opacity=".45"/>
+    ${T(34, 124, "can: borrow() · enterLab()", LI, 10.5)}
+    <g fill="none" stroke-width="2"><path d="M230 18 h8 v24 h-8" stroke="${PK}"/><path d="M230 50 h8 v48 h-8" stroke="${TL}"/><path d="M230 106 h8 v26 h-8" stroke="${LI}"/></g>
+    ${T(244, 34, "name", PK, 10.5)}${T(244, 78, "attributes", TL, 10.5)}${T(244, 123, "operations", LI, 10.5)}`),
+  house: art("A house: public living room, private bedroom, protected kitchen, and a package-level street mailbox", `
+    <path d="M44 60 L160 14 L276 60Z" fill="rgba(255,181,71,.22)" stroke="${AM}" stroke-width="2" stroke-linejoin="round"/>
+    <rect x="58" y="60" width="204" height="76" fill="rgba(20,15,51,.85)" stroke="${INK}" stroke-opacity=".6" stroke-width="2"/>
+    <line x1="126" y1="60" x2="126" y2="136" stroke="${INK}" stroke-opacity=".4"/><line x1="194" y1="60" x2="194" y2="136" stroke="${INK}" stroke-opacity=".4"/>
+    ${T(78, 100, "+", LI, 26, "middle", 'font-weight="700"')}<rect x="100" y="76" width="16" height="26" fill="none" stroke="${LI}" stroke-width="1.5"/><path class="pulse" d="M100 76 L110 80 L110 106 L100 102Z" fill="${LI}" opacity=".7"/>${T(92, 127, "living room", MUT, 9.5, "middle")}
+    ${T(146, 100, "-", PK, 26, "middle", 'font-weight="700"')}<rect x="166" y="86" width="14" height="11" rx="2" fill="${PK}"/><path d="M168.5 86 v-4 a4.5 4.5 0 0 1 9 0 v4" fill="none" stroke="${PK}" stroke-width="2"/>${T(160, 127, "bedroom", MUT, 9.5, "middle")}
+    ${T(214, 100, "#", AM, 22, "middle", 'font-weight="700"')}<path d="M232 86 h18 v8 a6 6 0 0 1 -6 6 h-6 a6 6 0 0 1 -6 -6z" fill="${AM}"/><path class="pulse" d="M236 82 q2 -4 0 -8 M242 82 q2 -4 0 -8" stroke="${INK}" stroke-opacity=".6" fill="none"/>${T(228, 127, "kitchen", MUT, 9.5, "middle")}
+    <line x1="20" y1="136" x2="316" y2="136" stroke="${INK}" stroke-opacity=".3"/>
+    <line x1="296" y1="110" x2="296" y2="136" stroke="${INK}" stroke-width="2"/><rect x="284" y="94" width="24" height="16" rx="5" fill="${TL}"/><path d="M308 98 h5 v-9" stroke="${PK}" stroke-width="2" fill="none"/>
+    ${T(296, 86, "~", TL, 20, "middle", 'font-weight="700"')}${T(296, 148, "mailbox", MUT, 9.5, "middle")}`),
+  parcel: art("A parcel with a delivery label listing who may send it, what it is, what to hand over and what comes back", `
+    <g class="bob"><rect x="22" y="52" width="104" height="80" rx="6" fill="#b67a42"/><rect x="22" y="52" width="104" height="16" fill="#9a6232"/><rect x="66" y="52" width="16" height="80" fill="#e8c27a" opacity=".85"/></g>
+    <path d="M118 62 C134 54 140 44 156 34" stroke="${MUT}" stroke-width="1.5" fill="none"/>
+    <rect x="150" y="16" width="158" height="120" rx="10" fill="${DK}" stroke="${INK}" stroke-opacity=".5"/><circle cx="162" cy="28" r="4" fill="none" stroke="${MUT}"/>
+    <g stroke="${INK}" stroke-opacity=".15"><line x1="158" y1="58" x2="300" y2="58"/><line x1="158" y1="82" x2="300" y2="82"/><line x1="158" y1="106" x2="300" y2="106"/></g>
+    ${T(162, 50, "+", PK, 14, "start", 'font-weight="700"')}${T(298, 50, "who may send", MUT, 10, "end")}
+    ${T(162, 75, "deposit", AM, 12)}${T(298, 75, "what it is", MUT, 10, "end")}
+    ${T(162, 99, "(amount)", VI, 12)}${T(298, 99, "hand over", MUT, 10, "end")}
+    ${T(162, 124, ": void", TL, 12)}${T(298, 124, "you get back", MUT, 10, "end")}`),
+  ticket: art("A concert ticket linked to exactly one seat; each seat is sold to zero or one ticket", `
+    <defs><linearGradient id="art-tk" x1="0" x2="1"><stop offset="0" stop-color="${PK}"/><stop offset="1" stop-color="${AM}"/></linearGradient></defs>
+    <g class="bob"><path d="M22 46 h112 v20 a9 9 0 0 0 0 18 v20 h-112 v-20 a9 9 0 0 0 0 -18z" fill="url(#art-tk)"/>
+    <line x1="106" y1="50" x2="106" y2="100" stroke="${NB}" stroke-dasharray="3 4" opacity=".5"/>
+    ${T(62, 72, "TICKET", NB, 13, "middle", 'font-weight="800"')}${T(62, 90, "Row C · 12", NB, 10, "middle")}</g>
+    <line x1="140" y1="75" x2="204" y2="75" stroke="${INK}" stroke-width="2"/>
+    ${T(144, 66, "0..1", AM, 12)}${T(200, 66, "1", AM, 12, "end")}
+    <rect x="214" y="30" width="62" height="54" rx="12" fill="${TL}" opacity=".9"/><rect x="206" y="84" width="78" height="18" rx="7" fill="#1fb3a3"/>
+    <path d="M216 102 v26 M274 102 v26" stroke="${INK}" stroke-opacity=".6" stroke-width="3"/>${T(245, 62, "C12", "#0a2a28", 14, "middle", 'font-weight="800"')}
+    ${T(160, 142, "1 ticket → exactly 1 seat", MUT, 10.5, "middle")}`),
+  team: art("A team pennant joined to two players by a hollow diamond; a third player walks off and still exists", `
+    <line x1="40" y1="20" x2="40" y2="132" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>
+    <path class="wave" d="M42 22 L120 40 L42 58Z" fill="${PK}"/>${T(68, 44, "TEAM", NB, 11, "middle", 'font-weight="800"')}
+    <path d="M44 86 L56 80 L68 86 L56 92Z" fill="#ffffff" stroke="${INK}" stroke-width="1.6"/>
+    <g stroke="${INK}" stroke-width="1.6" fill="none"><path d="M68 86 L156 62"/><path d="M68 86 L156 124"/><path d="M68 86 L254 90" stroke-dasharray="4 5" opacity=".45"/></g>
+    ${person(170, 40, TL)}${person(170, 100, VI)}
+    <g class="walk">${person(272, 66, LI)}</g>${T(278, 124, "still a player", LI, 10, "middle")}`),
+  rooms: art("A house whose rooms sit inside it and disappear with it", `
+    <path d="M50 56 L160 12 L270 56Z" fill="rgba(46,230,208,.2)" stroke="${TL}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M148 46 L160 40 L172 46 L160 52Z" fill="#000000" stroke="${INK}" stroke-width="1.6"/>
+    <rect x="62" y="56" width="196" height="78" rx="4" fill="rgba(20,15,51,.85)" stroke="${INK}" stroke-opacity=".7" stroke-width="2"/>
+    <g class="pulse"><rect x="72" y="68" width="54" height="54" rx="6" fill="rgba(255,79,154,.35)" stroke="${PK}"/>${T(99, 99, "kitchen", INK, 10, "middle")}</g>
+    <g class="pulse" style="animation-delay:-.8s"><rect x="133" y="68" width="54" height="54" rx="6" fill="rgba(139,108,255,.35)" stroke="${VI}"/>${T(160, 99, "bedroom", INK, 10, "middle")}</g>
+    <g class="pulse" style="animation-delay:-1.6s"><rect x="194" y="68" width="54" height="54" rx="6" fill="rgba(255,181,71,.35)" stroke="${AM}"/>${T(221, 99, "bath", INK, 10, "middle")}</g>
+    ${T(160, 148, "house gone = rooms gone", MUT, 10.5, "middle")}`),
+  recipe: art("Grandma's recipe book at the top; two children's books inherit it and each adds new recipes", `
+    ${book(124, 8, VI, "Grandma")}
+    <path d="M86 100 V78 H234 V100 M160 78 V70" fill="none" stroke="${INK}" stroke-width="1.7"/>
+    <path d="M151 70 L160 54 L169 70Z" fill="${DK}" stroke="${INK}" stroke-width="1.7" stroke-linejoin="round"/>
+    ${T(172, 72, "inherits", MUT, 10.5)}
+    <g class="bob">${book(50, 100, TL, "Ana")}<rect x="104" y="92" width="32" height="15" rx="4" fill="${AM}"/>${T(120, 103, "+new", NB, 9, "middle", 'font-weight="800"')}</g>
+    <g class="bob" style="animation-delay:-1.3s">${book(198, 100, PK, "Ben")}<rect x="252" y="92" width="32" height="15" rx="4" fill="${AM}"/>${T(268, 103, "+new", NB, 9, "middle", 'font-weight="800"')}</g>`),
+  socket: art("A wall socket with a phone and a laptop plugged in and charging, while a banana cannot plug in", `
+    <path class="pulse" d="M162 4 L153 19 h7 l-3 11 11 -16 h-7 l4 -10z" fill="${AM}"/>
+    <rect x="132" y="34" width="60" height="70" rx="14" fill="rgba(255,255,255,.16)" stroke="${INK}" stroke-opacity=".6"/>
+    <rect x="148" y="56" width="7" height="20" rx="3" fill="#0a0720"/><rect x="169" y="56" width="7" height="20" rx="3" fill="#0a0720"/>
+    ${T(162, 96, "Chargeable", INK, 8.5, "middle")}
+    <rect x="26" y="30" width="42" height="76" rx="9" fill="${DK}" stroke="${TL}" stroke-width="2"/><rect x="32" y="40" width="30" height="54" rx="3" fill="rgba(46,230,208,.2)"/>
+    <rect x="40" y="56" width="14" height="24" rx="2" fill="none" stroke="${TL}"/><rect class="charge" x="42" y="58" width="10" height="20" fill="${LI}"/>
+    <path class="flow" d="M68 92 C100 92 116 68 150 66" stroke="${TL}" stroke-width="2.5" fill="none"/>
+    <rect x="238" y="34" width="66" height="44" rx="5" fill="${DK}" stroke="${VI}" stroke-width="2"/><rect x="244" y="40" width="54" height="32" rx="2" fill="rgba(139,108,255,.25)"/><path d="M230 84 H312 L304 92 H238Z" fill="${VI}"/>
+    <path class="flow" d="M238 66 C212 66 200 66 174 66" stroke="${VI}" stroke-width="2.5" fill="none"/>
+    <path d="M126 128 Q160 150 198 120 Q196 118 191 119 Q160 138 131 123Z" fill="#ffd84a"/>
+    <path d="M206 110 l12 12 M218 110 l-12 12" stroke="${PK}" stroke-width="3" stroke-linecap="round"/>`),
+  knife: art("A chef uses a knife only while cooking: a dashed arrow labeled cook(k) and a clock", `
+    <circle cx="56" cy="44" r="10" fill="${INK}"/><circle cx="68" cy="37" r="12" fill="${INK}"/><circle cx="80" cy="44" r="10" fill="${INK}"/><rect x="55" y="44" width="26" height="12" rx="2" fill="${INK}"/>
+    <circle cx="68" cy="72" r="15" fill="#ffd9b0"/><circle cx="63" cy="70" r="1.8" fill="${NB}"/><circle cx="73" cy="70" r="1.8" fill="${NB}"/><path d="M62 78 q6 5 12 0" stroke="${NB}" stroke-width="1.6" fill="none"/>
+    <path d="M42 134 Q42 92 68 92 Q94 92 94 134Z" fill="${INK}"/>
+    <path class="march" d="M104 82 H186" stroke="${INK}" stroke-width="2"/><path d="M178 75 L188 82 L178 89" stroke="${INK}" stroke-width="2" fill="none" stroke-linecap="round"/>
+    ${T(146, 72, "cook(k)", AM, 11, "middle")}
+    <g class="wig"><rect x="194" y="75" width="28" height="14" rx="4" fill="${VI}"/><path d="M222 74 L296 70 Q306 77 296 84 L222 90Z" fill="#dfe6f5"/></g>
+    <circle cx="146" cy="118" r="13" fill="none" stroke="${AM}" stroke-width="2"/><path d="M146 110 V118 H152" stroke="${AM}" stroke-width="2" fill="none" stroke-linecap="round"/>
+    ${T(166, 122, "only during the call", MUT, 10.5)}`)
+};
+$$(".analogy[data-art]").forEach(a => { const d = document.createElement("div"); d.className = "art"; d.innerHTML = ART[a.dataset.art]; a.querySelector(".lbl").after(d); });
+
+/* ---------- quizzes ---------- */
+const QUIZ = {
+  intro: [
+    { q: "What does a UML class diagram mainly show?", o: ["The order in which things happen over time", "The static structure: classes, their data, behavior and relationships", "The screens of the user interface", "The server hardware"], a: 1, why: "Class diagrams are structural. Timing and order belong to behavioral diagrams such as sequence diagrams." },
+    { q: "In the cookie analogy, what plays the role of the class?", o: ["One cookie", "The cookie cutter", "The oven", "The chocolate flavor"], a: 1, why: "The cutter defines the shape for every cookie, just as a class defines the attributes and operations for every object." },
+    { q: "How does UML write an object named <code>c1</code> made from class <code>Cookie</code>?", o: ["<code>Cookie : c1</code>", "<code><u>c1 : Cookie</u></code> (underlined)", "<code>«Cookie» c1</code>", "<code>c1 → Cookie</code>"], a: 1, why: "Objects are written name : Class, and the whole label is underlined to show it is an instance." }
+  ],
+  anatomy: [
+    { q: "How many compartments does a full class box have?", o: ["Two", "Three", "Four", "Five"], a: 1, why: "Name on top, attributes in the middle, operations at the bottom." },
+    { q: "Where does <code>+ withdraw(amount : double) : boolean</code> belong?", o: ["Name compartment", "Attributes compartment", "Operations compartment", "Outside the box"], a: 2, why: "It has parentheses, so it is an operation: something the class can do." },
+    { q: "Which line is an attribute?", o: ["<code>+ getName() : String</code>", "<code>- name : String</code>", "<code>Student</code>", "<code>+ study() : void</code>"], a: 1, why: "Attributes have no parentheses. They describe what an object knows." },
+    { q: "How are class names usually written?", o: ["lowercase plural: <code>students</code>", "Capitalized singular noun: <code>Student</code>", "As a verb: <code>Study</code>", "With a visibility symbol: <code>+Student</code>"], a: 1, why: "A class describes one kind of thing, so the name is a singular noun starting with a capital letter." }
+  ],
+  visibility: [
+    { q: "Which symbol means private?", o: ["+", "-", "#", "~"], a: 1, why: "Minus means private: only the class itself can use the member." },
+    { q: "<code># salary</code> is in class Employee. Who can access it?", o: ["Every class", "Only Employee", "Employee and its subclasses", "Only classes in other packages"], a: 2, why: "Hash means protected: the class and the classes that inherit from it." },
+    { q: "In the house analogy, the living room where guests walk in matches…", o: ["- private", "+ public", "# protected", "~ package"], a: 1, why: "Anyone can enter, just as any class can use a public member." },
+    { q: "Good practice: attributes are usually ___ and used through ___ operations.", o: ["public, private", "private, public", "protected, package", "package, private"], a: 1, why: "This is encapsulation: hide the data, expose safe operations." }
+  ],
+  syntax: [
+    { q: "In <code>- balance : double = 0.0</code>, what is <code>double</code>?", o: ["The visibility", "The name", "The type", "The default value"], a: 2, why: "In UML the type comes after the colon." },
+    { q: "Which operation is written correctly in UML?", o: ["<code>+ deposit : double</code>", "<code>+ deposit(amount : double) : void</code>", "<code>deposit + (double amount)</code>", "<code>+ void deposit(amount)</code>"], a: 1, why: "Visibility, name, parameters as name : Type in parentheses, then : ReturnType. The last option is Java style." },
+    { q: "An <u>underlined</u> member is…", o: ["private", "static: shared by the whole class", "abstract", "deleted"], a: 1, why: "Static members belong to the class itself, not to each object." },
+    { q: "An operation written in <i>italics</i> is…", o: ["static", "abstract: subclasses must implement it", "private", "optional"], a: 1, why: "Italic means abstract. There is no implementation in this class." }
+  ],
+  association: [
+    { q: "What does <code>1..*</code> mean?", o: ["Exactly one", "Zero or one", "One or more", "Exactly a star"], a: 2, why: "Lower bound 1, upper bound unlimited." },
+    { q: "<code>Person 1 ── 0..1 Passport</code>. How many passports can one person have?", o: ["Exactly 1", "0 or 1", "Any number", "At least 1"], a: 1, why: "Read the number at the far end, next to Passport: 0..1." },
+    { q: "A lone <code>*</code> means…", o: ["Exactly one", "Any number, including zero (0..*)", "One or more", "It is invalid"], a: 1, why: "* is short for 0..*." },
+    { q: "A plain solid line between two classes means…", o: ["One class is a kind of the other", "Their objects are linked and know about each other", "One is deleted with the other", "Nothing at all"], a: 1, why: "That is an association: a structural link between objects." }
+  ],
+  wholepart: [
+    { q: "A filled (black) diamond means…", o: ["Aggregation", "Composition", "Inheritance", "Dependency"], a: 1, why: "Filled diamond = composition: parts live and die with the whole." },
+    { q: "Where is the diamond drawn?", o: ["At the part's end", "At the whole's end", "In the middle of the line", "Either end"], a: 1, why: "The diamond always touches the whole." },
+    { q: "A university's departments close when the university closes. Which relationship?", o: ["Aggregation", "Composition", "Generalization", "Dependency"], a: 1, why: "The parts cannot exist without the whole: composition." },
+    { q: "Players keep existing when their team is disbanded. Which relationship?", o: ["Composition", "Aggregation", "Realization", "Generalization"], a: 1, why: "Parts survive and can be shared: aggregation." }
+  ],
+  inheritance: [
+    { q: "Which arrowhead shows inheritance (generalization)?", o: ["Filled diamond", "Hollow triangle pointing to the parent", "Open arrow pointing to the child", "Filled triangle pointing to the child"], a: 1, why: "Solid line, hollow triangle, pointing up to the general class." },
+    { q: "Which sentence passes the is-a test?", o: ["A Car is an Engine", "A Dog is an Animal", "A Room is a House", "A Teacher is a Course"], a: 1, why: "The others are has-a or plain associations." },
+    { q: "Dog extends Animal, and Animal has <code># name</code>. Does a Dog object have a name?", o: ["No", "Yes, it inherits it", "Only if Dog declares it again", "Only if name is static"], a: 1, why: "Subclasses inherit the attributes and operations of their parent." },
+    { q: "How is an abstract class shown?", o: ["Underlined name", "Name in italics (or {abstract})", "Name in capitals", "A dashed box"], a: 1, why: "Italics mark abstract classes and abstract operations." }
+  ],
+  interfaces: [
+    { q: "How do you draw an interface?", o: ["A class box with «interface» above the name", "A class with a filled diamond", "A class with an underlined name", "A circle with a dashed border"], a: 0, why: "The «interface» stereotype marks the box as a contract. (A small circle, the 'lollipop', is another accepted short form.)" },
+    { q: "Which line shows that a class realizes an interface?", o: ["Solid line + hollow triangle", "Dashed line + hollow triangle", "Dashed line + open arrow", "Solid line + filled diamond"], a: 1, why: "Realization looks like inheritance, but dashed." },
+    { q: "Chef has <code>+ cook(k : Knife)</code> and does not store the knife. Chef → Knife is a…", o: ["Composition", "Dependency (dashed open arrow)", "Generalization", "Aggregation"], a: 1, why: "Using something briefly as a parameter is a dependency." },
+    { q: "Why are interfaces useful?", o: ["They store data for objects", "They define a contract that many unrelated classes can fulfil", "They make attributes private", "They delete objects safely"], a: 1, why: "Like a socket: any class with the right operations can plug in." }
+  ],
+  lab: [
+    { q: "Order these from weakest to strongest tie.", o: ["Composition < Aggregation < Association < Dependency", "Dependency < Association < Aggregation < Composition", "Association < Dependency < Composition < Aggregation", "They are all equal"], a: 1, why: "Uses briefly, knows, has, is made of." },
+    { q: "\"A pizza has toppings, and the same toppings are used on other pizzas.\"", o: ["Composition", "Aggregation", "Generalization", "Realization"], a: 1, why: "Has-a, and the parts are shared: aggregation." },
+    { q: "Which two relationships use dashed lines?", o: ["Association and aggregation", "Dependency and realization", "Composition and generalization", "Generalization and association"], a: 1, why: "Dashed lines mark the 'softer' links: uses (dependency) and promises (realization)." }
+  ]
+};
+
+function mountQuiz(el) {
+  const key = el.dataset.quiz, qs = QUIZ[key];
+  let i = 0, score = 0;
+  function render() {
+    if (i >= qs.length) {
+      const pct = Math.round(score / qs.length * 100), ok = score >= Math.ceil(qs.length * 0.6);
+      el.innerHTML = `<div class="quiz-head"><span class="chip">Quick check · result</span></div>
+        <div class="qres"><div class="ring" style="--p:${pct}"><b>${score}/${qs.length}</b></div>
+        <div><p class="qq" style="margin-bottom:6px">${score === qs.length ? "Perfect score. This idea is yours." : ok ? "Well done, you passed this check." : "Not yet. Re-read the window above and try again."}</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn small retry">Try again</button>${nextLink(key)}</div></div></div>`;
+      $(".retry", el).onclick = () => { i = 0; score = 0; render(); };
+      const best = Math.max(done[key] ? done[key].s : 0, score);
+      done[key] = { s: best, t: qs.length }; store.set("uml-done", done); paintProgress();
+      if (score === qs.length) { const r = el.getBoundingClientRect(); confetti(r.left + r.width / 2, r.top + 40); }
+      return;
+    }
+    const q = qs[i];
+    el.innerHTML = `<div class="quiz-head"><span class="chip">Quick check</span><span class="hint">Question ${i + 1} of ${qs.length}</span>
+      <span class="qprog" aria-hidden="true">${qs.map((_, k) => `<i class="${k < i ? "done" : k === i ? "now" : ""}"></i>`).join("")}</span></div>
+      <p class="qq">${q.q}</p><div class="opts">${q.o.map((o, k) => `<button class="opt" data-k="${k}">${o}</button>`).join("")}</div>
+      <div class="qfb" aria-live="polite"></div>`;
+    $$(".opt", el).forEach(b => b.addEventListener("click", () => {
+      const k = +b.dataset.k, right = k === q.a;
+      $$(".opt", el).forEach(x => { x.disabled = true; if (+x.dataset.k === q.a) x.classList.add("right"); });
+      if (right) score++; else b.classList.add("wrong");
+      $(".qfb", el).innerHTML = `<p><b>${right ? "Correct!" : "Not quite."}</b> ${q.why}</p><button class="btn small nextq">${i < qs.length - 1 ? "Next question →" : "See my score"}</button>`;
+      $(".nextq", el).onclick = () => { i++; render(); };
+      $(".nextq", el).focus({ preventScroll: true });
+    }));
+  }
+  render();
+}
+function nextLink(key) {
+  const idx = WINS.findIndex(w => w[0] === key), nx = WINS[idx + 1];
+  return nx ? `<a class="btn ghost small" href="#${nx[0]}">Next window: ${nx[1]} →</a>` : "";
+}
+$$(".quiz").forEach(mountQuiz);
+
+/* ---------- W1: object factory ---------- */
+$("#cookieClass").innerHTML = umlBox({ name: "Cookie", attrs: ["- flavor : String", "- size : int"], ops: ["+ bake() : void", "+ eat() : void"] });
+const FLAV = { chocolate: ["#6b3d22", "#b9774a"], vanilla: ["#e3c27e", "#fff1cc"], strawberry: ["#ff5f8a", "#ffc4d4"], matcha: ["#5e9e4b", "#c8eab0"] };
+let flavor = "chocolate", cid = 0;
+$$("#flavorSeg button").forEach(b => b.addEventListener("click", () => {
+  flavor = b.dataset.f; $$("#flavorSeg button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+}));
+$("#csize").addEventListener("input", e => $("#csizeOut").textContent = e.target.value);
+function countCookies() { const n = $("#tray").children.length; $("#ccount").textContent = `1 class → ${n} object${n === 1 ? "" : "s"}`; }
+$("#bake").addEventListener("click", () => {
+  const tray = $("#tray"); if (tray.children.length >= 8) tray.firstElementChild.remove();
+  cid++; const size = +$("#csize").value, px = 30 + size * 14, [k1, k2] = FLAV[flavor];
+  const d = document.createElement("div"); d.className = "cookie-obj";
+  d.innerHTML = `<div class="cookie" style="--k1:${k1};--k2:${k2};width:${px}px;height:${px}px"></div>
+    <div class="obj"><u>c${cid} : Cookie</u><span>flavor = "${flavor}"</span><span>size = ${size}</span></div>`;
+  tray.append(d); countCookies();
+  const c = $("#cutter"); c.classList.remove("press"); void c.offsetWidth; c.classList.add("press");
+});
+$("#clearTray").addEventListener("click", () => { $("#tray").innerHTML = ""; countCookies(); });
+
+/* ---------- W2: anatomy ---------- */
+const ANAT = {
+  name: "<b>Name compartment.</b> The class name, a singular noun starting with a capital letter. It can also hold a stereotype such as «interface», and appears in italics if the class is abstract.",
+  attrs: "<b>Attributes compartment.</b> The data each object stores: <code>- balance : double</code>. Each object of BankAccount has its own owner, balance and IBAN.",
+  ops: "<b>Operations compartment.</b> What objects of the class can do: <code>+ deposit(amount : double) : void</code>. Parentheses hold parameters; the type after the final colon is what comes back."
+};
+function showAnat(p) { $$("#anatBox [data-part]").forEach(x => x.classList.toggle("on", x.dataset.part === p)); $("#anatExplain").innerHTML = ANAT[p]; }
+$$("#anatBox [data-part]").forEach(x => { x.tabIndex = 0; x.setAttribute("role", "button");
+  x.addEventListener("click", () => showAnat(x.dataset.part));
+  x.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); showAnat(x.dataset.part); } }); });
+showAnat("name");
+
+const PRESETS = {
+  Student: { name: "Student", attrs: [{ v: "-", n: "name", t: "String" }, { v: "-", n: "studentId", t: "int" }], ops: [{ v: "+", n: "enroll", p: "course : Course", r: "boolean" }, { v: "+", n: "getName", p: "", r: "String" }] },
+  Car: { name: "Car", attrs: [{ v: "-", n: "brand", t: "String" }, { v: "-", n: "speed", t: "double" }], ops: [{ v: "+", n: "accelerate", p: "delta : double", r: "void" }, { v: "+", n: "brake", p: "", r: "void" }] },
+  Song: { name: "Song", attrs: [{ v: "-", n: "title", t: "String" }, { v: "-", n: "seconds", t: "int" }], ops: [{ v: "+", n: "play", p: "", r: "void" }, { v: "+", n: "getLength", p: "", r: "int" }] }
+};
+let B = JSON.parse(JSON.stringify(PRESETS.Student));
+const ident = /^[A-Za-z_][A-Za-z0-9_]*$/;
+const VIS = { "+": "public", "-": "private", "#": "protected", "~": "" };
+function javaParams(p) { return p.split(",").map(s => s.trim()).filter(Boolean).map(s => { const [n, t] = s.split(":").map(x => x.trim()); return t ? `${t} ${n}` : n; }).join(", "); }
+function renderB() {
+  $("#bName").value = B.name;
+  $("#bPreview").innerHTML = umlBox({ name: B.name || "?", attrs: B.attrs.map(a => `${a.v} ${a.n} : ${a.t}`), ops: B.ops.map(o => `${o.v} ${o.n}(${o.p}) : ${o.r}`) });
+  $("#bList").innerHTML = B.attrs.map((a, i) => `<li><code>${esc(a.v + " " + a.n)}</code><button data-del="a${i}" aria-label="Remove attribute ${esc(a.n)}">×</button></li>`).join("") +
+    B.ops.map((o, i) => `<li><code>${esc(o.v + " " + o.n + "()")}</code><button data-del="o${i}" aria-label="Remove operation ${esc(o.n)}">×</button></li>`).join("");
+  const kw = s => s ? `<span class="k">${s}</span> ` : "";
+  let code = `${kw("public class")}<span class="t">${esc(B.name || "?")}</span> {\n`;
+  B.attrs.forEach(a => code += `    ${kw(VIS[a.v])}<span class="t">${esc(a.t)}</span> ${esc(a.n)};\n`);
+  if (B.attrs.length && B.ops.length) code += "\n";
+  B.ops.forEach(o => code += `    ${kw(VIS[o.v])}<span class="t">${esc(o.r)}</span> ${esc(o.n)}(${esc(javaParams(o.p))}) { <span class="c">/* … */</span> }\n`);
+  $("#bCode").innerHTML = code + "}";
+}
+$("#bName").addEventListener("input", e => { const v = e.target.value.trim(); $("#bMsg").textContent = v && !ident.test(v) ? "A class name cannot contain spaces or symbols." : ""; B.name = v; renderB(); });
+$("#baAdd").addEventListener("click", () => {
+  const n = $("#baN").value.trim(), t = $("#baT").value.trim();
+  if (!ident.test(n)) return $("#bMsg").textContent = "Give the attribute a name without spaces, like totalPrice.";
+  if (!t) return $("#bMsg").textContent = "Every attribute needs a type, like int or String.";
+  B.attrs.push({ v: $("#baV").value, n, t }); $("#baN").value = $("#baT").value = ""; $("#bMsg").textContent = ""; renderB();
+});
+$("#boAdd").addEventListener("click", () => {
+  const n = $("#boN").value.trim(), p = $("#boP").value.trim(), r = $("#boR").value.trim() || "void";
+  if (!ident.test(n)) return $("#bMsg").textContent = "Give the operation a name without spaces, like calculateTotal.";
+  if (p && p.split(",").some(s => !/^\s*[A-Za-z_]\w*\s*:\s*[A-Za-z_][\w<>\[\]]*\s*$/.test(s))) return $("#bMsg").textContent = "Write parameters as name : Type, separated by commas.";
+  B.ops.push({ v: $("#boV").value, n, p, r }); $("#boN").value = $("#boP").value = $("#boR").value = ""; $("#bMsg").textContent = ""; renderB();
+});
+$("#bList").addEventListener("click", e => { const d = e.target.dataset.del; if (!d) return; (d[0] === "a" ? B.attrs : B.ops).splice(+d.slice(1), 1); renderB(); });
+$$("[data-preset]").forEach(b => b.addEventListener("click", () => { B = JSON.parse(JSON.stringify(PRESETS[b.dataset.preset])); $("#bMsg").textContent = ""; renderB(); }));
+renderB();
+
+/* ---------- W3: access checker ---------- */
+const MEM = [
+  { v: "+", n: "name : String", room: "Living room", desc: "Guests are welcome." },
+  { v: "-", n: "diary : String", room: "Bedroom", desc: "Only the owner." },
+  { v: "#", n: "familyRecipe : String", room: "Family kitchen", desc: "Owner and children." },
+  { v: "~", n: "spareKey : Key", room: "Street mailbox", desc: "Neighbors on the street." }
+];
+const WHO = { self: ["+", "-", "#", "~"], child: ["+", "#"], pkg: ["+", "~"], out: ["+"] };
+const WHO_TXT = {
+  self: "<b>Person</b> looks at its own members. Inside its own class, everything is accessible.",
+  child: "<b>Student</b> inherits from Person (and lives in another package). It sees public <code>+</code> and protected <code>#</code> members.",
+  pkg: "<b>Neighbor</b> is a different class in the same package. It sees public <code>+</code> and package <code>~</code> members.",
+  out: "<b>Stranger</b> is in another package and does not inherit from Person. Only public <code>+</code> members are reachable."
+};
+function renderAccess(who) {
+  const ok = WHO[who];
+  $("#accBox").innerHTML = `<div class="uml-name">Person</div><div class="uml-sec">${MEM.map(m => `<div class="m ${ok.includes(m.v) ? "ok" : "no"}">${esc(m.v + " " + m.n)}<span class="lk">${ok.includes(m.v) ? "open" : "locked"}</span></div>`).join("")}</div><div class="uml-sec"><div class="m ok">+ greet() : void<span class="lk">open</span></div></div>`;
+  $("#rooms").innerHTML = MEM.map(m => `<div class="room ${ok.includes(m.v) ? "ok" : ""}"><div class="frame"><div class="door" aria-hidden="true"></div></div><b>${m.room}</b><span><span class="sym">${m.v}</span> ${m.desc}<br>${ok.includes(m.v) ? "Door open" : "Door locked"}</span></div>`).join("");
+  $("#whoText").innerHTML = WHO_TXT[who];
+}
+$$("#whoSeg button").forEach(b => b.addEventListener("click", () => { $$("#whoSeg button").forEach(x => x.setAttribute("aria-pressed", String(x === b))); renderAccess(b.dataset.who); }));
+renderAccess("self");
+
+/* ---------- W4: decoder ---------- */
+const TC = { vis: "var(--pink)", name: "var(--amber)", type: "var(--teal)", par: "var(--violet)", def: "var(--lime)" };
+const LINES = [
+  { lbl: "attribute", toks: [["-", "vis", "Visibility: private", "Only BankAccount itself can read or change balance."], ["balance", "name", "Attribute name", "Starts with a lowercase letter, written in camelCase."], [": double", "type", "Type", "What kind of value is stored. In UML it comes after a colon."], ["= 0.0", "def", "Default value", "The starting value when a new object is created. Optional."]] },
+  { lbl: "operation", toks: [["+", "vis", "Visibility: public", "Any class may call deposit."], ["deposit", "name", "Operation name", "Usually a verb: deposit, print, calculateTotal."], ["(amount : double)", "par", "Parameter list", "What the caller must hand over. Each parameter is name : Type, separated by commas. Empty () means no input."], [": void", "type", "Return type", "What comes back. void means nothing is returned."]] },
+  { lbl: "multiplicity", toks: [["-", "vis", "Visibility: private", "Hidden from other classes."], ["tags", "name", "Attribute name", "Plural, because it holds several values."], [": String", "type", "Type", "Each element is a String."], ["[0..*]", "def", "Multiplicity", "The attribute holds any number of values, so it is a list."]] },
+  { lbl: "static", toks: [["+ count : int", "name", "Static attribute (underlined)", "One shared value for the whole class, not one per object. For example: how many accounts exist in total.", "static"]] },
+  { lbl: "abstract", toks: [["+ area() : double", "name", "Abstract operation (italic)", "Declared here without a body. Every subclass, such as Circle or Square, must give its own version.", "abstract"]] }
+];
+$("#decoder").innerHTML = LINES.map((l, li) => `<div class="dline"><span class="lbl">${l.lbl}</span>${l.toks.map((t, ti) => `<button class="tok ${t[4] || ""}" style="--tc:${TC[t[1]]}" data-l="${li}" data-t="${ti}">${esc(t[0])}</button>`).join("")}</div>`).join("");
+function showTok(b) {
+  const t = LINES[b.dataset.l].toks[b.dataset.t];
+  $$("#decoder .tok").forEach(x => x.classList.toggle("on", x === b));
+  const tip = $("#tip"); tip.style.setProperty("--tc", TC[t[1]]);
+  tip.innerHTML = `<b>${t[2]}</b><br>${t[3]}`;
+}
+$$("#decoder .tok").forEach(b => { b.addEventListener("mouseenter", () => showTok(b)); b.addEventListener("click", () => showTok(b)); b.addEventListener("focus", () => showTok(b)); });
+
+/* ---------- W5: multiplicity tester ---------- */
+const MSC = {
+  passport: { L: "Person", R: "Passport", verb: "owns", mL: "1", mR: "0..1", ln: ["Ana", "Ben", "Chen"], rn: ["P-01", "P-02"] },
+  course: { L: "Teacher", R: "Course", verb: "teaches", mL: "1", mR: "1..*", ln: ["Ms Ito", "Mr Diaz"], rn: ["Math", "Art", "Music", "Biology"] },
+  enroll: { L: "Student", R: "Course", verb: "attends", mL: "*", mR: "1..3", ln: ["Lea", "Omar", "Zoe"], rn: ["Math", "Art", "Music", "Biology"] }
+};
+const range = m => { if (m === "*") return [0, Infinity]; if (m.includes("..")) { const [a, b] = m.split(".."); return [+a, b === "*" ? Infinity : +b]; } return [+m, +m]; };
+let sc = "passport", links = new Set(), sel = null;
+function drawM() {
+  const S = MSC[sc], rows = Math.max(S.ln.length, S.rn.length), Hh = rows * 64 + 24;
+  const svg = $("#mSvg"); svg.setAttribute("viewBox", `0 0 600 ${Hh}`);
+  const ly = i => 12 + i * 64 + (rows - S.ln.length) * 32, ry = j => 12 + j * 64 + (rows - S.rn.length) * 32;
+  const [lmin, lmax] = range(S.mR), [rmin, rmax] = range(S.mL);
+  const lc = S.ln.map((_, i) => [...links].filter(k => +k.split("-")[0] === i).length);
+  const rc = S.rn.map((_, j) => [...links].filter(k => +k.split("-")[1] === j).length);
+  let s = "";
+  links.forEach(k => { const [i, j] = k.split("-").map(Number); s += `<line class="lnk" x1="190" y1="${ly(i) + 22}" x2="410" y2="${ry(j) + 22}"/>`; });
+  S.ln.forEach((n, i) => { const ok = lc[i] >= lmin && lc[i] <= lmax;
+    s += `<g class="node ${ok ? "ok" : "bad"} ${sel === i ? "sel" : ""}" data-side="L" data-i="${i}" tabindex="0" role="button" aria-label="${n}, ${lc[i]} links"><rect x="40" y="${ly(i)}" width="150" height="44" rx="10"/><text x="115" y="${ly(i) + 21}" text-anchor="middle" text-decoration="underline">${n}</text><text class="cnt" x="115" y="${ly(i) + 37}" text-anchor="middle">${lc[i]} ${S.R.toLowerCase()}${lc[i] === 1 ? "" : "s"}</text></g>`; });
+  S.rn.forEach((n, j) => { const ok = rc[j] >= rmin && rc[j] <= rmax;
+    s += `<g class="node ${ok ? "ok" : "bad"}" data-side="R" data-i="${j}" tabindex="0" role="button" aria-label="${n}, ${rc[j]} links"><rect x="410" y="${ry(j)}" width="150" height="44" rx="10"/><text x="485" y="${ry(j) + 21}" text-anchor="middle" text-decoration="underline">${n}</text><text class="cnt" x="485" y="${ry(j) + 37}" text-anchor="middle">${rc[j]} ${S.L.toLowerCase()}${rc[j] === 1 ? "" : "s"}</text></g>`; });
+  svg.innerHTML = s;
+  const issues = [];
+  S.ln.forEach((n, i) => { if (lc[i] < lmin) issues.push(`${n} must be linked to at least ${lmin} ${S.R} (the <code>${S.mR}</code> next to ${S.R}).`); if (lc[i] > lmax) issues.push(`${n} has ${lc[i]} ${S.R}s, but <code>${S.mR}</code> allows at most ${lmax}.`); });
+  S.rn.forEach((n, j) => { if (rc[j] < rmin) issues.push(`${n} needs at least ${rmin} ${S.L} (the <code>${S.mL}</code> next to ${S.L}).`); if (rc[j] > rmax) issues.push(`${n} has ${rc[j]} ${S.L}s, but <code>${S.mL}</code> allows at most ${rmax}.`); });
+  const st = $("#mStatus");
+  st.className = "status" + (issues.length ? "" : " good");
+  st.innerHTML = issues.length ? `<b>${issues.length} rule${issues.length > 1 ? "s" : ""} broken.</b>${sel !== null ? ` ${S.ln[sel]} is selected. Now tap a ${S.R}.` : ""}<ul>${issues.map(x => `<li>${x}</li>`).join("")}</ul>` : `<b>Valid!</b> Every object respects <code>${S.L} ${S.mL} ── ${S.mR} ${S.R}</code>.`;
+}
+function headM() {
+  const S = MSC[sc];
+  $("#mHead").innerHTML = `${umlBox({ name: S.L, cls: "mini" })}<span class="assoc-line">${S.mL}<i data-verb="${S.verb}"></i>${S.mR}</span>${umlBox({ name: S.R, cls: "mini" })}`;
+}
+function mClick(g) {
+  if (!g) return; const i = +g.dataset.i;
+  if (g.dataset.side === "L") sel = sel === i ? null : i;
+  else if (sel !== null) { const k = `${sel}-${i}`; links.has(k) ? links.delete(k) : links.add(k); }
+  else { $("#mStatus").innerHTML = `Tap a ${MSC[sc].L} on the left first, then a ${MSC[sc].R}.`; return; }
+  drawM();
+}
+$("#mSvg").addEventListener("click", e => mClick(e.target.closest(".node")));
+$("#mSvg").addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); mClick(e.target.closest(".node")); } });
+$$("#mScen button").forEach(b => b.addEventListener("click", () => { $$("#mScen button").forEach(x => x.setAttribute("aria-pressed", String(x === b))); sc = b.dataset.s; links = new Set(); sel = null; headM(); drawM(); }));
+$("#mReset").addEventListener("click", () => { links = new Set(); sel = null; drawM(); });
+headM(); drawM();
+
+/* ---------- W6: demolition ---------- */
+function wpSVG(kind) {
+  const agg = kind === "agg", whole = agg ? "fc : Team" : "villa : House";
+  const parts = agg ? ["mia : Player", "leo : Player", "sam : Player"] : ["k : Room", "b : Room", "t : Room"];
+  const xs = [55, 165, 275];
+  let s = `<svg viewBox="0 0 330 230" role="img" aria-label="${agg ? "Team object linked to three player objects" : "House object made of three room objects"}">`;
+  xs.forEach((x, i) => s += `<path class="rel lnk-wp" d="M${125 + i * 40},56 L${x},160" marker-start="url(#${agg ? "m-dh" : "m-df"})"/>`);
+  s += `<g class="o whole"><rect class="obox" x="105" y="16" width="120" height="40" rx="8"/><text class="otxt" x="165" y="41" text-anchor="middle">${whole}</text></g>`;
+  parts.forEach((p, i) => s += `<g class="o part"><rect class="obox" x="${xs[i] - 50}" y="160" width="100" height="40" rx="8"/><text class="otxt" x="${xs[i]}" y="185" text-anchor="middle">${p}</text><text class="olbl" x="${xs[i]}" y="218" text-anchor="middle"></text></g>`);
+  return s + `<g class="sparks"></g></svg>`;
+}
+$$(".wp").forEach(panel => {
+  const kind = panel.dataset.kind, btn = $(".wp-btn", panel), status = $(".wp-status", panel);
+  const label = kind === "agg" ? "Delete the team" : "Delete the house";
+  const initial = status.textContent;
+  const reset = () => { $(".wp-svg", panel).innerHTML = wpSVG(kind); panel.dataset.state = ""; btn.textContent = label; status.textContent = initial; };
+  reset();
+  btn.addEventListener("click", () => {
+    if (panel.dataset.state === "gone") return reset();
+    panel.dataset.state = "gone"; btn.textContent = "Rebuild";
+    const svg = $("svg", panel), whole = $(".whole", svg), sp = $(".sparks", svg);
+    whole.classList.add("boom");
+    for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2, r = 50 + Math.random() * 40;
+      const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      c.setAttribute("cx", 165); c.setAttribute("cy", 36); c.setAttribute("r", 3 + Math.random() * 3);
+      c.setAttribute("fill", ["#ff4f9a", "#ffb547", "#2ee6d0", "#8b6cff"][i % 4]); c.setAttribute("class", "spark");
+      c.style.setProperty("--dx", Math.cos(a) * r + "px"); c.style.setProperty("--dy", Math.sin(a) * r + "px"); sp.append(c); }
+    setTimeout(() => {
+      $$(".lnk-wp", svg).forEach(l => l.classList.add("cut"));
+      $$(".part", svg).forEach((p, i) => setTimeout(() => {
+        if (kind === "agg") { p.classList.add("free"); $(".olbl", p).textContent = "still exists"; }
+        else p.classList.add("fall");
+      }, i * 180));
+      status.innerHTML = kind === "agg"
+        ? "<b>The team is gone, but every player survives.</b> They can join another team. That is aggregation <span class='dw'>◆</span>."
+        : "<b>The house is gone, and its rooms are destroyed with it.</b> A room cannot exist without its house. That is composition <span class='db'>◆</span>.";
+    }, 520);
+  });
+});
+
+/* ---------- W7: inheritance ---------- */
+const ANI = {
+  Animal: { abstract: true, attrs: ["# name : String", "# age : int"], ops: ["+ eat() : void", "/+ makeSound() : String"] },
+  Dog: { attrs: ["- breed : String"], ops: ["+ makeSound() : String", "+ fetch() : void"], sound: "Woof!" },
+  Cat: { attrs: ["- indoor : boolean"], ops: ["+ makeSound() : String", "+ purr() : void"], sound: "Meow!" },
+  Bird: { attrs: ["- wingSpan : double"], ops: ["+ makeSound() : String", "+ fly() : void"], sound: "Tweet!" }
+};
+$("#n-Animal").innerHTML = umlBox({ name: "Animal", ...ANI.Animal });
+$("#inhRow").innerHTML = ["Dog", "Cat", "Bird"].map(n => `<div class="inh-node" data-c="${n}" role="button" tabindex="0" aria-label="Explore ${n}"><span class="bubble"></span>${umlBox({ name: n, ...ANI[n] })}</div>`).join("");
+function drawInh() {
+  const box = $("#inh"), top = $("#n-Animal"), kids = $$("#inhRow .inh-node");
+  const cx = top.offsetLeft + top.offsetWidth / 2, ty = top.offsetTop + top.offsetHeight;
+  const ym = ty + 34;
+  let s = `<path class="rel" d="M${cx},${ym} L${cx},${ty}" marker-end="url(#m-tri)"/>`;
+  kids.forEach(k => { const x = k.offsetLeft + k.offsetWidth / 2, y = k.offsetTop;
+    s += `<path class="rel" d="M${x},${y} L${x},${y > ym + 40 ? y - 18 : ym} L${x},${ym} L${cx},${ym}"/>`; });
+  const svg = $("#inhLines"); svg.setAttribute("viewBox", `0 0 ${box.offsetWidth} ${box.offsetHeight}`); svg.innerHTML = s;
+}
+function showAnimal(n) {
+  $$("#inhRow .inh-node").forEach(x => x.classList.toggle("on", x.dataset.c === n));
+  const A = ANI.Animal, C = ANI[n];
+  const rows = [
+    ...A.attrs.map(a => [a, "inh", "inherited from Animal"]),
+    ...C.attrs.map(a => [a, "own", `${n}'s own`]),
+    ["+ eat() : void", "inh", "inherited from Animal"],
+    ["+ makeSound() : String", "ovr", "overrides Animal's abstract makeSound()"],
+    [C.ops[1], "own", `${n}'s own`]
+  ];
+  $("#inhPanel").innerHTML = `<h3 style="font-size:20px">Everything a <u>rex : ${n}</u> object has</h3>${rows.map(r => `<div class="rowm"><span>${esc(r[0])}</span><span class="tag ${r[1]}">${r[2]}</span></div>`).join("")}
+    <p class="hint" style="margin:12px 0 8px">Animal is abstract (italic), so <code>new Animal()</code> is not allowed. You can only create Dogs, Cats and Birds.</p>
+    <button class="btn small" id="speak">Call makeSound() on this ${n}</button>`;
+  $("#speak").addEventListener("click", () => {
+    const b = $(`#inhRow .inh-node[data-c="${n}"] .bubble`); b.textContent = C.sound; b.classList.add("show");
+    setTimeout(() => b.classList.remove("show"), 1500);
+  });
+}
+$$("#inhRow .inh-node").forEach(k => {
+  k.addEventListener("click", () => showAnimal(k.dataset.c));
+  k.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); showAnimal(k.dataset.c); } });
+});
+showAnimal("Dog");
+
+/* ---------- W8: interfaces ---------- */
+$("#ifaceBox").innerHTML = umlBox({ name: "Chargeable", stereo: "interface", attrs: [], ops: ["+ charge() : void"] });
+const DEV = [
+  { n: "Phone", ops: ["+ charge() : void", "+ call(nr : String) : void"], ok: true },
+  { n: "Laptop", ops: ["+ charge() : void", "+ compile() : void"], ok: true },
+  { n: "Banana", ops: ["+ peel() : void", "+ eat() : void"], ok: false },
+  { n: "ElectricCar", ops: ["+ charge() : void", "+ drive() : void"], ok: true }
+];
+$("#devices").innerHTML = DEV.map((d, i) => `<div class="device" data-i="${i}" role="button" tabindex="0" aria-label="Plug in ${d.n}" style="cursor:pointer">${umlBox({ name: d.n, attrs: [], ops: d.ops, cls: "mini" })}<span class="real">${d.ok ? "┄┄▷ realizes Chargeable" : "no realization line"}</span><div class="batt"><i></i></div></div>`).join("");
+let plugging = false;
+function plug(card) {
+  if (plugging) return; plugging = true;
+  const d = DEV[card.dataset.i], sock = $("#socket"), sr = sock.getBoundingClientRect(), cr = card.getBoundingClientRect();
+  const dx = sr.left + sr.width / 2 - (cr.left + cr.width / 2), dy = sr.bottom + 8 - cr.top;
+  card.style.transform = `translate(${dx}px,${dy}px) scale(.85)`;
+  setTimeout(() => {
+    if (d.ok) { sock.classList.add("on"); $(".batt i", card).style.width = "100%"; $("#plugMsg").innerHTML = `<b>${d.n} is charging.</b> It realizes Chargeable, so it is guaranteed to have <code>charge()</code>. The socket does not need to know anything else about it.`; }
+    else { sock.classList.add("reject"); $("#plugMsg").innerHTML = `<b>Rejected.</b> Banana does not realize Chargeable and has no <code>charge()</code> operation. The contract is not met.`; }
+    setTimeout(() => { card.style.transform = ""; sock.classList.remove("on", "reject"); setTimeout(() => { $(".batt i", card).style.width = "0"; plugging = false; }, 700); }, 1700);
+  }, 700);
+}
+$$("#devices .device").forEach(c => { c.addEventListener("click", () => plug(c)); c.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); plug(c); } }); });
+$("#plugMsg").textContent = "Tap a device to plug it in.";
+
+$("#chefBox").innerHTML = umlBox({ name: "Chef", attrs: ["- name : String"], ops: ["+ cook(k : Knife) : Meal"], cls: "mini" });
+$("#knifeBox").innerHTML = umlBox({ name: "Knife", attrs: ["- sharp : boolean"], ops: ["+ cut() : void"], cls: "mini" });
+$("#depMsg").textContent = "Chef has no attribute of type Knife. Press the button to call cook().";
+$("#cookBtn").addEventListener("click", () => {
+  const a = $("#depArrow"), k = $("#knifeBox"), btn = $("#cookBtn");
+  btn.disabled = true; a.classList.add("on"); k.classList.add("use");
+  $("#depMsg").innerHTML = "<b>During the call</b> the chef uses the knife it was given as a parameter. Dashed line, open arrow: Chef depends on Knife.";
+  setTimeout(() => { a.classList.remove("on"); k.classList.remove("use"); btn.disabled = false;
+    $("#depMsg").innerHTML = "<b>The call is over.</b> The chef kept no reference to the knife. That short, temporary use is what a dependency means."; }, 2200);
+});
+
+/* ---------- W9: lab ---------- */
+const REL = {
+  dep: { name: "Dependency", A: { name: "Chef", ops: ["+ cook(k : Knife)"] }, B: { name: "Knife" }, dash: true, end: "m-open", s: 1, sent: "A Chef <u>uses</u> a Knife for a moment.", how: "Dashed line, open arrow toward the class that is used." },
+  assoc: { name: "Association", A: { name: "Teacher" }, B: { name: "Student" }, mA: "1", mB: "*", s: 2, sent: "A Teacher <u>knows and teaches</u> Students.", how: "Plain solid line. The numbers at each end are its multiplicity." },
+  agg: { name: "Aggregation", A: { name: "Playlist" }, B: { name: "Song" }, start: "m-dh", s: 3, sent: "A Playlist <u>has</u> Songs, and songs live on without it.", how: "Solid line, white diamond on the whole (Playlist)." },
+  comp: { name: "Composition", A: { name: "Book" }, B: { name: "Page" }, start: "m-df", s: 4, sent: "A Book <u>is made of</u> Pages that die with it.", how: "Solid line, black diamond on the whole (Book)." },
+  gen: { name: "Generalization", A: { name: "Dog" }, B: { name: "Animal", abstract: true }, end: "m-tri", s: 0, sent: "A Dog <u>is an</u> Animal.", how: "Solid line, hollow triangle pointing to the parent." },
+  real: { name: "Realization", A: { name: "Phone", ops: ["+ charge()"] }, B: { name: "Chargeable", stereo: "interface", ops: ["+ charge()"] }, dash: true, end: "m-rtri", s: 0, sent: "A Phone <u>promises to behave like</u> Chargeable.", how: "Dashed line, hollow triangle pointing to the interface." }
+};
+let relKey = "assoc";
+$("#relPick").innerHTML = Object.entries(REL).map(([k, r]) => `<button data-r="${k}" aria-pressed="${k === relKey}">${r.name}</button>`).join("");
+const stage = $("#stage"), dA = $("#dragA"), dB = $("#dragB"), path = $("#labPath");
+function edgePt(el, tx, ty) {
+  const w = el.offsetWidth, h = el.offsetHeight, cx = el.offsetLeft + w / 2, cy = el.offsetTop + h / 2;
+  const dx = tx - cx, dy = ty - cy; if (!dx && !dy) return [cx, cy];
+  const s = Math.min(Math.abs((w / 2 + 2) / (dx || 1e-6)), Math.abs((h / 2 + 2) / (dy || 1e-6)));
+  return [cx + dx * s, cy + dy * s];
+}
+function drawLab() {
+  const ca = [dA.offsetLeft + dA.offsetWidth / 2, dA.offsetTop + dA.offsetHeight / 2], cb = [dB.offsetLeft + dB.offsetWidth / 2, dB.offsetTop + dB.offsetHeight / 2];
+  const p1 = edgePt(dA, cb[0], cb[1]), p2 = edgePt(dB, ca[0], ca[1]), r = REL[relKey];
+  path.setAttribute("d", `M${p1[0]},${p1[1]} L${p2[0]},${p2[1]}`);
+  path.setAttribute("class", "rel" + (r.dash ? " dash" : ""));
+  const m1 = $("#labM1"), m2 = $("#labM2"), ddx = p2[0] - p1[0], ddy = p2[1] - p1[1], dl = Math.hypot(ddx, ddy) || 1;
+  const at = (t, txt, el) => { el.textContent = txt || ""; el.setAttribute("x", p1[0] + ddx * t - ddy / dl * 14); el.setAttribute("y", p1[1] + ddy * t + ddx / dl * 14 + 5); el.setAttribute("text-anchor", "middle"); };
+  at(0.14, r.mA, m1); at(0.86, r.mB, m2);
+  r.start ? path.setAttribute("marker-start", `url(#${r.start})`) : path.removeAttribute("marker-start");
+  r.end ? path.setAttribute("marker-end", `url(#${r.end})`) : path.removeAttribute("marker-end");
+}
+function setRel(k) {
+  relKey = k; const r = REL[k];
+  $$("#relPick button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.r === k)));
+  dA.innerHTML = umlBox({ attrs: [], ops: [], ...r.A, cls: "mini" }); dB.innerHTML = umlBox({ attrs: [], ops: [], ...r.B, cls: "mini" });
+  $("#labSentence").innerHTML = r.sent; $("#labHow").textContent = r.how + (r.s ? "" : " This one links types, not objects, so it has no tie strength.");
+  $$("#meter i").forEach((m, i) => m.classList.toggle("on", i < r.s));
+  path.style.opacity = 0; drawLab(); requestAnimationFrame(() => path.style.opacity = 1);
+}
+$$("#relPick button").forEach(b => b.addEventListener("click", () => setRel(b.dataset.r)));
+[dA, dB].forEach(el => {
+  let sx, sy, ox, oy, on = false;
+  el.addEventListener("pointerdown", e => { on = true; sx = e.clientX; sy = e.clientY; ox = el.offsetLeft; oy = el.offsetTop; el.setPointerCapture(e.pointerId); el.style.zIndex = 2; });
+  el.addEventListener("pointermove", e => { if (!on) return;
+    const x = Math.max(0, Math.min(stage.clientWidth - el.offsetWidth, ox + e.clientX - sx)), y = Math.max(0, Math.min(stage.clientHeight - el.offsetHeight, oy + e.clientY - sy));
+    el.style.left = x + "px"; el.style.top = y + "px"; drawLab(); });
+  const end = () => { on = false; el.style.zIndex = ""; };
+  el.addEventListener("pointerup", end); el.addEventListener("pointercancel", end);
+});
+function fitLab() {
+  [dA, dB].forEach(el => {
+    if (el.offsetLeft + el.offsetWidth > stage.clientWidth) el.style.left = Math.max(0, stage.clientWidth - el.offsetWidth) + "px";
+  });
+  if (stage.clientWidth < 520) { dA.style.left = "8px"; dA.style.top = "20px"; dB.style.left = Math.max(8, stage.clientWidth - dB.offsetWidth - 8) + "px"; dB.style.top = "200px"; }
+  drawLab();
+}
+setRel("assoc");
+
+/* ---------- exercises ---------- */
+const RELOPTS = [["", "Choose…"], ["dep", "Dependency"], ["assoc", "Association"], ["agg", "Aggregation"], ["comp", "Composition"], ["gen", "Generalization"], ["real", "Realization"]];
+const relSelect = id => `<select id="${id}" aria-label="Relationship">${RELOPTS.map(([v, t]) => `<option value="${v}">${t}</option>`).join("")}</select>`;
+const exCards = $$(".ex");
+$("#exRail").innerHTML = exCards.map(c => `<button role="tab" data-n="${c.dataset.n}" aria-selected="false" aria-controls="ex${c.dataset.n}">Level ${c.dataset.n}<small>${"★".repeat(+c.dataset.stars)}</small></button>`).join("");
+function showEx(n) {
+  exCards.forEach(c => c.classList.toggle("show", c.dataset.n === String(n)));
+  $$("#exRail button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.n === String(n))));
+}
+$$("#exRail button").forEach(b => b.addEventListener("click", () => showEx(b.dataset.n)));
+function exResult(n, ok, msg) {
+  const fb = $(`#ex${n} .ex-fb`);
+  fb.className = "ex-fb " + (ok ? "good" : "bad");
+  fb.innerHTML = msg + (ok && n < 8 ? ` <button class="btn small" data-go="${n + 1}">Go to level ${n + 1} →</button>` : "");
+  const go = $("[data-go]", fb); if (go) go.addEventListener("click", () => showEx(n + 1));
+  if (ok) { exSolved[n] = true; store.set("uml-ex", exSolved); paintProgress(); const r = fb.getBoundingClientRect(); confetti(r.left + r.width / 2, r.top, 80); }
+}
+const onCheck = (n, fn) => $(`#ex${n} .ex-check`).addEventListener("click", fn);
+
+/* L1 sort */
+const L1 = ["- name : String", "+ getName() : String", "# age : int", "+ birthday() : void", "- id : int", "+ toString() : String", "~ email : String", "+ setEmail(e : String) : void"];
+let l1sel = null;
+function resetL1() {
+  $("#pool1").innerHTML = shuffle(L1).map(t => `<span class="mchip" draggable="true" tabindex="0" role="button">${esc(t)}</span>`).join("");
+  $$("#ex1 .bin").forEach(b => $$(".mchip", b).forEach(c => c.remove()));
+  $$("#ex1 .mchip").forEach(bindChip); l1sel = null; $("#ex1 .ex-fb").innerHTML = ""; $("#ex1 .ex-fb").className = "ex-fb";
+}
+function bindChip(c) {
+  c.addEventListener("click", e => { e.stopPropagation();
+    if (c.parentElement.dataset.bin !== "pool") { $("#pool1").append(c); c.classList.remove("ok", "no", "sel"); l1sel = null; return; }
+    $$("#ex1 .mchip").forEach(x => x.classList.toggle("sel", x === c && !c.classList.contains("sel"))); l1sel = c.classList.contains("sel") ? c : null; });
+  c.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); c.click(); } });
+  c.addEventListener("dragstart", e => { l1sel = c; e.dataTransfer.setData("text/plain", "x"); });
+}
+$$("#ex1 .bin").forEach(b => {
+  b.tabIndex = 0;
+  const drop = () => { if (l1sel) { b.append(l1sel); l1sel.classList.remove("sel", "ok", "no"); l1sel = null; } };
+  b.addEventListener("click", drop);
+  b.addEventListener("keydown", e => { if (e.key === "Enter") drop(); });
+  b.addEventListener("dragover", e => { e.preventDefault(); b.classList.add("over"); });
+  b.addEventListener("dragleave", () => b.classList.remove("over"));
+  b.addEventListener("drop", e => { e.preventDefault(); b.classList.remove("over"); drop(); });
+});
+$("#ex1 .ex-reset").addEventListener("click", resetL1);
+onCheck(1, () => {
+  if ($$("#pool1 .mchip").length) return exResult(1, false, `Place all eight lines first. ${$$("#pool1 .mchip").length} still waiting.`);
+  let bad = 0;
+  $$("#ex1 .bin").forEach(b => $$(".mchip", b).forEach(c => { const isOp = c.textContent.includes("("); const ok = (b.dataset.bin === "op") === isOp; c.classList.toggle("ok", ok); c.classList.toggle("no", !ok); if (!ok) bad++; }));
+  exResult(1, !bad, bad ? `${bad} line${bad > 1 ? "s are" : " is"} in the wrong place (red). Hint: operations always have parentheses.` : "All sorted! Parentheses mean operation, no parentheses mean attribute.");
+});
+resetL1();
+
+/* L2 visibility */
+const L2 = [["<code>balance</code> must be hidden from every other class.", "-"], ["<code>deposit()</code> can be called by any class.", "+"], ["<code>interestRate</code> must be reachable by the subclass SavingsAccount, but not by outsiders.", "#"], ["<code>audit()</code> is a helper used only by classes in the same package.", "~"]];
+$("#visRows").innerHTML = L2.map((r, i) => `<div class="qrow" id="vr${i}"><span>${r[0]}</span><select aria-label="Visibility for requirement ${i + 1}"><option value="">Choose…</option><option value="+">+ public</option><option value="-">- private</option><option value="#"># protected</option><option value="~">~ package</option></select></div>`).join("");
+onCheck(2, () => {
+  let bad = 0; L2.forEach((r, i) => { const row = $("#vr" + i), ok = $("select", row).value === r[1]; row.classList.toggle("ok", ok); row.classList.toggle("no", !ok); if (!ok) bad++; });
+  exResult(2, !bad, bad ? `${bad} wrong. Remember: - only me, # me and my children, ~ my package, + everyone.` : "Perfect encapsulation: private data, public service, protected for heirs, package for neighbors.");
+});
+
+/* L3 assembler */
+const L3 = [
+  { target: ["-", "balance", ": double", "= 0.0"], decoys: ["double balance", "+"], label: "Attribute: private balance of type double that starts at 0.0" },
+  { target: ["+", "deposit", "(amount : double)", ": void"], decoys: ["(double amount)", "void"], label: "Operation: public deposit taking an amount (double) and returning nothing" }
+];
+function resetL3() {
+  $("#asmZone").innerHTML = L3.map((p, i) => `<div class="asm" data-i="${i}"><b style="font-size:15px">${p.label}</b><div class="asm-ans"></div><div class="asm-pool">${shuffle([...p.target, ...p.decoys]).map(t => `<button class="mchip">${esc(t)}</button>`).join("")}</div></div>`).join("");
+  $$("#asmZone .mchip").forEach(c => c.addEventListener("click", () => {
+    const wrap = c.closest(".asm"), ans = $(".asm-ans", wrap), pool = $(".asm-pool", wrap);
+    (c.parentElement === ans ? pool : ans).append(c); ans.classList.remove("ok", "no");
+  }));
+  $("#ex3 .ex-fb").innerHTML = ""; $("#ex3 .ex-fb").className = "ex-fb";
+}
+$("#ex3 .ex-reset").addEventListener("click", resetL3);
+onCheck(3, () => {
+  let bad = 0; $$("#asmZone .asm").forEach(w => { const got = $$(".asm-ans .mchip", w).map(c => c.textContent), ok = got.join("|") === L3[w.dataset.i].target.join("|"); $(".asm-ans", w).classList.toggle("ok", ok); $(".asm-ans", w).classList.toggle("no", !ok); if (!ok) bad++; });
+  exResult(3, !bad, bad ? "Not yet. UML order is: visibility, name, then the type after a colon. Java-style pieces like <code>double balance</code> do not belong." : "Both lines read like real UML: <code>- balance : double = 0.0</code> and <code>+ deposit(amount : double) : void</code>.");
+});
+resetL3();
+
+/* L4 multiplicity */
+const MOPTS = ["", "1", "0..1", "*", "1..*", "4"];
+const L4 = [
+  { s: "A Person has at most one Passport. Every Passport belongs to exactly one Person.", A: "Person", B: "Passport", a: "1", b: "0..1" },
+  { s: "An Order contains one or more OrderLines. Each OrderLine belongs to exactly one Order.", A: "Order", B: "OrderLine", a: "1", b: "1..*" },
+  { s: "A Car has exactly four Wheels. A Wheel is mounted on at most one Car.", A: "Car", B: "Wheel", a: "0..1", b: "4" },
+  { s: "A Student attends any number of Courses. A Course has any number of Students.", A: "Student", B: "Course", a: "*", b: "*" }
+];
+const mSel = lbl => `<select aria-label="${lbl}">${MOPTS.map(o => `<option value="${o}">${o || "?"}</option>`).join("")}</select>`;
+$("#multRows").innerHTML = L4.map((r, i) => `<div class="mrow" id="mr${i}"><p>${r.s}</p><div class="mline"><span class="cls">${r.A}</span>${mSel("Multiplicity next to " + r.A)}<span class="ln"></span>${mSel("Multiplicity next to " + r.B)}<span class="cls">${r.B}</span></div></div>`).join("");
+onCheck(4, () => {
+  let bad = 0; L4.forEach((r, i) => { const [s1, s2] = $$(`#mr${i} select`), ok = s1.value === r.a && s2.value === r.b; $("#mr" + i).classList.toggle("ok", ok); $("#mr" + i).classList.toggle("no", !ok); if (!ok) bad++; });
+  exResult(4, !bad, bad ? `${bad} line${bad > 1 ? "s" : ""} wrong. Each number describes the class it stands next to: "how many of <em>this</em> for one of the other".` : "All four are right. You read multiplicity like a pro.");
+});
+
+/* L5 name relationship */
+const L5 = [["A Square is a kind of Shape.", "gen"], ["A Hand is made of Fingers; no hand, no fingers.", "comp"], ["A Department groups Professors, who stay employed when it closes.", "agg"], ["A Printer uses a Document only while printing it.", "dep"], ["A Doctor treats Patients.", "assoc"], ["ArrayList implements the List interface.", "real"]];
+$("#relRows").innerHTML = L5.map((r, i) => `<div class="qrow" id="rr${i}"><span>${r[0]}</span>${relSelect("rs" + i)}</div>`).join("");
+onCheck(5, () => {
+  let bad = 0; L5.forEach((r, i) => { const ok = $("#rs" + i).value === r[1]; $("#rr" + i).classList.toggle("ok", ok); $("#rr" + i).classList.toggle("no", !ok); if (!ok) bad++; });
+  exResult(5, !bad, bad ? `${bad} wrong. Use the key phrases: is a kind of, is made of, has (shared), uses briefly, knows, implements.` : "Six for six. You can tell every relationship apart.");
+});
+
+/* L6 spot errors */
+(function buildErr() {
+  let s = "";
+  s += svgBox(30, 20, 210, { name: "Shape", abstract: true, attrs: ["# color : String"], ops: ["+ area() : double"] }).svg;
+  s += svgBox(30, 210, 210, { name: "Circle", attrs: ["- radius : double"], ops: ["+ area : double"] }).svg;
+  s += svgBox(320, 20, 200, { name: "Library", attrs: ["- name : String"], ops: ["+ add(b : Book) : void"] }).svg;
+  s += svgBox(600, 20, 190, { name: "Book", attrs: ["- title : String"], ops: ["+ getTitle() : String"] }).svg;
+  s += svgBox(320, 210, 200, { name: "Customer", attrs: ["- name : String"], ops: ["+ placeOrder() : Order"] }).svg;
+  s += svgBox(600, 210, 190, { name: "Order", attrs: ["- total : double"], ops: ["+ pay() : boolean"] }).svg;
+  s += `<path class="rel" d="M135,210 L135,104" marker-end="url(#m-tri)"/>`;
+  s += `<path class="rel" d="M600,62 L520,62" marker-start="url(#m-dh)"/>`;
+  s += `<path class="rel" d="M520,252 L600,252"/>`;
+  s += `<text class="mult" x="526" y="244">1</text><text class="mult" x="562" y="272">1..0</text>`;
+  const H = [[1, 116, 106, 38, 102], [2, 515, 46, 92, 32], [3, 32, 271, 206, 20], [4, 554, 257, 44, 22], [5, 32, 244, 206, 20], [6, 32, 22, 206, 28]];
+  s += H.map(([n, x, y, w, h]) => `<rect class="hot" data-h="${n}" x="${x}" y="${y}" width="${w}" height="${h}" rx="6" tabindex="0" role="button" aria-label="Diagram part ${n}"/>`).join("");
+  $("#errSvg").innerHTML = s;
+  $$("#errSvg .hot").forEach(h => { const t = () => { h.classList.remove("good", "bad"); h.classList.toggle("flag"); };
+    h.addEventListener("click", t); h.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); t(); } }); });
+})();
+const WRONG = { 2: "The aggregation diamond is drawn at Book. It must touch the whole, Library.", 3: "<code>+ area : double</code> is missing its parentheses. It should be <code>+ area() : double</code>.", 4: "<code>1..0</code> is impossible: the lower bound cannot be bigger than the upper bound. It should be <code>0..*</code> or similar." };
+const RIGHTNOTE = { 1: "the inheritance triangle correctly points to Shape", 5: "<code>- radius : double</code> is a correct attribute", 6: "the italic name correctly marks Shape as abstract" };
+$("#ex6 .ex-reset").addEventListener("click", () => { $$("#errSvg .hot").forEach(h => h.classList.remove("flag", "good", "bad")); $("#ex6 .ex-fb").innerHTML = ""; $("#ex6 .ex-fb").className = "ex-fb"; });
+onCheck(6, () => {
+  const flagged = $$("#errSvg .hot.flag").map(h => +h.dataset.h);
+  let missed = Object.keys(WRONG).map(Number).filter(n => !flagged.includes(n)), falsePos = flagged.filter(n => !WRONG[n]);
+  $$("#errSvg .hot").forEach(h => { const n = +h.dataset.h; if (flagged.includes(n)) { h.classList.remove("flag"); h.classList.add(WRONG[n] ? "good" : "bad"); } });
+  if (!missed.length && !falsePos.length) return exResult(6, true, "You found all three:<ul>" + Object.values(WRONG).map(x => `<li>${x}</li>`).join("") + "</ul>");
+  exResult(6, false, `Found ${3 - missed.length} of 3.` + (falsePos.length ? ` Marked by mistake: ${falsePos.map(n => RIGHTNOTE[n]).join("; ")}.` : "") + (missed.length ? " Look again at the diamond, the operations and the multiplicities." : "") + " Your marks were cleared, so mark again and check.");
+});
+
+/* L7 code to UML */
+const L7 = [["Car → Vehicle", ["gen"], "<code>extends</code> means generalization."], ["Car → Drivable", ["real"], "<code>implements</code> means realization."], ["Car → Engine", ["comp"], "The engine is created inside Car and never shared: composition."], ["Car → Driver", ["agg", "assoc"], "The driver comes from outside and lives on: aggregation (a plain association is also accepted)."], ["Car → GasStation", ["dep"], "Only used as a parameter: dependency."]];
+$("#codeRows").innerHTML = L7.map((r, i) => `<div class="qrow" id="cr${i}"><span><code>${r[0]}</code></span>${relSelect("cs" + i)}</div>`).join("");
+onCheck(7, () => {
+  let bad = [], i = 0; L7.forEach((r, k) => { const ok = r[1].includes($("#cs" + k).value); $("#cr" + k).classList.toggle("ok", ok); $("#cr" + k).classList.toggle("no", !ok); if (!ok) bad.push(r[2]); i++; });
+  exResult(7, !bad.length, bad.length ? `${bad.length} to fix. Hints:<ul>${bad.map(x => `<li>${x}</li>`).join("")}</ul>` : "Exactly right. Keywords and how fields are created tell you the relationship.");
+});
+
+/* L8 design */
+const L8 = [
+  { p: "User — Profile", r: ["comp"], m: "1", ml: "Profile end" },
+  { p: "User — Playlist", r: ["assoc", "agg"], m: "*", ml: "Playlist end" },
+  { p: "Playlist — Song", r: ["agg"], m: "*", ml: "Song end" },
+  { p: "PremiumUser — User", r: ["gen"] },
+  { p: "Song — Playable", r: ["real"] },
+  { p: "Player — Playable", r: ["dep"] }
+];
+$("#designRows").innerHTML = L8.map((r, i) => `<div class="qrow" id="dr${i}"><span><code>${r.p}</code>${r.m ? ` <span class="hint">and multiplicity at the ${r.ml}</span>` : ""}</span><span style="display:flex;gap:8px;flex-wrap:wrap">${relSelect("ds" + i)}${r.m ? `<select id="dm${i}" aria-label="Multiplicity at the ${r.ml}">${MOPTS.slice(0, 5).map(o => `<option value="${o}">${o || "?"}</option>`).join("")}</select>` : ""}</span></div>`).join("");
+(function buildModel() {
+  const b = (x, y, c) => svgBox(x, y, 180, { attrs: [], ops: [], ...c }).svg;
+  let s = b(20, 30, { name: "Profile" }) + b(320, 30, { name: "User" }) + b(620, 30, { name: "Playlist" }) + b(320, 200, { name: "PremiumUser" }) + b(620, 200, { name: "Song" }) + b(320, 360, { name: "Player", ops: ["+ play(p : Playable)"] }) + b(620, 360, { name: "Playable", stereo: "interface", ops: ["+ play() : void"] });
+  s += `<path class="rel" d="M320,58 L200,58" marker-start="url(#m-df)"/><text class="mult" x="206" y="50">1</text>`;
+  s += `<path class="rel" d="M500,58 L620,58"/><text class="mult" x="506" y="50">1</text><text class="mult" x="606" y="50">*</text><text class="sb-t" x="535" y="78" font-style="italic" font-size="11">creates</text>`;
+  s += `<path class="rel" d="M710,86 L710,200" marker-start="url(#m-dh)"/><text class="mult" x="718" y="120">*</text><text class="mult" x="718" y="194">*</text>`;
+  s += `<path class="rel" d="M410,200 L410,86" marker-end="url(#m-tri)"/>`;
+  s += `<path class="rel dash" d="M710,256 L710,360" marker-end="url(#m-rtri)"/>`;
+  s += `<path class="rel dash" d="M500,392 L620,392" marker-end="url(#m-open)"/>`;
+  $("#modelSvg").innerHTML = s;
+})();
+$("#showModel").addEventListener("click", () => { $("#model").classList.add("show"); $("#model").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "nearest" }); });
+onCheck(8, () => {
+  let bad = 0; L8.forEach((r, i) => { let ok = r.r.includes($("#ds" + i).value); if (r.m) ok = ok && $("#dm" + i).value === r.m; $("#dr" + i).classList.toggle("ok", ok); $("#dr" + i).classList.toggle("no", !ok); if (!ok) bad++; });
+  exResult(8, !bad, bad ? `${bad} of 6 need another look. Re-read each sentence of the scenario for the key words, or open the model answer.` : "Your model matches the expert answer. That is a complete, correct class diagram design.");
+  if (!bad) $("#model").classList.add("show");
+});
+showEx(1);
+
+/* ---------- cheat sheet ---------- */
+const CHEAT = [
+  ["Association", "", "", "", "Objects are linked and know each other."],
+  ["Dependency", "dash", "", "m-open", "Uses briefly: a parameter or local variable."],
+  ["Aggregation", "", "m-dh", "", "Whole <span class='dw'>◆</span> has parts that can live alone."],
+  ["Composition", "", "m-df", "", "Whole <span class='db'>◆</span> owns parts that die with it."],
+  ["Generalization", "", "", "m-tri", "Child is a kind of the parent."],
+  ["Realization", "dash", "", "m-rtri", "Class implements an interface."]
+];
+$("#cheat").innerHTML = CHEAT.map(c => `<div class="card"><b>${c[0]}</b><svg viewBox="0 0 220 44" aria-hidden="true"><rect x="2" y="10" width="44" height="24" rx="4" class="sb-rect"/><rect x="174" y="10" width="44" height="24" rx="4" class="sb-rect"/><path class="rel ${c[1]}" d="M46,22 L174,22" ${c[2] ? `marker-start="url(#${c[2]})"` : ""} ${c[3] ? `marker-end="url(#${c[3]})"` : ""}/></svg><p>${c[4]}</p></div>`).join("");
+$("#resetAll").addEventListener("click", () => {
+  done = {}; exSolved = {}; store.set("uml-done", done); store.set("uml-ex", exSolved);
+  $$(".quiz").forEach(mountQuiz); paintProgress();
+  $("#finalText").textContent = "Progress reset. Start again from window 1 whenever you are ready.";
+});
+
+/* ---------- layout-dependent drawing ---------- */
+function layout() { drawInh(); fitLab(); }
+addEventListener("resize", layout);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
+addEventListener("load", layout);
+layout();
+paintProgress();
+})();
+</script>
+</body>
+</html>
